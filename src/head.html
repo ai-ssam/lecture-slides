@@ -110,6 +110,8 @@ body.mm #viewport{background:#D9CFF0}
 #inspector{background:#fff;border-left:1px solid var(--line);overflow:auto;padding:10px 12px}
 #inspector h4{margin:12px 0 6px;font-size:12px;color:var(--mut);font-weight:600}
 #inspector h4:first-child{margin-top:0}
+.fstat{margin:6px 0;padding:6px 8px;background:#F7F8FA;border:1px solid var(--line);border-radius:6px}.modal.folder{width:min(520px,92vw)}
+#top button.on{box-shadow:inset 0 0 0 2px #22c55e}
 .fld{display:grid;grid-template-columns:96px 1fr;align-items:center;gap:6px;margin:5px 0}
 .fld label{color:#444}
 .fld input[type=range]{width:100%}
@@ -147,8 +149,8 @@ body.mm #viewport{background:#D9CFF0}
 .plist .it button{padding:2px 7px;border:1px solid var(--line);border-radius:5px;background:#fff}
 #toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%);background:rgba(28,32,38,.94);color:#fff;padding:8px 16px;border-radius:20px;z-index:4000;pointer-events:none;opacity:0;transition:opacity .2s;max-width:80vw}
 #toast.on{opacity:1}
-#banner{position:fixed;top:54px;left:50%;transform:translateX(-50%);background:#FFF7D6;border:1px solid #E8C94A;border-radius:8px;padding:8px 14px;z-index:2500;display:flex;gap:10px;align-items:center}
-#banner button{padding:3px 10px;border:1px solid #C9A92B;border-radius:5px;background:#fff}
+#banner,#banner2{position:fixed;top:54px;left:50%;transform:translateX(-50%);background:#FFF7D6;border:1px solid #E8C94A;border-radius:8px;padding:8px 14px;z-index:2500;display:flex;gap:10px;align-items:center}
+#banner button,#banner2 button{padding:3px 10px;border:1px solid #C9A92B;border-radius:5px;background:#fff}
 /* 캡처 오버레이 */
 #cap{position:fixed;inset:0;background:#000;z-index:2800;cursor:crosshair;user-select:none}
 #cap video{position:absolute;left:0;top:44px;width:100%;height:calc(100% - 44px);object-fit:contain;background:#000}
@@ -196,7 +198,7 @@ body.mm #viewport{background:#D9CFF0}
 @media print{
   html,body{height:auto!important;overflow:visible!important;background:#fff!important}
   body *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  #app,#pres,#modals,#toast,#banner,#cap,#cpop,#aud{display:none!important}
+  #app,#pres,#modals,#toast,#banner,#banner2,#cap,#cpop,#aud{display:none!important}
   #printRoot{display:block}
   .pp{width:1280px;height:var(--H,720px);position:relative;overflow:hidden;break-after:page;page-break-after:always}
   .pp:last-child{break-after:auto;page-break-after:auto}
@@ -216,6 +218,7 @@ body.mm #viewport{background:#D9CFF0}
     <button id="bOpen">열기</button>
     <button id="bSave" title="Ctrl+S">저장</button>
     <button id="bSaveAs">다른 이름으로</button>
+    <button id="bFolder" title="동기화 폴더 연결 (Google Drive·OneDrive·Dropbox)">📁 폴더</button>
     <span class="sep"></span>
     <button id="bCap" title="다른 창이나 화면의 영역을 캡처">📷 캡처</button>
     <button id="bImg">이미지 넣기</button>

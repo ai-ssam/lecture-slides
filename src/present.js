@@ -254,6 +254,8 @@ function showHelp(){
   +'<tr><th>패널</th><td><kbd>Alt</kbd>+<kbd>1</kbd> 왼쪽 목록 접기/펴기 · <kbd>Alt</kbd>+<kbd>2</kbd> 오른쪽 도구 접기/펴기 · 패널 사이 경계선을 드래그하면 폭 조절(더블클릭: 기본 폭) · 목록 아래 작게/보통/크게로 섬네일 크기 · 설정은 자동 기억</td></tr>'
   +'<tr><th>배치</th><td><kbd>]</kbd>/<kbd>[</kbd> 한 단계 앞/뒤 · <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>]</kbd>/<kbd>[</kbd> 맨 앞/맨 뒤 · <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>C</kbd>/<kbd>V</kbd> 스타일 복사/붙여넣기 · <kbd>Alt</kbd>+클릭 잠긴 도형 선택 · 드래그 중 <kbd>Alt</kbd> 스냅 잠시 끄기</td></tr>'
   +'<tr><th>화면</th><td><kbd>Ctrl</kbd>+휠 또는 <kbd>Ctrl</kbd>+<kbd>+</kbd>/<kbd>-</kbd> 확대·축소 · <kbd>Ctrl</kbd>+<kbd>0</kbd> 맞춤 · <kbd>Space</kbd>+드래그 또는 휠 버튼 드래그로 이동</td></tr>'
+  +'<tr><th>꾸미기</th><td>글자/이미지를 고르면 오른쪽에 <b>아이콘 버튼</b>(그림자·외곽선·배경띠 / 테두리·둥근 모서리·그림자·반전·반투명)과 <b>기본 세트</b>가 떠요. 「＋ 내 꾸미기 저장」으로 이름 붙여 저장하고, 칩을 누르면 적용 · ✎ 이름 변경 · × 삭제. 세밀한 값은 「자세히」</td></tr>'
+  +'<tr><th>📁 폴더</th><td>「📁 폴더」에서 Google Drive·OneDrive·Dropbox 동기화 폴더를 연결하면 저장(Ctrl+S)·자동 저장이 그 폴더로 가고 목록에서 바로 열어요. 설정(즐겨찾기·내 꾸미기·화면)도 파일로 내보내고 불러올 수 있어요. 다른 기기에서 파일이 바뀌면 경고해요</td></tr>'
   +'<tr><th>마스터</th><td>오른쪽 패널 「마스터 만들기/편집」 · 글자에 <kbd>{n}</kbd> 쪽번호, <kbd>{total}</kbd> 전체 쪽수 · 이미지 선택 후 「배경으로 만들기」</td></tr>'
   +'<tr><th>슬라이드</th><td><kbd>PageUp</kbd>/<kbd>PageDown</kbd> 이동 · 방향키(선택 없을 때) · <kbd>E</kbd> HTML 글자 편집</td></tr>'
   +'<tr><th>붙여넣기</th><td><kbd>Ctrl</kbd>+<kbd>V</kbd> 이미지/HTML 코드 · 파일을 창에 끌어놓아도 돼요 (이미지, .html, .lecture)</td></tr>'
@@ -335,6 +337,8 @@ function initEditor(){
   $('#toolbar').addEventListener('click',e=>{const b=e.target.closest('[data-tool]');if(!b)return;setTool(b.dataset.tool);if(b.dataset.var){toolVar=b.dataset.var;Object.assign(ST.rect,clone(RECT_VAR[toolVar]));markTools();markFavs();renderInspector();}});
   window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
   offerRestore();
+  $('#bFolder').onclick=showFolder;idb.get('dir').then(h=>{dirHandle=h||null;updateFolderBtn();}).catch(()=>{});
+  addEventListener('focus',()=>showExtBanner(false));document.addEventListener('visibilitychange',()=>{if(!document.hidden)showExtBanner(false);});
 }
 if(IS_AUD)initAudience();else initEditor();
 

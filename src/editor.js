@@ -103,7 +103,7 @@ function restore(st){P.slides=st.slides;if(st.masters)P.masters=st.masters;cur=c
 function doUndo(){if(!undo.length)return;redo.push(snapState());restore(undo.pop());markDirty();}
 function doRedo(){if(!redo.length)return;undo.push(snapState());restore(redo.pop());markDirty();}
 let autoT;
-function markDirty(){dirty=true;$('#dirty').textContent='● 변경됨';clearTimeout(autoT);autoT=setTimeout(autosave,2500);}
+function markDirty(){dirty=true;$('#dirty').textContent='● 변경됨';clearTimeout(autoT);autoT=setTimeout(autosave,2500);clearTimeout(folderT);if(folderAuto&&typeof folderAutosave==='function')folderT=setTimeout(folderAutosave,15000);}
 
 /* ===================== 기하/히트테스트 ===================== */
 function ptsBox(pts,pad){pad=pad||0;let x1=1e9,y1=1e9,x2=-1e9,y2=-1e9;for(const p of pts){x1=Math.min(x1,p[0]);y1=Math.min(y1,p[1]);x2=Math.max(x2,p[0]);y2=Math.max(y2,p[1]);}if(x1>x2)return {x:0,y:0,w:0,h:0};return {x:x1-pad,y:y1-pad,w:x2-x1+pad*2,h:y2-y1+pad*2};}
@@ -1126,23 +1126,145 @@ function loadProject(d){
   $('#title').value=P.title;for(const [,t] of thumbEls)t.el.remove();thumbEls.clear();stageEl._ok=0;stageEl._sid=null;applyRatio(P.ratio);
   renderFavs();go(0);P.slides.filter(s=>s.type==='html'&&!s.thumb).forEach(queueThumb);
 }
-function openText(text,handle){try{loadProject(JSON.parse(text));fileHandle=handle;toast('열었어요: '+P.title);}catch(err){toast('열 수 없어요: '+err.message);}}
+function openText(text,handle){try{loadProject(JSON.parse(text));fileHandle=handle;baseMod=0;if(handle)handle.getFile().then(f=>{baseMod=f.lastModified;}).catch(()=>{});toast('열었어요: '+P.title);}catch(err){toast('열 수 없어요: '+err.message);}}
+/* ---- 동기화 폴더 (Google Drive / OneDrive / Dropbox 데스크톱 앱 폴더) ---- */
+let dirHandle=null,baseMod=0,folderAuto=lsGet('ls.folderAuto')==='1',folderT=0,extIgnored=0;
+const safeName=n=>(String(n||'강의').replace(/[\\/:*?"<>|]/g,'_').trim().slice(0,80)||'강의');
+async function dirPerm(ask){
+  if(!dirHandle)return false;
+  try{const o={mode:'readwrite'};let p=await dirHandle.queryPermission(o);if(p==='granted')return true;if(!ask)return false;p=await dirHandle.requestPermission(o);return p==='granted';}catch(e){return false;}
+}
+async function inFolder(h){try{return !!(dirHandle&&h&&await dirHandle.resolve(h));}catch(e){return false;}}
+async function freeName(base){
+  let n=base+'.lecture',i=2;
+  for(;;){try{await dirHandle.getFileHandle(n);n=base+' ('+(i++)+').lecture';}catch(e){return n;}}
+}
+async function folderFileFor(title,silent){
+  const base=safeName(title);let name=base+'.lecture',exists=false;
+  try{await dirHandle.getFileHandle(name);exists=true;}catch(e){}
+  if(exists){if(silent||!confirm('폴더에 같은 이름(「'+name+'」)의 프로젝트가 있어요.\n확인: 덮어쓰기 · 취소: 새 이름으로 저장'))name=await freeName(base);}
+  return dirHandle.getFileHandle(name,{create:true});
+}
+async function writeRaw(h,data){const w=await h.createWritable();await w.write(data);await w.close();}
+async function writeProject(h,data){await writeRaw(h,data);baseMod=(await h.getFile()).lastModified;extIgnored=0;}
+async function externalChanged(){
+  if(!fileHandle||!baseMod)return 0;
+  try{const f=await fileHandle.getFile();return f.lastModified!==baseMod?f.lastModified:0;}catch(e){return 0;}
+}
 async function saveProject(as){
   const data=serialize();
   try{
     if(window.showSaveFilePicker){
-      if(!fileHandle||as)fileHandle=await window.showSaveFilePicker({suggestedName:(P.title||'강의')+'.lecture',types:[{description:'강의슬라이드 프로젝트',accept:{'application/json':['.lecture']}}]});
-      const w=await fileHandle.createWritable();await w.write(data);await w.close();
+      let fresh=false;
+      if(as||!fileHandle){
+        if(!as&&dirHandle&&await dirPerm(true)){fileHandle=await folderFileFor(P.title,false);}
+        else{const o={suggestedName:(P.title||'강의')+'.lecture',types:[{description:'강의슬라이드 프로젝트',accept:{'application/json':['.lecture']}}]};if(dirHandle)o.startIn=dirHandle;fileHandle=await window.showSaveFilePicker(o);}
+        baseMod=0;fresh=true;
+      }
+      if(!fresh&&await externalChanged()){
+        if(!confirm('⚠ 이 파일이 다른 기기나 창에서 바뀌었어요.\n지금 저장하면 그쪽 변경이 사라져요.\n\n확인: 그래도 덮어쓰기 · 취소: 저장 안 함 (「다른 이름으로」로 사본을 만들 수 있어요)')){toast('저장을 취소했어요 · 다른 이름으로 저장해 두면 안전해요');return;}
+      }
+      await writeProject(fileHandle,data);
       toast('저장했어요: '+fileHandle.name);
     }else{download(new Blob([data],{type:'application/json'}),(P.title||'강의')+'.lecture');toast('파일로 내려받았어요');}
     dirty=false;$('#dirty').textContent='저장됨';setTimeout(()=>{if(!dirty)$('#dirty').textContent='';},2500);
   }catch(err){if(err&&err.name==='AbortError')return;toast('저장 실패: '+(err&&err.message||err));}
 }
+async function folderAutosave(){
+  if(!folderAuto||!dirty||!dirHandle||IS_AUD)return;
+  try{
+    if(!await dirPerm(false))return;
+    if(fileHandle&&!await inFolder(fileHandle))return;
+    if(!fileHandle){if(P.slides.length<2&&!P.slides[0].objects.length&&P.slides[0].type!=='html')return;fileHandle=await folderFileFor(P.title,true);baseMod=0;}
+    else if(await externalChanged()){showExtBanner(true);return;}
+    await writeProject(fileHandle,serialize());dirty=false;
+    const t=new Date();$('#dirty').textContent='📁 폴더에 자동 저장됨 '+t.getHours()+':'+String(t.getMinutes()).padStart(2,'0');
+  }catch(e){toast('폴더 자동 저장 실패: '+(e&&e.message||e));}
+}
+async function reloadExternal(){
+  try{const f=await fileHandle.getFile();const t=await f.text();openText(t,fileHandle);}catch(e){toast('다시 불러오지 못했어요: '+(e&&e.message||e));}
+}
+async function showExtBanner(force){
+  if(!fileHandle||$('#banner2'))return;
+  const m=await externalChanged();if(!m||(m===extIgnored&&!force))return;
+  const b=document.createElement('div');b.id='banner2';b.className='banner';
+  b.innerHTML='<span>⚠ 이 프로젝트가 다른 기기·창에서 바뀌었어요'+(dirty?' (내 변경도 저장 전이에요)':'')+'</span><button id="xRe">'+(dirty?'그쪽 내용으로 다시 불러오기':'다시 불러오기')+'</button><button id="xNo">무시</button>';
+  document.body.appendChild(b);
+  $('#xRe',b).onclick=()=>{if(dirty&&!confirm('저장하지 않은 내 변경이 사라져요. 계속할까요?'))return;b.remove();reloadExternal();};
+  $('#xNo',b).onclick=()=>{extIgnored=m;b.remove();};
+}
 async function openProject(){
   if(dirty&&!confirm('저장하지 않은 변경이 있어요. 그래도 열까요?'))return;
   if(window.showOpenFilePicker){
-    try{const [h]=await window.showOpenFilePicker({types:[{description:'강의슬라이드 프로젝트',accept:{'application/json':['.lecture','.json']}}]});openText(await (await h.getFile()).text(),h);}catch(err){}
+    try{const o={types:[{description:'강의슬라이드 프로젝트',accept:{'application/json':['.lecture','.json']}}]};if(dirHandle)o.startIn=dirHandle;const [h]=await window.showOpenFilePicker(o);openText(await (await h.getFile()).text(),h);}catch(err){}
   }else $('#fOpen').click();
+}
+function settingsObj(){return {format:'lecture-settings',version:1,presets:P.presets,decos:myDeco,layout,snap:snapOn,renum:autoRenum,savedAt:new Date().toISOString()};}
+function applySettings(d){
+  if(!d||d.format!=='lecture-settings')throw new Error('강의슬라이드 설정 파일이 아니에요');
+  if(Array.isArray(d.presets)&&d.presets.length){P.presets=d.presets.map(p=>({...p,id:uid()}));savePresets();renderFavs();}
+  if(d.decos&&Array.isArray(d.decos.text)&&Array.isArray(d.decos.img)){myDeco=d.decos;saveDecos();}
+  if(d.layout){Object.assign(layout,d.layout);saveLayout();applyLayout();}
+  if(d.snap!=null){snapOn=!!d.snap;lsSet('ls.snap',snapOn?'1':'0');}
+  if(d.renum!=null){autoRenum=!!d.renum;lsSet('ls.renum',autoRenum?'1':'0');}
+  renderInspector();updateStatus();
+}
+const SET_NAME='강의슬라이드-설정.lecture-settings';
+async function exportSettings(){
+  const data=JSON.stringify(settingsObj(),null,1);
+  try{
+    if(dirHandle&&await dirPerm(true)){const h=await dirHandle.getFileHandle(SET_NAME,{create:true});await writeRaw(h,data);toast('동기화 폴더에 설정을 저장했어요 · 다른 기기에서 불러오세요');return;}
+    download(new Blob([data],{type:'application/json'}),SET_NAME);toast('설정 파일을 내려받았어요');
+  }catch(e){toast('설정 저장 실패: '+(e&&e.message||e));}
+}
+async function importSettings(){
+  try{
+    if(dirHandle&&await dirPerm(true)){let h=null;try{h=await dirHandle.getFileHandle(SET_NAME);}catch(e){}
+      if(h&&confirm('동기화 폴더의 설정 파일을 불러올까요?\n(즐겨찾기·내 꾸미기·화면 설정이 바뀌어요)')){applySettings(JSON.parse(await (await h.getFile()).text()));toast('설정을 불러왔어요');return;}}
+    if(window.showOpenFilePicker){const o={types:[{description:'강의슬라이드 설정',accept:{'application/json':['.lecture-settings','.json']}}]};if(dirHandle)o.startIn=dirHandle;const [h]=await window.showOpenFilePicker(o);applySettings(JSON.parse(await (await h.getFile()).text()));toast('설정을 불러왔어요');}
+    else{const i=document.createElement('input');i.type='file';i.accept='.lecture-settings,.json';i.onchange=async()=>{try{applySettings(JSON.parse(await readFileText(i.files[0])));toast('설정을 불러왔어요');}catch(e){toast('불러오기 실패: '+e.message);}};i.click();}
+  }catch(e){if(e&&e.name==='AbortError')return;toast('불러오기 실패: '+(e&&e.message||e));}
+}
+async function pickFolder(){
+  if(!window.showDirectoryPicker){toast('이 브라우저는 폴더 연결을 지원하지 않아요 · Chrome이나 Edge를 써 주세요');return false;}
+  try{const h=await window.showDirectoryPicker({id:'lecture-slides-folder',mode:'readwrite'});dirHandle=h;await idb.set('dir',h);updateFolderBtn();return true;}
+  catch(e){if(!(e&&e.name==='AbortError'))toast('폴더를 열 수 없어요: '+(e&&e.message||e));return false;}
+}
+function updateFolderBtn(){const b=$('#bFolder');if(!b)return;b.classList.toggle('on',!!dirHandle);b.title=dirHandle?'동기화 폴더: '+dirHandle.name:'동기화 폴더 연결 (Google Drive·OneDrive·Dropbox)';}
+async function folderList(){
+  const out=[];
+  for await(const [name,h] of dirHandle.entries()){if(h.kind!=='file'||!name.toLowerCase().endsWith('.lecture'))continue;try{const f=await h.getFile();out.push({name,h,mod:f.lastModified,size:f.size,cur:fileHandle?await fileHandle.isSameEntry(h).catch(()=>false):false});}catch(e){}}
+  return out.sort((a,b)=>b.mod-a.mod);
+}
+const fmtDate=t=>{const d=new Date(t),p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes());};
+async function showFolder(){
+  const sup=!!window.showDirectoryPicker;
+  const m=modal('<h3>📁 동기화 폴더</h3><div id="fBody"></div>','folder');
+  async function draw(){
+    const ok=dirHandle?await dirPerm(false):false;let h='';
+    if(!sup)h+='<p class="hint">⚠ 이 브라우저는 폴더 저장을 지원하지 않아요. Chrome 또는 Edge(데스크톱)에서 열어 주세요.</p>';
+    h+='<p class="hint">Google Drive·OneDrive·Dropbox <b>데스크톱 앱</b>이 동기화하는 폴더를 고르면, 거기에 저장한 파일이 다른 컴퓨터에도 자동으로 나타나요. (프로그램은 이 폴더만 읽고 써요)</p>';
+    h+='<div class="fstat">'+(dirHandle?(ok?'🟢 연결됨 · <b>'+esc(dirHandle.name)+'</b>':'🟡 <b>'+esc(dirHandle.name)+'</b> · 권한 확인이 필요해요'):'⚪ 아직 연결 안 됨')+'</div>';
+    h+='<div class="arow"><button id="fPick">'+(dirHandle?'폴더 바꾸기':'폴더 선택')+'</button>'+(dirHandle&&!ok?'<button id="fPerm">권한 허용</button>':'')+(dirHandle?'<button id="fOff">연결 해제</button>':'')+'</div>';
+    h+='<label class="chk"><input type="checkbox" id="fAuto"'+(folderAuto?' checked':'')+'> 변경하면 폴더에 자동 저장 (15초 뒤)</label>';
+    h+='<h4>폴더의 프로젝트</h4><div class="plist" id="fList">'+(ok?'<span class="hint">불러오는 중…</span>':'<span class="hint">폴더를 연결하고 권한을 허용하면 목록이 보여요</span>')+'</div>';
+    h+='<h4>내 설정 (즐겨찾기·내 꾸미기·화면 설정)</h4><div class="arow"><button id="sExp">'+(dirHandle?'폴더에 설정 저장':'설정 내보내기')+'</button><button id="sImp">설정 불러오기</button></div>';
+    h+='<p class="hint">💡 브라우저를 다시 열면 보안 때문에 폴더 권한을 다시 물어볼 수 있어요. 이때 「권한 허용」(또는 이 창의 버튼)을 누르면 이어서 쓸 수 있어요. 두 컴퓨터에서 같은 파일을 동시에 고치면 저장할 때 경고가 떠요.</p><div class="arow"><button id="fClose">닫기</button></div>';
+    $('#fBody',m).innerHTML=h;
+    if(ok){const list=await folderList(),el=$('#fList',m);if(el)el.innerHTML=list.length?list.map((x,i)=>'<div class="it"><button data-fo="'+i+'" style="flex:1;text-align:left">'+(x.cur?'▶ ':'')+esc(x.name.replace(/\.lecture$/i,''))+'<small style="color:#6b7280"> · '+fmtDate(x.mod)+' · '+Math.max(1,Math.round(x.size/1024))+'KB</small></button></div>').join(''):'<span class="hint">아직 저장된 프로젝트가 없어요 · 저장(Ctrl+S)하면 여기에 생겨요</span>';m._list=list;}
+  }
+  m.addEventListener('click',async e=>{
+    const t=e.target.closest('button');if(!t)return;
+    if(t.id==='fClose'){closeModal();return;}
+    if(t.id==='fPick'){if(await pickFolder())draw();return;}
+    if(t.id==='fPerm'){await dirPerm(true);draw();return;}
+    if(t.id==='fOff'){dirHandle=null;try{await idb.set('dir',null);}catch(e){}updateFolderBtn();draw();return;}
+    if(t.id==='sExp'){await exportSettings();return;}
+    if(t.id==='sImp'){await importSettings();return;}
+    if(t.dataset.fo!=null){const x=m._list[+t.dataset.fo];if(!x)return;if(dirty&&!confirm('저장하지 않은 변경이 있어요. 그래도 열까요?'))return;closeModal();openText(await (await x.h.getFile()).text(),x.h);}
+  });
+  m.addEventListener('change',e=>{if(e.target.id==='fAuto'){folderAuto=e.target.checked;lsSet('ls.folderAuto',folderAuto?'1':'0');if(folderAuto&&dirty)markDirty();}});
+  draw();
 }
 $('#fOpen').addEventListener('change',async e=>{const f=e.target.files[0];e.target.value='';if(f)openText(await readFileText(f),null);});
 const idb={
