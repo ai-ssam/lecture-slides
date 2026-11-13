@@ -37,7 +37,8 @@ body.aud-mode #aud{display:block}
 #center{display:flex;flex-direction:column;min-width:0;min-height:0}
 #toolbar{background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:4px;padding:6px 8px;flex-wrap:wrap}
 #toolbar .tb{border:1px solid var(--line);background:#fff;border-radius:6px;padding:4px 8px;white-space:nowrap}
-#toolbar .tb.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+#toolbar .tb.on{background:var(--acc);color:#fff;border-color:var(--acc);font-weight:700;box-shadow:0 0 0 3px rgba(37,99,235,.28)}
+#toolbar .tb.on small{opacity:.85}
 #toolbar .tb small{opacity:.6;margin-left:3px}
 #toolbar .vs{width:1px;height:26px;background:var(--line);margin:0 6px}
 #favs{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
@@ -45,6 +46,22 @@ body.aud-mode #aud{display:block}
 .fav:hover{border-color:var(--acc)}
 .fav svg{width:100%;height:100%;display:block}
 .fav b{position:absolute;right:2px;bottom:0;font-size:10px;color:var(--mut)}
+.fav.on{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc);background:#E8EFFE}
+#stTool{color:var(--acc);font-weight:700}
+.cbtn{width:44px;height:24px;border:1px solid #9CA3AF;border-radius:4px;padding:0}
+.cbtn:hover{border-color:var(--acc)}
+.rg{display:flex;gap:6px;align-items:center}
+.rg input[type=range]{flex:1;min-width:0}
+.rn{width:58px!important;flex:none}
+#cpop{position:fixed;z-index:3500;background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 10px 10px;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+.cp-t{font-size:11px;color:var(--mut);margin:6px 0 3px}
+.cp-t:first-child{margin-top:0}
+.cp-g{display:grid;grid-template-columns:repeat(10,22px);gap:3px}
+.sw{width:22px;height:22px;border:1px solid rgba(0,0,0,.2);border-radius:3px;padding:0}
+.sw:hover{transform:scale(1.15)}
+.sw.on{outline:2px solid var(--acc);outline-offset:1px}
+.cp-more{margin-top:8px;width:100%;padding:5px;border:1px solid var(--line);border-radius:6px;background:#F7F8FA}
+.cp-native{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
 .favbtn{border:1px dashed #9CA3AF;background:#fff;border-radius:6px;padding:4px 8px;color:var(--mut)}
 #viewport{flex:1;position:relative;background:#CBD0D8;overflow:hidden;min-height:0}
 #boxOuter{position:absolute;box-shadow:0 6px 28px rgba(0,0,0,.28)}
@@ -178,7 +195,7 @@ body.aud-mode #aud{display:block}
       <div id="favs"></div>
     </div>
     <div id="viewport"><div id="boxOuter"><div id="box"><div id="stage"></div><svg id="ui" viewBox="0 0 1280 720"></svg></div></div></div>
-    <div id="status"><span id="stPos"></span><span id="stHint"></span></div>
+    <div id="status"><span id="stTool"></span><span id="stPos"></span><span id="stHint"></span></div>
   </main>
   <aside id="inspector"></aside>
 </div>
@@ -252,7 +269,8 @@ function blankSlide(){return {id:uid(),type:'blank',bg:'#FFFFFF',objects:[],note
 function newProject(){return {title:'제목 없는 강의',slides:[blankSlide()],assets:{},htmls:{},presets:loadPresets()||defPresets()};}
 let P=IS_AUD?{assets:{},htmls:{},slides:[],presets:[]}:newProject();
 let cur=0,tool='select',sel=null,nextNum=1,dirty=false,fileHandle=null,undo=[],redo=[],lastSnap=0,editText=false,draft=null,drag=null,clipObj=null,pasteMode='new';
-const view={s:1};
+const view={s:1};let activeFav=-1;
+const TOOL_NAME={select:'선택',rect:'사각형',ellipse:'원',arrow:'화살표',num:'번호',text:'글자',mosaic:'모자이크',pen:'펜'};
 const ST=clone(DEF);
 const curSlide=()=>P.slides[cur];
 const findObj=id=>curSlide().objects.find(o=>o.id===id);
@@ -506,7 +524,7 @@ function renderUI(){
   }
   const o=sel&&findObj(sel);
   if(o&&!editText){
-    const b=bbox(o),hs=9/view.s;
+    const b=bbox(o),hs=11/view.s;
     h+='<rect x="'+b.x+'" y="'+b.y+'" width="'+b.w+'" height="'+b.h+'" fill="none" stroke="#2563EB" stroke-width="1.5" stroke-dasharray="5 3" vector-effect="non-scaling-stroke"/>';
     for(const hd of handlesOf(o))h+='<rect x="'+(hd.x-hs/2)+'" y="'+(hd.y-hs/2)+'" width="'+hs+'" height="'+hs+'" fill="#fff" stroke="#2563EB" stroke-width="1.5" vector-effect="non-scaling-stroke"/>';
   }
@@ -539,14 +557,15 @@ function renderThumbs(){
 }
 function renderAll(){renderThumbs();renderStage();renderInspector();updateStatus();$$('#toolbar .tb').forEach(b=>b.classList.toggle('on',b.dataset.tool===tool));}
 function go(i){cur=clamp(i,0,P.slides.length-1);sel=null;draft=null;editText=false;nextNum=1+Math.max(0,...curSlide().objects.filter(o=>o.t==='num').map(o=>+o.n||0));renderAll();}
-function setTool(t){tool=t;sel=null;draft=null;editText=false;$$('#toolbar .tb').forEach(b=>b.classList.toggle('on',b.dataset.tool===t));box.classList.toggle('sel',t==='select');renderUI();renderInspector();$('#stHint').textContent=HINTS[t]||'';}
+function setTool(t,keep){tool=t;if(!keep)activeFav=-1;sel=null;draft=null;editText=false;$$('#toolbar .tb').forEach(b=>b.classList.toggle('on',b.dataset.tool===t));box.classList.toggle('sel',t==='select');box.style.cursor=t==='select'?'default':(t==='text'?'text':'crosshair');renderUI();renderInspector();$('#stHint').textContent=HINTS[t]||'';markFavs();}
+function markFavs(){$$('#favs .fav').forEach(b=>b.classList.toggle('on',+b.dataset.i===activeFav));const el=$('#stTool');if(el)el.textContent='현재 도구: '+(TOOL_NAME[tool]||'')+(activeFav>=0&&P.presets[activeFav]?' · 즐겨찾기 '+(activeFav+1)+'번 ('+P.presets[activeFav].name+')':'');}
 const HINTS={select:'클릭: 선택 · 드래그: 이동 · 모서리 점: 크기 · Delete: 삭제 · 숫자키 1~9: 선택한 도형에 즐겨찾기 스타일 적용',rect:'드래그해서 사각형 그리기 (Shift: 정사각형)',ellipse:'드래그해서 원 그리기 (Shift: 정원)',arrow:'드래그해서 화살표 그리기 (Shift: 각도 고정)',num:'클릭하면 번호가 하나씩 늘어나며 찍혀요',text:'클릭해서 글자 넣기 (Ctrl+Enter: 확정)',mosaic:'드래그해서 가리기 · 오른쪽 패널에서 사각/원/자유 영역 선택',pen:'드래그해서 자유롭게 그리기'};
 
 /* ===================== 인스펙터 ===================== */
 function ctl(f,val){
   const k=f[0],label=f[1],type=f[2];let inp='';
-  if(type==='color')inp='<input type="color" data-k="'+k+'" value="'+val+'">';
-  else if(type==='range')inp='<input type="range" data-k="'+k+'" min="'+f[3]+'" max="'+f[4]+'" step="'+f[5]+'" value="'+val+'">';
+  if(type==='color')inp='<button type="button" class="cbtn" data-k="'+k+'" data-color="'+val+'" style="background:'+val+'" title="색 선택"></button>';
+  else if(type==='range')inp='<div class="rg"><input type="range" data-k="'+k+'" min="'+f[3]+'" max="'+f[4]+'" step="'+f[5]+'" value="'+val+'"><input type="number" class="rn" data-k="'+k+'" min="'+f[3]+'" max="'+f[4]+'" step="'+f[5]+'" value="'+val+'"></div>';
   else if(type==='check')inp='<input type="checkbox" data-k="'+k+'"'+(val?' checked':'')+'>';
   else if(type==='select')inp='<select data-k="'+k+'"'+(NUMERIC_SELECT.has(k)?' data-num="1"':'')+'>'+f[3].map(op=>'<option value="'+op[0]+'"'+(String(op[0])===String(val)?' selected':'')+'>'+op[1]+'</option>').join('')+'</select>';
   return '<div class="fld"><label>'+label+'</label>'+inp+'</div>';
@@ -563,7 +582,7 @@ function renderInspector(){
   }else if(o&&o.t==='img'){h+='<h4>이미지</h4><p class="hint">드래그로 이동, 모서리 점으로 크기 조절, Delete 로 삭제. 위에 모자이크/도형을 올려보세요.</p>';}
   else h+='<h4>도구</h4><p class="hint">위쪽 도구를 고르거나, 도형을 클릭해서 스타일을 바꿔요. 자주 쓰는 모양은 ★로 저장하고 숫자키 1~9 로 불러오세요.</p>';
   h+='<h4>슬라이드 '+(cur+1)+'</h4>';
-  h+='<div class="fld"><label>배경색</label><input type="color" id="bg" value="'+s.bg+'"></div>';
+  h+='<div class="fld"><label>배경색</label><button type="button" class="cbtn" data-id="bg" data-color="'+s.bg+'" style="background:'+s.bg+'" title="색 선택"></button></div>';
   if(s.type==='html'){
     h+='<button class="btn" id="bEditText">'+(editText?'✔ 텍스트 편집 끝내기':'✎ 텍스트 편집 (E)')+'</button>';
     h+='<p class="hint">HTML 슬라이드는 원본 모양 그대로 보여요. 글자 수정은 위 버튼, 도형·모자이크·펜은 그 위에 얹혀요.</p>';
@@ -578,13 +597,62 @@ $('#inspector').addEventListener('input',e=>{
   if(t.id==='notes'){curSlide().notes=t.value;markDirty();return;}
   const k=t.dataset.k;if(!k)return;
   let v=t.type==='checkbox'?(t.checked?1:0):t.value;
-  if(t.type==='range'||t.dataset.num)v=+v;
+  if(t.type==='range'||t.type==='number'||t.dataset.num){
+    if(v==='')return;v=+v;if(isNaN(v))return;
+    if(t.type==='number'||t.type==='range'){const mn=+t.min,mx=+t.max;if(!isNaN(mn))v=Math.max(mn,v);if(!isNaN(mx))v=Math.min(mx,v);}
+    const rg=t.closest('.rg');if(rg)$$('input',rg).forEach(i=>{if(i!==t)i.value=v;});
+  }
   setProp(k,v);
+});
+$('#inspector').addEventListener('change',e=>{
+  const t=e.target;if(!(t.classList&&t.classList.contains('rn')))return;
+  const mn=+t.min,mx=+t.max;let v=+t.value;if(isNaN(v))v=mn;v=Math.min(mx,Math.max(mn,v));t.value=v;
+  const rg=t.closest('.rg');if(rg)$('input[type=range]',rg).value=v;
 });
 $('#inspector').addEventListener('click',e=>{
   if(e.target.id==='addFav')addFavorite();
   if(e.target.id==='bEditText')toggleTextEdit();
+  const cb=e.target.closest('.cbtn');
+  if(cb)openColorPopup(cb,cb.dataset.color,v=>{
+    cb.style.background=v;cb.dataset.color=v;
+    if(cb.dataset.id==='bg'){if(Date.now()-lastSnap>700)snap();curSlide().bg=v;renderStage();}
+    else setProp(cb.dataset.k,v);
+  });
 });
+/* ---- 격자 색상표 ---- */
+const QUICK=['#E23B2E','#2563EB','#FFE066','#16A34A','#F59E0B','#111111','#FFFFFF','#7C3AED','#EC4899','#06B6D4'];
+const GRAYS=['#FFFFFF','#F2F2F2','#D9D9D9','#BFBFBF','#A6A6A6','#808080','#595959','#404040','#262626','#000000'];
+const HUES=[4,28,48,130,170,210,232,275,325,20];
+function hsl2hex(h,s,l){s/=100;l/=100;const a=s*Math.min(l,1-l);const f=n=>{const k=(n+h/30)%12;const c=l-a*Math.max(-1,Math.min(k-3,9-k,1));return Math.round(255*c).toString(16).padStart(2,'0');};return ('#'+f(0)+f(8)+f(4)).toUpperCase();}
+const HUEROWS=[88,74,58,44,30].map(L=>HUES.map((h,i)=>hsl2hex(h,i===9?35:80,L)));
+function recentColors(){try{return JSON.parse(localStorage.getItem('ls.recent')||'[]');}catch(e){return [];}}
+function addRecent(c){c=String(c).toUpperCase();let r=recentColors().filter(x=>x!==c);r.unshift(c);try{localStorage.setItem('ls.recent',JSON.stringify(r.slice(0,10)));}catch(e){}}
+function closeColorPopup(){const p=$('#cpop');if(p)p.remove();document.removeEventListener('pointerdown',cpOut,true);}
+function cpOut(e){if(!e.target.closest('#cpop'))closeColorPopup();}
+function openColorPopup(anchor,cur,cb){
+  closeColorPopup();
+  const up=String(cur).toUpperCase();
+  const sw=c=>'<button type="button" class="sw'+(c.toUpperCase()===up?' on':'')+'" data-c="'+c+'" style="background:'+c+'" title="'+c+'"></button>';
+  const rec=recentColors();
+  const p=document.createElement('div');p.id='cpop';
+  p.innerHTML='<div class="cp-t">자주 쓰는 색</div><div class="cp-g">'+QUICK.map(sw).join('')+'</div>'
+    +(rec.length?'<div class="cp-t">최근 쓴 색</div><div class="cp-g">'+rec.map(sw).join('')+'</div>':'')
+    +'<div class="cp-t">색상표</div><div class="cp-g">'+GRAYS.map(sw).join('')+HUEROWS.map(r=>r.map(sw).join('')).join('')+'</div>'
+    +'<button type="button" class="cp-more">더 많은 색…</button><input type="color" class="cp-native" value="'+(/^#[0-9a-f]{6}$/i.test(cur)?cur:'#000000')+'">';
+  document.body.appendChild(p);
+  const r=anchor.getBoundingClientRect();
+  p.style.left=Math.max(8,Math.min(innerWidth-p.offsetWidth-8,r.left-p.offsetWidth+r.width))+'px';
+  p.style.top=Math.max(8,Math.min(innerHeight-p.offsetHeight-8,r.bottom+4))+'px';
+  p.addEventListener('click',e=>{
+    const b=e.target.closest('.sw');
+    if(b){cb(b.dataset.c);addRecent(b.dataset.c);closeColorPopup();return;}
+    if(e.target.classList.contains('cp-more'))$('.cp-native',p).click();
+  });
+  const nat=$('.cp-native',p);
+  nat.addEventListener('input',()=>cb(nat.value.toUpperCase()));
+  nat.addEventListener('change',()=>{addRecent(nat.value);closeColorPopup();});
+  setTimeout(()=>document.addEventListener('pointerdown',cpOut,true),0);
+}
 function setProp(k,v){
   const o=sel&&findObj(sel),kind=o?kindOf(o):(tool!=='select'?tool:null);if(!kind)return;
   if(o){if(Date.now()-lastSnap>700)snap();if(!(o.t==='mosaic'&&k==='shape'))o[k]=v;}
@@ -621,7 +689,7 @@ function presetPreview(p){
   return '<svg viewBox="0 0 44 30">'+annItem(o)+'</svg>';
 }
 function renderFavs(){
-  $('#favs').innerHTML=P.presets.map((p,i)=>'<button class="fav" data-i="'+i+'" title="'+esc((i<9?(i+1)+'번 · ':'')+p.name)+'">'+presetPreview(p)+(i<9?'<b>'+(i+1)+'</b>':'')+'</button>').join('')+'<button class="favbtn" id="favAdd" title="현재 스타일을 즐겨찾기로 저장">★＋</button><button class="favbtn" id="favMng">관리</button>';
+  $('#favs').innerHTML=P.presets.map((p,i)=>'<button class="fav" data-i="'+i+'" title="'+esc((i<9?(i+1)+'번 · ':'')+p.name)+'">'+presetPreview(p)+(i<9?'<b>'+(i+1)+'</b>':'')+'</button>').join('')+'<button class="favbtn" id="favAdd" title="현재 스타일을 즐겨찾기로 저장">★＋</button><button class="favbtn" id="favMng">관리</button>';markFavs();
 }
 $('#favs').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
@@ -633,7 +701,7 @@ function applyPreset(i){
   if(o&&tool==='select'&&kindOf(o)===p.kind){
     snap();const st=clone(p.style);if(o.t==='mosaic')delete st.shape;Object.assign(o,st);renderStage();renderInspector();toast('적용: '+p.name);return;
   }
-  Object.assign(ST[p.kind],clone(p.style));setTool(p.kind);toast((i<9?(i+1)+'번 · ':'')+p.name);
+  Object.assign(ST[p.kind],clone(p.style));setTool(p.kind,true);activeFav=i;markFavs();toast((i<9?(i+1)+'번 · ':'')+p.name);
 }
 function addFavorite(){
   const o=sel&&findObj(sel),kind=o?kindOf(o):(tool!=='select'?tool:null);
@@ -668,24 +736,35 @@ $('#fPre').addEventListener('change',async e=>{
 function pt(e){const r=box.getBoundingClientRect();return {x:(e.clientX-r.left)/r.width*W,y:(e.clientY-r.top)/r.height*H};}
 function makeObj(kind,extra){return {id:uid(),t:kind,...clone(ST[kind]),...extra};}
 function normRect(a,b,shift){let x=Math.min(a.x,b.x),y=Math.min(a.y,b.y),w=Math.abs(b.x-a.x),h=Math.abs(b.y-a.y);if(shift){const m=Math.max(w,h);w=h=m;x=b.x<a.x?a.x-m:a.x;y=b.y<a.y?a.y-m:a.y;}return {x,y,w,h};}
+const CUR={nw:'nwse-resize',se:'nwse-resize',ne:'nesw-resize',sw:'nesw-resize',n:'ns-resize',s:'ns-resize',e:'ew-resize',w:'ew-resize',a1:'move',a2:'move'};
+function updateCursor(e){
+  if(drag||document.querySelector('.te'))return;
+  let c=tool==='select'?'default':(tool==='text'?'text':'crosshair');
+  if(tool==='select'&&!editText){
+    const p=pt(e),o=sel&&findObj(sel);let done=false;
+    if(o){const hs=12/view.s;for(const hd of handlesOf(o))if(Math.abs(hd.x-p.x)<=hs&&Math.abs(hd.y-p.y)<=hs){c=CUR[hd.n]||'pointer';done=true;break;}}
+    if(!done&&hitTest(curSlide().objects,p.x,p.y,8/view.s+2))c='move';
+  }
+  box.style.cursor=c;
+}
 box.addEventListener('pointerdown',e=>{
   if(e.button!==0||editText||document.querySelector('.te'))return;
   const p=pt(e),s=curSlide();box.setPointerCapture(e.pointerId);
   if(tool==='select'){
     const o=sel&&findObj(sel);
-    if(o){const hs=12/view.s;for(const hd of handlesOf(o))if(Math.abs(hd.x-p.x)<=hs&&Math.abs(hd.y-p.y)<=hs){snap();drag={kind:'resize',h:hd.n,orig:cloneObj(o),id:o.id,start:p};return;}}
+    if(o){const hs=12/view.s;for(const hd of handlesOf(o))if(Math.abs(hd.x-p.x)<=hs&&Math.abs(hd.y-p.y)<=hs){snap();box.style.cursor=CUR[hd.n]||'move';drag={kind:'resize',h:hd.n,orig:cloneObj(o),id:o.id,start:p};return;}}
     const hit=hitTest(s.objects,p.x,p.y,8/view.s+2);
     if(hit){sel=hit.id;snap();drag={kind:'move',orig:cloneObj(hit),id:hit.id,start:p,moved:false};renderUI();renderInspector();}
     else{sel=null;renderUI();renderInspector();}
     return;
   }
   if(tool==='num'){snap();const o=makeObj('num',{x:p.x,y:p.y,n:nextNum});nextNum++;s.objects.push(o);renderStage();renderInspector();return;}
-  if(tool==='text'){startText(p);return;}
+  if(tool==='text'){drag={kind:'text',start:p};return;}
   if(tool==='pen'||(tool==='mosaic'&&ST.mosaic.shape==='free')){drag={kind:'free',pts:[[p.x,p.y]]};draft=tool==='pen'?makeObj('pen',{pts:drag.pts}):makeObj('mosaic',{shape:'free',pts:drag.pts});renderUI();return;}
   drag={kind:'draw',start:p};
 });
 box.addEventListener('pointermove',e=>{
-  if(!drag)return;const p=pt(e),s=curSlide();
+  if(!drag){updateCursor(e);return;}const p=pt(e),s=curSlide();
   if(drag.kind==='move'){
     const o=findObj(drag.id);if(!o)return;let dx=p.x-drag.start.x,dy=p.y-drag.start.y;
     if(!drag.moved&&Math.hypot(dx,dy)<3/view.s)return;drag.moved=true;
@@ -703,6 +782,7 @@ box.addEventListener('pointermove',e=>{
 });
 function endDrag(e){
   if(!drag)return;const d=drag;drag=null;const s=curSlide();
+  if(d.kind==='text'){startText(d.start);return;}
   if(d.kind==='move'){if(!d.moved)undo.pop();renderStage();return;}
   if(d.kind==='resize'){renderStage();return;}
   if(d.kind==='draw'&&draft){

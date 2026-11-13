@@ -37,7 +37,8 @@ body.aud-mode #aud{display:block}
 #center{display:flex;flex-direction:column;min-width:0;min-height:0}
 #toolbar{background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:4px;padding:6px 8px;flex-wrap:wrap}
 #toolbar .tb{border:1px solid var(--line);background:#fff;border-radius:6px;padding:4px 8px;white-space:nowrap}
-#toolbar .tb.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+#toolbar .tb.on{background:var(--acc);color:#fff;border-color:var(--acc);font-weight:700;box-shadow:0 0 0 3px rgba(37,99,235,.28)}
+#toolbar .tb.on small{opacity:.85}
 #toolbar .tb small{opacity:.6;margin-left:3px}
 #toolbar .vs{width:1px;height:26px;background:var(--line);margin:0 6px}
 #favs{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
@@ -45,6 +46,22 @@ body.aud-mode #aud{display:block}
 .fav:hover{border-color:var(--acc)}
 .fav svg{width:100%;height:100%;display:block}
 .fav b{position:absolute;right:2px;bottom:0;font-size:10px;color:var(--mut)}
+.fav.on{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc);background:#E8EFFE}
+#stTool{color:var(--acc);font-weight:700}
+.cbtn{width:44px;height:24px;border:1px solid #9CA3AF;border-radius:4px;padding:0}
+.cbtn:hover{border-color:var(--acc)}
+.rg{display:flex;gap:6px;align-items:center}
+.rg input[type=range]{flex:1;min-width:0}
+.rn{width:58px!important;flex:none}
+#cpop{position:fixed;z-index:3500;background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px 10px 10px;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+.cp-t{font-size:11px;color:var(--mut);margin:6px 0 3px}
+.cp-t:first-child{margin-top:0}
+.cp-g{display:grid;grid-template-columns:repeat(10,22px);gap:3px}
+.sw{width:22px;height:22px;border:1px solid rgba(0,0,0,.2);border-radius:3px;padding:0}
+.sw:hover{transform:scale(1.15)}
+.sw.on{outline:2px solid var(--acc);outline-offset:1px}
+.cp-more{margin-top:8px;width:100%;padding:5px;border:1px solid var(--line);border-radius:6px;background:#F7F8FA}
+.cp-native{position:absolute;opacity:0;width:0;height:0;pointer-events:none}
 .favbtn{border:1px dashed #9CA3AF;background:#fff;border-radius:6px;padding:4px 8px;color:var(--mut)}
 #viewport{flex:1;position:relative;background:#CBD0D8;overflow:hidden;min-height:0}
 #boxOuter{position:absolute;box-shadow:0 6px 28px rgba(0,0,0,.28)}
@@ -178,7 +195,7 @@ body.aud-mode #aud{display:block}
       <div id="favs"></div>
     </div>
     <div id="viewport"><div id="boxOuter"><div id="box"><div id="stage"></div><svg id="ui" viewBox="0 0 1280 720"></svg></div></div></div>
-    <div id="status"><span id="stPos"></span><span id="stHint"></span></div>
+    <div id="status"><span id="stTool"></span><span id="stPos"></span><span id="stHint"></span></div>
   </main>
   <aside id="inspector"></aside>
 </div>
