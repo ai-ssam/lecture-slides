@@ -250,7 +250,7 @@ function showHelp(){
   modal('<h3>단축키</h3><table>'
   +'<tr><th>편집</th><td><kbd>V</kbd> 선택 <kbd>R</kbd> 사각형 <kbd>O</kbd> 원 <kbd>A</kbd> 화살표 <kbd>N</kbd> 번호 <kbd>T</kbd> 글자 <kbd>M</kbd> 모자이크 <kbd>P</kbd> 펜</td></tr>'
   +'<tr><th>즐겨찾기</th><td><kbd>1</kbd>~<kbd>9</kbd> 해당 스타일로 도구 전환 (도형을 선택해 둔 상태면 그 도형에 스타일 적용)</td></tr>'
-  +'<tr><th>도형</th><td><kbd>Delete</kbd> 삭제 · 방향키 1px 이동(Shift 10px) · <kbd>Ctrl</kbd>+<kbd>C</kbd>/<kbd>V</kbd> 복사 · <kbd>Ctrl</kbd>+<kbd>D</kbd> 복제 · 더블클릭 글자/번호 수정 · <kbd>Shift</kbd>+클릭 또는 빈 곳 드래그로 여러 개 선택 · <kbd>Ctrl</kbd>+<kbd>A</kbd> 전체 · <kbd>Ctrl</kbd>+<kbd>G</kbd> 그룹 · <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd> 그룹 풀기</td></tr>'
+  +'<tr><th>도형</th><td><kbd>Delete</kbd> 삭제 · 방향키 1px 이동(Shift 10px) · <kbd>Ctrl</kbd>+<kbd>C</kbd>/<kbd>V</kbd> 복사 · <kbd>Ctrl</kbd>+<kbd>D</kbd> 복제 · 더블클릭 글자/번호 수정 · <kbd>Shift</kbd>+클릭 또는 빈 곳 드래그로 여러 개 선택 · <kbd>Ctrl</kbd>+<kbd>A</kbd> 전체 · <kbd>Ctrl</kbd>+<kbd>G</kbd> 그룹 · <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd> 그룹 풀기 · 선택하면 위쪽에 생기는 동그란 점을 끌어 회전 (<kbd>Shift</kbd>: 15°씩)</td></tr>'
   +'<tr><th>슬라이드</th><td><kbd>PageUp</kbd>/<kbd>PageDown</kbd> 이동 · 방향키(선택 없을 때) · <kbd>E</kbd> HTML 글자 편집</td></tr>'
   +'<tr><th>붙여넣기</th><td><kbd>Ctrl</kbd>+<kbd>V</kbd> 이미지/HTML 코드 · 파일을 창에 끌어놓아도 돼요 (이미지, .html, .lecture)</td></tr>'
   +'<tr><th>파일</th><td><kbd>Ctrl</kbd>+<kbd>S</kbd> 저장 · <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> 다른 이름 · <kbd>Ctrl</kbd>+<kbd>Z</kbd>/<kbd>Y</kbd> 되돌리기/다시</td></tr>'
