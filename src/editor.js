@@ -260,6 +260,19 @@ function frameScript(cfg){
       else{el.removeAttribute('contenteditable');el.style.outline='';el.style.cursor='';}
     });
   }
+  function snapshot(){
+    try{
+      var cl=document.documentElement.cloneNode(true);
+      [].slice.call(cl.querySelectorAll('script')).forEach(function(s){s.parentNode.removeChild(s);});
+      var xml=new XMLSerializer().serializeToString(cl);
+      var svg='<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720"><foreignObject x="0" y="0" width="1280" height="720">'+xml+'</foreignObject></svg>';
+      var img=new Image();
+      img.onload=function(){try{var c=document.createElement('canvas');c.width=480;c.height=270;var g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,480,270);g.drawImage(img,0,0,480,270);parent.postMessage({ls:1,t:'thumb',url:c.toDataURL('image/jpeg',0.72)},'*');}catch(e){parent.postMessage({ls:1,t:'thumb',url:null},'*');}};
+      img.onerror=function(){parent.postMessage({ls:1,t:'thumb',url:null},'*');};
+      img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+    }catch(e){parent.postMessage({ls:1,t:'thumb',url:null},'*');}
+  }
+  if(cfg.snap)window.addEventListener('load',function(){setTimeout(snapshot,1700);});
   document.addEventListener('DOMContentLoaded',function(){apply();setTimeout(apply,300);setTimeout(apply,1200);});
   window.addEventListener('load',function(){apply();setTimeout(apply,400);});
   document.addEventListener('click',function(e){if(editing){e.preventDefault();e.stopPropagation();}},true);
@@ -271,9 +284,9 @@ function frameScript(cfg){
   window.addEventListener('message',function(e){if(e.data&&e.data.ls===1&&e.data.t==='editMode')setEdit(!!e.data.on);});
 }
 function frameKey(s){return s.htmlId+'|'+s.pick+'|'+s.sel+'|'+JSON.stringify(s.textEdits||{});}
-function buildSrcdoc(s){
+function buildSrcdoc(s,snap){
   let html=P.htmls[s.htmlId]||'<p style="font:16px sans-serif;padding:30px">HTML 원본을 찾을 수 없어요</p>';
-  const cfg={sel:s.sel||'',pick:s.pick==null?-1:s.pick,edits:s.textEdits||{}};
+  const cfg={sel:s.sel||'',pick:s.pick==null?-1:s.pick,edits:s.textEdits||{},snap:!!snap};
   const css='<style>*{-webkit-print-color-adjust:exact;print-color-adjust:exact}'+(cfg.pick>=0?'html,body{overflow:hidden!important}':'')+'</style>';
   const inj=css+'<script>('+frameScript.toString()+')('+JSON.stringify(cfg).replace(/</g,'\\u003c')+');<\/script>';
   const m=html.match(/<head[^>]*>/i);
@@ -293,7 +306,7 @@ function paintSlide(root,slide,ink,opt){
   /* HTML 프레임 */
   const fr=$('.l-frame',root);
   if(slide.type==='html'){
-    if(opt.thumb){if(root._fk!=='thumb'){fr.innerHTML='<div class="thumb-html">HTML</div>';root._fk='thumb';root._frame=null;}}
+    if(opt.thumb){const tk='thumb'+(slide.thumb?slide.thumb.length:0);if(root._fk!==tk){fr.innerHTML=slide.thumb?'<img class="thumb-img" src="'+slide.thumb+'">':'<div class="thumb-html">HTML</div>';root._fk=tk;root._frame=null;}}
     else{
       const key=frameKey(slide);
       if(root._fk!==key){fr.innerHTML='';const f=document.createElement('iframe');f.className='html-frame';f.setAttribute('sandbox','allow-scripts');f.srcdoc=buildSrcdoc(slide);fr.appendChild(f);root._fk=key;root._frame=f;}
@@ -560,7 +573,7 @@ window.addEventListener('message',e=>{
   if(m.t==='edit'&&stageEl._frame&&e.source===stageEl._frame.contentWindow){
     const s=curSlide();if(s.type!=='html')return;
     if(Date.now()-lastSnap>1500)snap();
-    s.textEdits=s.textEdits||{};s.textEdits[m.id]=m.html;stageEl._fk=frameKey(s);markDirty();scheduleThumb();
+    s.textEdits=s.textEdits||{};s.textEdits[m.id]=m.html;stageEl._fk=frameKey(s);markDirty();scheduleThumb();clearTimeout(window._thT);window._thT=setTimeout(()=>queueThumb(s),2000);
   }
 });
 
@@ -820,6 +833,7 @@ window.addEventListener('drop',async e=>{
   for(const f of fs){
     if(f.type.startsWith('image/'))await addImage(await readFileURL(f));
     else if(/\.html?$/i.test(f.name))openImportDialog(await readFileText(f),f.name);
+    else if(/\.pdf$/i.test(f.name)||f.type==='application/pdf')openPdfDialog(f);
     else if(/\.lecture$/i.test(f.name)||/\.json$/i.test(f.name)){if(!dirty||confirm('저장하지 않은 변경이 있어요. 그래도 열까요?'))openText(await readFileText(f),null);}
   }
 });
@@ -836,7 +850,7 @@ function loadProject(d){
   P={title:d.title||'제목 없는 강의',slides:d.slides&&d.slides.length?d.slides:[blankSlide()],assets:d.assets||{},htmls:d.htmls||{},presets:d.presets&&d.presets.length?d.presets:(loadPresets()||defPresets())};
   imgCache.clear();undo=[];redo=[];sel=null;editText=false;dirty=false;$('#dirty').textContent='';
   $('#title').value=P.title;for(const [,t] of thumbEls)t.el.remove();thumbEls.clear();stageEl._ok=0;stageEl._sid=null;
-  renderFavs();go(0);
+  renderFavs();go(0);P.slides.filter(s=>s.type==='html'&&!s.thumb).forEach(queueThumb);
 }
 function openText(text,handle){try{loadProject(JSON.parse(text));fileHandle=handle;toast('열었어요: '+P.title);}catch(err){toast('열 수 없어요: '+err.message);}}
 async function saveProject(as){
@@ -912,4 +926,28 @@ function showPrintDialog(){
     +'<div class="row"><button class="pri" id="prGo">인쇄창 열기</button><button id="prNo">취소</button></div>');
   $('#prNo',m).onclick=closeModal;
   $('#prGo',m).onclick=()=>{const v=n=>m.querySelector('input[name='+n+']:checked').value;const o={range:v('pr'),notes:v('pm')==='notes'};closeModal();printSlides(o);};
+}
+
+/* ===================== HTML 슬라이드 섬네일 만들기 ===================== */
+const thumbQ=[];let thumbBusy=false;
+function queueThumb(s){if(s&&s.type==='html'&&!thumbQ.includes(s.id))thumbQ.push(s.id);runThumbQ();}
+async function runThumbQ(){
+  if(thumbBusy||IS_AUD)return;thumbBusy=true;let n=0;const total=thumbQ.length;
+  while(thumbQ.length){
+    const id=thumbQ.shift();const s=P.slides.find(x=>x.id===id);if(!s||s.type!=='html')continue;
+    n++;if(total>3)$('#stHint').textContent='HTML 슬라이드 섬네일 만드는 중… '+n+'/'+total;
+    await makeThumb(s);
+  }
+  thumbBusy=false;if(total>3)$('#stHint').textContent=HINTS[tool]||'';
+}
+function makeThumb(s){
+  return new Promise(res=>{
+    const f=document.createElement('iframe');f.setAttribute('sandbox','allow-scripts');
+    f.style.cssText='position:fixed;left:-4000px;top:0;width:1280px;height:720px;border:0;visibility:hidden';
+    f.srcdoc=buildSrcdoc(s,true);
+    const t=setTimeout(done,9000);
+    function onmsg(e){const m=e.data;if(e.source!==f.contentWindow||!m||m.ls!==1||m.t!=='thumb')return;if(m.url){s.thumb=m.url;const th=thumbEls.get(s.id);if(th)paintSlide(th.root,s,null,{thumb:true});}done();}
+    function done(){clearTimeout(t);window.removeEventListener('message',onmsg);f.remove();res();}
+    window.addEventListener('message',onmsg);document.body.appendChild(f);
+  });
 }

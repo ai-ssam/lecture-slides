@@ -23,7 +23,7 @@ function doImport(text,name,sel){
   snap();
   const only=P.slides.length===1&&P.slides[0].type==='blank'&&!P.slides[0].objects.length;
   if(only){P.slides=news;cur=0;}else{P.slides.splice(cur+1,0,...news);cur++;}
-  go(cur);toast('HTML 슬라이드 '+news.length+'장을 가져왔어요');
+  go(cur);toast('HTML 슬라이드 '+news.length+'장을 가져왔어요');news.forEach(queueThumb);
 }
 
 /* ===================== 화면 캡처 ===================== */
@@ -309,6 +309,8 @@ function initEditor(){
     $('#hGo',m).onclick=()=>{const t=$('#hTxt',m).value;if(!t.trim())return;openImportDialog(t,'붙여넣은 HTML');};
   };
   $('#fHtml').addEventListener('change',async e=>{const f=e.target.files[0];e.target.value='';if(f)openImportDialog(await readFileText(f),f.name);});
+  $('#bPdf').onclick=()=>$('#fPdf').click();
+  $('#fPdf').addEventListener('change',e=>{const f=e.target.files[0];e.target.value='';if(f)openPdfDialog(f);});
   $('#bPng').onclick=exportPNG;$('#bPrint').onclick=showPrintDialog;$('#bUndo').onclick=doUndo;$('#bRedo').onclick=doRedo;$('#bHelp').onclick=showHelp;
   $('#bPlay').onclick=()=>startPresent('single',cur);$('#bPresenter').onclick=()=>startPresent('presenter',cur);
   $('#pasteMode').onchange=e=>{pasteMode=e.target.value;};
@@ -317,3 +319,61 @@ function initEditor(){
   offerRestore();
 }
 if(IS_AUD)initAudience();else initEditor();
+
+/* ===================== PDF 가져오기 (pdf.js) ===================== */
+let pdfReady=false;
+function initPdfJs(){
+  if(pdfReady)return true;if(!window.pdfjsLib)return false;
+  const w=document.getElementById('pdfWorkerSrc');
+  pdfjsLib.GlobalWorkerOptions.workerSrc=URL.createObjectURL(new Blob([w.textContent],{type:'text/javascript'}));
+  pdfReady=true;return true;
+}
+function parsePageRange(str,n){
+  str=(str||'').trim();if(!str)return Array.from({length:n},(_,i)=>i+1);
+  const set=new Set();
+  for(const part of str.split(',')){
+    const m=part.trim().match(/^(\d+)(?:\s*-\s*(\d+))?$/);if(!m)continue;
+    let a=+m[1],b=m[2]?+m[2]:a;if(a>b)[a,b]=[b,a];
+    for(let i=Math.max(1,a);i<=Math.min(n,b);i++)set.add(i);
+  }
+  return [...set].sort((x,y)=>x-y);
+}
+async function openPdfDialog(file){
+  if(!initPdfJs()){toast('PDF 모듈을 불러오지 못했어요');return;}
+  let pdf;
+  try{pdf=await pdfjsLib.getDocument({data:new Uint8Array(await file.arrayBuffer())}).promise;}
+  catch(err){toast('PDF를 열 수 없어요: '+(err&&err.message||err));return;}
+  const n=pdf.numPages;
+  const m=modal('<h3>PDF 가져오기</h3><p>'+esc(file.name)+' · 총 <b>'+n+'</b>쪽</p>'
+    +'<p>가져올 쪽 (비우면 전체, 예: 1-5, 8)</p><input type="text" id="pgr" placeholder="전체">'
+    +'<p>화질</p><select id="pgq"><option value="1.5">보통 (파일이 작아요)</option><option value="2.2" selected>선명 (권장)</option><option value="3">아주 선명 (파일이 커요)</option></select>'
+    +'<p class="hint">쪽마다 슬라이드 한 장으로 들어오고, 그 위에 도형·모자이크·글자·필기를 올릴 수 있어요. PDF 안의 원래 글자는 수정되지 않아요.</p>'
+    +'<div class="row"><button class="pri" id="pgo">가져오기</button><button id="pno">취소</button></div>');
+  m.parentNode.dataset.sticky='1';
+  $('#pno',m).onclick=()=>{closeModal();pdf.destroy();};
+  $('#pgo',m).onclick=async()=>{
+    const pages=parsePageRange($('#pgr',m).value,n),q=+$('#pgq',m).value;
+    if(!pages.length){toast('가져올 쪽을 확인해 주세요');return;}
+    if(pages.length>60&&!confirm(pages.length+'쪽은 많은 편이라 파일이 커질 수 있어요. 계속할까요?'))return;
+    m.innerHTML='<h3>PDF 가져오는 중…</h3><p id="pgp">0 / '+pages.length+'</p>';
+    const news=[];
+    try{
+      for(let i=0;i<pages.length;i++){
+        const page=await pdf.getPage(pages[i]),v1=page.getViewport({scale:1});
+        const fit=Math.min(W/v1.width,H/v1.height),vw=v1.width*fit,vh=v1.height*fit;
+        const vp=page.getViewport({scale:fit*q}),c=document.createElement('canvas');
+        c.width=Math.round(vp.width);c.height=Math.round(vp.height);
+        const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);
+        await page.render({canvasContext:g,viewport:vp}).promise;
+        const url=c.toDataURL('image/jpeg',0.92),aid=uid();P.assets[aid]=url;
+        const sl=blankSlide();sl.objects.push({id:uid(),t:'img',src:aid,x:(W-vw)/2,y:(H-vh)/2,w:vw,h:vh});sl.label='PDF '+pages[i]+'쪽';news.push(sl);
+        const pp=document.getElementById('pgp');if(pp)pp.textContent=(i+1)+' / '+pages.length;
+        page.cleanup();
+      }
+    }catch(err){closeModal();toast('PDF 변환 중 오류: '+(err&&err.message||err));pdf.destroy();return;}
+    pdf.destroy();snap();
+    const only=P.slides.length===1&&P.slides[0].type==='blank'&&!P.slides[0].objects.length;
+    if(only){P.slides=news;cur=0;}else{P.slides.splice(cur+1,0,...news);cur++;}
+    closeModal();go(cur);toast('PDF '+news.length+'쪽을 슬라이드로 가져왔어요');
+  };
+}

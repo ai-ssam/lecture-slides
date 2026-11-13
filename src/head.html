@@ -95,6 +95,7 @@ body.aud-mode #aud{display:block}
 .l-bg,.l-img,.l-mos,.l-ann,.l-ink{pointer-events:none}
 .l-ann,.l-ink{overflow:visible}
 .html-frame{width:1280px;height:720px;border:0;background:#fff;display:block}
+.thumb-img{width:1280px;height:720px;display:block}
 .thumb-html{width:1280px;height:720px;background:#EEF1F6;color:#6B7280;font:700 120px/720px sans-serif;text-align:center}
 /* 모달/토스트 */
 .mback{position:fixed;inset:0;background:rgba(15,18,24,.5);z-index:3000;display:flex;align-items:center;justify-content:center}
@@ -188,6 +189,7 @@ body.aud-mode #aud{display:block}
     <button id="bCap" title="다른 창이나 화면의 영역을 캡처">📷 캡처</button>
     <button id="bImg">이미지 넣기</button>
     <button id="bHtml">HTML 가져오기</button>
+    <button id="bPdf">PDF 가져오기</button>
     <button id="bPng">PNG 저장</button>
     <button id="bPrint" title="Ctrl+P">인쇄 / PDF</button>
     <select id="pasteMode" title="Ctrl+V 로 붙여넣을 때"><option value="new">붙여넣기 → 새 슬라이드</option><option value="here">붙여넣기 → 현재 슬라이드</option></select>
@@ -224,6 +226,7 @@ body.aud-mode #aud{display:block}
 <div id="toast"></div>
 <div id="printRoot"></div>
 <input type="file" id="fImg" accept="image/*" multiple hidden>
+<input type="file" id="fPdf" accept=".pdf,application/pdf" hidden>
 <input type="file" id="fHtml" accept=".html,.htm,text/html" hidden>
 <input type="file" id="fOpen" accept=".lecture,.json,application/json" hidden>
 <input type="file" id="fPre" accept=".json,.lecture-presets" hidden>
