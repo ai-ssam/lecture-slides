@@ -60,6 +60,11 @@ body.lc #thumbs,body.lc #rzL,body.rc #inspector,body.rc #rzR{display:none}
 .tglrow{display:flex;gap:4px;align-items:center;margin:4px 0 6px}
 .tglrow button{min-width:30px;height:28px;border:1px solid var(--line);background:#fff;border-radius:6px;padding:0 6px}
 .tglrow button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.decrow{margin-bottom:2px}.chips{display:flex;flex-wrap:wrap;gap:4px;margin:2px 0 6px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:12px;padding:2px 9px;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:2px}
+.chip:hover{border-color:var(--acc)}.chip.add{border-style:dashed;color:var(--acc)}
+.chip.my{padding:0;gap:0;overflow:hidden;background:#EEF4FF;border-color:#BFD2FF}.chip.my button{border:0;background:none;padding:2px 6px;font-size:12px;cursor:pointer}.chip.my .cx{padding:2px 3px;color:#6b7280}.chip.my .cx:hover{color:#E23B2E}
+#detBox{margin:6px 0;border:1px solid var(--line);border-radius:6px;padding:2px 8px 4px}#detBox summary{cursor:pointer;font-size:12px;color:#556;padding:3px 0}
 .tglrow .tsep{width:1px;height:20px;background:var(--line);margin:0 3px}
 .chk{display:flex;gap:6px;align-items:center;margin:6px 0;color:#444}
 #zoomBox{margin-left:auto;display:flex;gap:4px;align-items:center}
@@ -819,6 +824,68 @@ function ctl(f,val){
   return '<div class="fld"><label>'+label+'</label>'+inp+'</div>';
 }
 function pickStyle(kind,src){const r={};for(const f of FIELDS[kind]){let v=src[f[0]];if(v==null&&DEF[kind])v=DEF[kind][f[0]];r[f[0]]=v;}return r;}
+
+/* ---- 꾸미기: 아이콘 버튼 줄 + 내 꾸미기 칩 ---- */
+const DECO_KEYS={text:['color','bold','italic','underline','strike','font','bg','bgA','outline','outlineC','shadow'],img:['bw','bc','radius','shadow','opacity','flip']};
+const DECO_BUILTIN={
+  text:[
+    {name:'강조 노란띠',style:{color:'#1C2026',bold:1,bg:'#FFE066',bgA:.9,outline:0,shadow:0}},
+    {name:'제목',style:{color:'#111827',bold:1,size:44,bgA:0,outline:0,shadow:0}},
+    {name:'캡처용',style:{color:'#FFFFFF',bold:1,bgA:0,outline:3,outlineC:'#111111',shadow:1}},
+    {name:'파란 라벨',style:{color:'#FFFFFF',bold:1,bg:'#2563EB',bgA:.95,outline:0,shadow:0}}
+  ],
+  img:[
+    {name:'캡처용',style:{bw:2,bc:'#CBD5E1',radius:0,shadow:1,opacity:1}},
+    {name:'둥근 카드',style:{bw:0,radius:24,shadow:1,opacity:1}},
+    {name:'액자',style:{bw:10,bc:'#FFFFFF',radius:4,shadow:1,opacity:1}},
+    {name:'반투명',style:{opacity:.45,shadow:0}}
+  ]
+};
+let myDeco=(()=>{try{const v=JSON.parse(lsGet('ls.decos')||'null');if(v&&Array.isArray(v.text)&&Array.isArray(v.img))return v;}catch(e){}return{text:[],img:[]};})();
+function saveDecos(){lsSet('ls.decos',JSON.stringify(myDeco));}
+let detOpen=lsGet('ls.det')==='1';
+function contrastOf(hex){const m=/^#?([0-9a-f]{6})$/i.exec(hex||'');if(!m)return '#FFFFFF';const n=parseInt(m[1],16),r=n>>16,g=(n>>8)&255,b=n&255;return (0.299*r+0.587*g+0.114*b)>150?'#111111':'#FFFFFF';}
+function decoRow(kind,src){
+  const g=k=>src[k]!=null?src[k]:DEF[kind][k],B=(id,on,inner,tip)=>'<button type="button" data-dec="'+id+'" class="'+(on?'on':'')+'" title="'+tip+'">'+inner+'</button>';
+  let h='<div class="tglrow decrow">';
+  if(kind==='text'){
+    h+=B('shadow',g('shadow'),'<span style="text-shadow:2px 2px 2px #888">가</span>','그림자 켜기/끄기')
+      +B('outline',g('outline')>0,'<span style="-webkit-text-stroke:1.2px #111;color:#fff">가</span>','외곽선 켜기/끄기 (색은 글자 색에 맞춰 자동)')
+      +B('tbg',g('bgA')>0,'<span style="background:#FFE066;padding:0 4px;border-radius:2px">가</span>','배경 띠 켜기/끄기');
+  }else{
+    h+=B('bw',g('bw')>0,'▢','테두리 켜기/끄기')+B('radius',g('radius')>0,'◜','둥근 모서리 켜기/끄기')+B('ishadow',g('shadow'),'◪','그림자 켜기/끄기')+B('flip',g('flip'),'⇋','좌우 반전')+B('opacity',g('opacity')<1,'◔','반투명 켜기/끄기');
+  }
+  h+='</div>';
+  const bi=DECO_BUILTIN[kind],my=myDeco[kind];
+  h+='<div class="chips">'+bi.map((d,i)=>'<button type="button" class="chip" data-dapply="b'+i+'" title="기본 세트">'+esc(d.name)+'</button>').join('')
+    +my.map((d,i)=>'<span class="chip my"><button type="button" data-dapply="m'+i+'" title="내 꾸미기 적용">'+esc(d.name)+'</button><button type="button" class="cx" data-dren="'+i+'" title="이름 바꾸기">✎</button><button type="button" class="cx" data-ddel="'+i+'" title="삭제">×</button></span>').join('')
+    +'<button type="button" class="chip add" data-dsave="1" title="지금 선택한 꾸미기를 이름 붙여 저장">＋ 내 꾸미기 저장</button></div>';
+  return h;
+}
+function applyDeco(kind,style){
+  const list=selList();if(list.length){if(Date.now()-lastSnap>700)snap();for(const o of list)Object.assign(o,style);}
+  Object.assign(ST[kind],style);renderStage();renderInspector();
+}
+function decoClick(b){
+  const kind=curKind();if(!kind||(kind!=='text'&&kind!=='img'))return;
+  const l=selList(),src=l.length?l[0]:ST[kind],g=k=>src[k]!=null?src[k]:DEF[kind][k];
+  if(b.dataset.dec){
+    const id=b.dataset.dec;
+    if(id==='shadow'||id==='ishadow')applyDeco(kind,{shadow:g('shadow')?0:1});
+    else if(id==='outline')applyDeco(kind,g('outline')>0?{outline:0}:{outline:3,outlineC:contrastOf(g('color'))});
+    else if(id==='tbg')applyDeco(kind,{bgA:g('bgA')>0?0:.9});
+    else if(id==='bw')applyDeco(kind,g('bw')>0?{bw:0}:{bw:4});
+    else if(id==='radius')applyDeco(kind,{radius:g('radius')>0?0:24});
+    else if(id==='flip')applyDeco(kind,{flip:g('flip')?0:1});
+    else if(id==='opacity')applyDeco(kind,{opacity:g('opacity')<1?1:.6});
+    return;
+  }
+  if(b.dataset.dapply){const a=b.dataset.dapply,i=+a.slice(1),d=(a[0]==='b'?DECO_BUILTIN:myDeco)[kind][i];if(d)applyDeco(kind,clone(d.style));return;}
+  if(b.dataset.dsave){const name=prompt('내 꾸미기 이름',(kind==='text'?'글자 ':'이미지 ')+(myDeco[kind].length+1));if(!name)return;const st={};for(const k of DECO_KEYS[kind])st[k]=g(k);myDeco[kind].push({id:uid(),name:name.trim().slice(0,20)||'내 꾸미기',style:st});saveDecos();renderInspector();toast('내 꾸미기에 저장했어요');return;}
+  if(b.dataset.dren!=null){const d=myDeco[kind][+b.dataset.dren];if(!d)return;const n=prompt('새 이름',d.name);if(n&&n.trim()){d.name=n.trim().slice(0,20);saveDecos();renderInspector();}return;}
+  if(b.dataset.ddel!=null){const d=myDeco[kind][+b.dataset.ddel];if(!d)return;if(!confirm('「'+d.name+'」을(를) 지울까요?'))return;myDeco[kind].splice(+b.dataset.ddel,1);saveDecos();renderInspector();return;}
+}
+function curKind(){const list=selList();if(list.length){return list.every(q=>q.t===list[0].t)?kindOf(list[0]):null;}return tool!=='select'?tool:null;}
 const TXT_TGL=new Set(['bold','italic','underline','strike','align']);
 function textToggleRow(src){
   const g=(k)=>src[k]!=null?src[k]:DEF.text[k],T=(k,lab)=>'<button type="button" data-tgl="'+k+'" class="'+(g(k)?'on':'')+'" title="'+lab+'">'+({bold:'<b>가</b>',italic:'<i>가</i>',underline:'<u>가</u>',strike:'<s>가</s>'})[k]+'</button>',A=(v,lab)=>'<button type="button" data-tgl="align" data-v="'+v+'" class="'+(g('align')===v?'on':'')+'" title="'+lab+' 정렬">'+({left:'◧',center:'▣',right:'◨'})[v]+'</button>';
@@ -832,7 +899,10 @@ function renderInspector(){
   if(kind&&src){
     h+='<h4>'+KIND_NAME[kind]+' 스타일'+(list.length>1?' · 선택한 '+list.length+'개':o?' · 선택한 도형':' · 다음에 그릴 도형')+'</h4>';
     if(kind==='text')h+=textToggleRow(src);
-    for(const f of FIELDS[kind]){if(list.length&&list[0].t==='mosaic'&&f[0]==='shape')continue;if(kind==='text'&&TXT_TGL.has(f[0]))continue;let v=src[f[0]];if(v==null&&DEF[kind])v=DEF[kind][f[0]];h+=ctl(f,v);}
+    if(kind==='text'||kind==='img')h+=decoRow(kind,src);
+    let hd='';const DET=kind==='img'?null:new Set(['bg','bgA','outline','outlineC','shadow']);
+    for(const f of FIELDS[kind]){if(list.length&&list[0].t==='mosaic'&&f[0]==='shape')continue;if(kind==='text'&&TXT_TGL.has(f[0]))continue;let v=src[f[0]];if(v==null&&DEF[kind])v=DEF[kind][f[0]];const c=ctl(f,v);if(kind==='img'||(DET&&DET.has(f[0])&&kind==='text'))hd+=c;else h+=c;}
+    if(hd)h+='<details id="detBox"'+(detOpen?' open':'')+'><summary>자세히 (색·굵기·투명도 직접 조절)</summary>'+hd+'</details>';
     if(kind==='num'){h+='<div class="fld"><label>다음 번호</label><input type="number" id="nn" min="0" value="'+nextNum+'"></div>';h+='<label class="chk"><input type="checkbox" id="autoRenum"'+(autoRenum?' checked':'')+'> 번호를 지우면 자동으로 다시 매기기</label><div class="arow ic">'+AB('renum','다시 매기기','이 슬라이드의 번호를 1부터 순서대로 다시 매겨요')+'</div>';}
     if(o&&ROTT.includes(o.t))h+=ctl(['rot','회전(°)','range',0,360,1],Math.round(o.rot||0));
     if(kind==='img'){
@@ -862,6 +932,7 @@ function renderInspector(){
   h+='<h4>발표자 메모</h4><textarea id="notes" placeholder="발표자 화면에만 보여요">'+esc(s.notes||'')+'</textarea>';
   $('#inspector').innerHTML=h;
 }
+$('#inspector').addEventListener('toggle',e=>{if(e.target.id==='detBox'){detOpen=e.target.open;lsSet('ls.det',detOpen?'1':'0');}},true);
 $('#inspector').addEventListener('input',e=>{
   const t=e.target;
   if(t.id==='mName'){const m=curSlide();m.name=t.value;markDirty();return;}
@@ -899,6 +970,7 @@ $('#inspector').addEventListener('click',e=>{
   if(e.target.id==='bgFromMaster'){snap();delete curSlide().bgOwn;renderStage();renderInspector();return;}
   if(e.target.id==='bCropEnd'){cropId=null;renderUI();renderInspector();return;}
   if(e.target.id==='bCropReset'){cropReset();return;}
+  const dc=e.target.closest('[data-dec],[data-dapply],[data-dsave],[data-dren],[data-ddel]');if(dc){decoClick(dc);return;}
   const tg=e.target.closest('[data-tgl]');if(tg){const k=tg.dataset.tgl;let v;if(tg.dataset.v!=null)v=tg.dataset.v;else{const l=selList(),sr=l.length?l[0]:ST.text;v=(sr[k]!=null?sr[k]:DEF.text[k])?0:1;}setProp(k,v);renderInspector();return;}
   const ac=e.target.closest('[data-act]');if(ac)doAct(ac.dataset.act);
   const cb=e.target.closest('.cbtn');
