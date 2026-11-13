@@ -271,11 +271,18 @@ document.addEventListener('keydown',e=>{
   if(typing)return;
   if(ctrl&&c==='KeyZ'){e.preventDefault();e.shiftKey?doRedo():doUndo();return;}
   if(ctrl&&c==='KeyY'){e.preventDefault();doRedo();return;}
+  if(ctrl&&e.altKey&&c==='KeyC'){e.preventDefault();copyStyle();return;}
+  if(ctrl&&e.altKey&&c==='KeyV'){e.preventDefault();pasteStyle();return;}
+  if(ctrl&&(c==='Equal'||c==='NumpadAdd')){e.preventDefault();zoomAt(1.25);return;}
+  if(ctrl&&(c==='Minus'||c==='NumpadSubtract')){e.preventDefault();zoomAt(1/1.25);return;}
+  if(ctrl&&(c==='Digit0'||c==='Numpad0')){e.preventDefault();zoomFit();return;}
+  if(ctrl&&e.shiftKey&&(c==='BracketRight'||c==='BracketLeft')){e.preventDefault();doAct(c==='BracketRight'?'front':'back');return;}
   if(ctrl&&c==='KeyC'){const l=selList();if(l.length){clipObj=l.map(cloneObj);e.preventDefault();toast('복사했어요 · Ctrl+V 로 붙여넣기');}return;}
-  if(ctrl&&c==='KeyA'){e.preventDefault();setSel(curSlide().objects.map(o=>o.id));renderUI();renderInspector();return;}
+  if(ctrl&&c==='KeyA'){e.preventDefault();setSel(curSlide().objects.filter(o=>!o.locked).map(o=>o.id));renderUI();renderInspector();return;}
   if(ctrl&&c==='KeyG'){e.preventDefault();doAct(e.shiftKey?'ungrp':'grp');return;}
   if(ctrl&&c==='KeyD'){const l=selList();if(l.length){e.preventDefault();snap();const ns=dupObjs(l,24,24);curSlide().objects.push(...ns);setSel(ns.map(o=>o.id));renderStage();renderInspector();}return;}
   if(ctrl)return;
+  if(c==='BracketRight'||c==='BracketLeft'){if(sel){e.preventDefault();doAct(c==='BracketRight'?'fwd':'bwd');}return;}
   if((tn==='SELECT'||(tn==='INPUT'&&t.type==='range'))&&c.startsWith('Arrow'))return;
   if(c==='F5'){e.preventDefault();startPresent('single',e.shiftKey?cur:0);return;}
   const m=c.match(/^(?:Digit|Numpad)([1-9])$/);if(m){applyPreset(+m[1]-1);return;}
@@ -287,7 +294,7 @@ document.addEventListener('keydown',e=>{
   if(c==='PageDown'){e.preventDefault();go(cur+1);return;}if(c==='PageUp'){e.preventDefault();go(cur-1);return;}
   if(c==='Home'){go(0);return;}if(c==='End'){go(P.slides.length-1);return;}
   if(c.startsWith('Arrow')){
-    const l=selList();e.preventDefault();
+    const l=selList().filter(o=>!o.locked);e.preventDefault();
     if(l.length){if(Date.now()-lastSnap>600)snap();const st=e.shiftKey?10:1,dx=c==='ArrowLeft'?-st:c==='ArrowRight'?st:0,dy=c==='ArrowUp'?-st:c==='ArrowDown'?st:0;for(const o of l)moveObj(o,cloneObj(o),dx,dy);renderStage();}
     else go(cur+(c==='ArrowRight'||c==='ArrowDown'?1:-1));
   }
@@ -301,6 +308,8 @@ function initEditor(){
   $('#bNew').onclick=()=>{if(dirty&&!confirm('저장하지 않은 변경이 있어요. 새로 시작할까요?'))return;loadProject({format:'lecture-slides',title:'제목 없는 강의',slides:[blankSlide()],assets:{},htmls:{},presets:P.presets});fileHandle=null;};
   $('#bOpen').onclick=openProject;$('#bSave').onclick=()=>saveProject(false);$('#bSaveAs').onclick=()=>saveProject(true);
   $('#bCap').onclick=startCapture;
+  $('#bSnap').onclick=()=>{snapOn=!snapOn;lsSet('ls.snap',snapOn?'1':'0');updateStatus();toast(snapOn?'스냅 켬: 도형이 가장자리·중앙에 달라붙어요':'스냅 끔');};
+  $('#zIn').onclick=()=>zoomAt(1.25);$('#zOut').onclick=()=>zoomAt(1/1.25);$('#zPct').onclick=zoomFit;
   $('#bImg').onclick=()=>$('#fImg').click();
   $('#fImg').addEventListener('change',async e=>{const fs=[...e.target.files];e.target.value='';await addImageFiles(fs);});
   $('#bHtml').onclick=()=>{
