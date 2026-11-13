@@ -250,7 +250,7 @@ function showHelp(){
   modal('<h3>단축키</h3><table>'
   +'<tr><th>편집</th><td><kbd>V</kbd> 선택 <kbd>R</kbd> 사각형 <kbd>O</kbd> 원 <kbd>A</kbd> 화살표 <kbd>N</kbd> 번호 <kbd>T</kbd> 글자 <kbd>M</kbd> 모자이크 <kbd>P</kbd> 펜</td></tr>'
   +'<tr><th>즐겨찾기</th><td><kbd>1</kbd>~<kbd>9</kbd> 해당 스타일로 도구 전환 (도형을 선택해 둔 상태면 그 도형에 스타일 적용)</td></tr>'
-  +'<tr><th>도형</th><td><kbd>Delete</kbd> 삭제 · 방향키 1px 이동(Shift 10px) · <kbd>Ctrl</kbd>+<kbd>C</kbd>/<kbd>V</kbd> 복사 · <kbd>Ctrl</kbd>+<kbd>D</kbd> 복제 · 더블클릭 글자/번호 수정</td></tr>'
+  +'<tr><th>도형</th><td><kbd>Delete</kbd> 삭제 · 방향키 1px 이동(Shift 10px) · <kbd>Ctrl</kbd>+<kbd>C</kbd>/<kbd>V</kbd> 복사 · <kbd>Ctrl</kbd>+<kbd>D</kbd> 복제 · 더블클릭 글자/번호 수정 · <kbd>Shift</kbd>+클릭 또는 빈 곳 드래그로 여러 개 선택 · <kbd>Ctrl</kbd>+<kbd>A</kbd> 전체 · <kbd>Ctrl</kbd>+<kbd>G</kbd> 그룹 · <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd> 그룹 풀기</td></tr>'
   +'<tr><th>슬라이드</th><td><kbd>PageUp</kbd>/<kbd>PageDown</kbd> 이동 · 방향키(선택 없을 때) · <kbd>E</kbd> HTML 글자 편집</td></tr>'
   +'<tr><th>붙여넣기</th><td><kbd>Ctrl</kbd>+<kbd>V</kbd> 이미지/HTML 코드 · 파일을 창에 끌어놓아도 돼요 (이미지, .html, .lecture)</td></tr>'
   +'<tr><th>파일</th><td><kbd>Ctrl</kbd>+<kbd>S</kbd> 저장 · <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> 다른 이름 · <kbd>Ctrl</kbd>+<kbd>Z</kbd>/<kbd>Y</kbd> 되돌리기/다시</td></tr>'
@@ -270,8 +270,10 @@ document.addEventListener('keydown',e=>{
   if(typing)return;
   if(ctrl&&c==='KeyZ'){e.preventDefault();e.shiftKey?doRedo():doUndo();return;}
   if(ctrl&&c==='KeyY'){e.preventDefault();doRedo();return;}
-  if(ctrl&&c==='KeyC'){const o=sel&&findObj(sel);if(o){clipObj=cloneObj(o);e.preventDefault();toast('복사했어요 · Ctrl+V 로 붙여넣기');}return;}
-  if(ctrl&&c==='KeyD'){const o=sel&&findObj(sel);if(o){e.preventDefault();snap();const n={...cloneObj(o),id:uid()};moveObj(n,o,24,24);curSlide().objects.push(n);sel=n.id;renderStage();renderInspector();}return;}
+  if(ctrl&&c==='KeyC'){const l=selList();if(l.length){clipObj=l.map(cloneObj);e.preventDefault();toast('복사했어요 · Ctrl+V 로 붙여넣기');}return;}
+  if(ctrl&&c==='KeyA'){e.preventDefault();setSel(curSlide().objects.map(o=>o.id));renderUI();renderInspector();return;}
+  if(ctrl&&c==='KeyG'){e.preventDefault();doAct(e.shiftKey?'ungrp':'grp');return;}
+  if(ctrl&&c==='KeyD'){const l=selList();if(l.length){e.preventDefault();snap();const ns=dupObjs(l,24,24);curSlide().objects.push(...ns);setSel(ns.map(o=>o.id));renderStage();renderInspector();}return;}
   if(ctrl)return;
   if((tn==='SELECT'||(tn==='INPUT'&&t.type==='range'))&&c.startsWith('Arrow'))return;
   if(c==='F5'){e.preventDefault();startPresent('single',e.shiftKey?cur:0);return;}
@@ -284,8 +286,8 @@ document.addEventListener('keydown',e=>{
   if(c==='PageDown'){e.preventDefault();go(cur+1);return;}if(c==='PageUp'){e.preventDefault();go(cur-1);return;}
   if(c==='Home'){go(0);return;}if(c==='End'){go(P.slides.length-1);return;}
   if(c.startsWith('Arrow')){
-    const o=sel&&findObj(sel);e.preventDefault();
-    if(o){if(Date.now()-lastSnap>600)snap();const st=e.shiftKey?10:1,dx=c==='ArrowLeft'?-st:c==='ArrowRight'?st:0,dy=c==='ArrowUp'?-st:c==='ArrowDown'?st:0;moveObj(o,cloneObj(o),dx,dy);renderStage();}
+    const l=selList();e.preventDefault();
+    if(l.length){if(Date.now()-lastSnap>600)snap();const st=e.shiftKey?10:1,dx=c==='ArrowLeft'?-st:c==='ArrowRight'?st:0,dy=c==='ArrowUp'?-st:c==='ArrowDown'?st:0;for(const o of l)moveObj(o,cloneObj(o),dx,dy);renderStage();}
     else go(cur+(c==='ArrowRight'||c==='ArrowDown'?1:-1));
   }
 });
