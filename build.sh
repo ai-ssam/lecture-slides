@@ -11,4 +11,5 @@ OUT=강의슬라이드.html
   cat src/editor.js src/present.js
   printf '</script>\n</body>\n</html>\n'
 } > "$OUT"
+cp "$OUT" index.html
 echo "built $OUT ($(wc -c < "$OUT") bytes)"
