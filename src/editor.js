@@ -274,7 +274,7 @@ function frameKey(s){return s.htmlId+'|'+s.pick+'|'+s.sel+'|'+JSON.stringify(s.t
 function buildSrcdoc(s){
   let html=P.htmls[s.htmlId]||'<p style="font:16px sans-serif;padding:30px">HTML 원본을 찾을 수 없어요</p>';
   const cfg={sel:s.sel||'',pick:s.pick==null?-1:s.pick,edits:s.textEdits||{}};
-  const css='<style>'+(cfg.pick>=0?'html,body{overflow:hidden!important}':'')+'</style>';
+  const css='<style>*{-webkit-print-color-adjust:exact;print-color-adjust:exact}'+(cfg.pick>=0?'html,body{overflow:hidden!important}':'')+'</style>';
   const inj=css+'<script>('+frameScript.toString()+')('+JSON.stringify(cfg).replace(/</g,'\\u003c')+');<\/script>';
   const m=html.match(/<head[^>]*>/i);
   if(m)return html.replace(m[0],m[0]+inj);
@@ -283,7 +283,7 @@ function buildSrcdoc(s){
 
 /* ===================== 슬라이드 그리기(공용) ===================== */
 function paintSlide(root,slide,ink,opt){
-  opt=opt||{};
+  opt=opt||{};root._pend=[];
   if(root._sid!==slide.id||!root._ok){
     root.innerHTML='<div class="l-bg"></div><div class="l-frame"></div><div class="l-img"></div><div class="l-mos"></div><svg class="l-ann" viewBox="0 0 1280 720" width="1280" height="720"></svg><svg class="l-ink" viewBox="0 0 1280 720" width="1280" height="720"></svg>';
     root._ok=1;root._sid=slide.id;root._fk=null;root._frame=null;root._maps={img:new Map(),mos:new Map()};
@@ -318,13 +318,13 @@ function paintSlide(root,slide,ink,opt){
     if(slide.type==='html'||opt.thumb&&false){
       if(!el||el.tagName!=='DIV'){if(el)el.remove();el=document.createElement('div');mm.set(o.id,el);}
       mh.appendChild(el);
-      el.style.cssText='position:absolute;left:'+b.x+'px;top:'+b.y+'px;width:'+b.w+'px;height:'+b.h+'px;'+(o.mode==='solid'?'background:'+o.color+';':'backdrop-filter:blur('+Math.max(2,o.strength*0.6)+'px);')+(o.shape==='ellipse'?'border-radius:50%;':'')+(o.shape==='free'&&o.pts.length>2?'clip-path:polygon('+o.pts.map(p=>(p[0]-b.x)+'px '+(p[1]-b.y)+'px').join(',')+');':'');
+      el.style.cssText='position:absolute;left:'+b.x+'px;top:'+b.y+'px;width:'+b.w+'px;height:'+b.h+'px;'+(o.mode==='solid'||opt.print?'background:'+(o.mode==='solid'?o.color:'#6B7280')+';':'backdrop-filter:blur('+Math.max(2,o.strength*0.6)+'px);')+(o.shape==='ellipse'?'border-radius:50%;':'')+(o.shape==='free'&&o.pts.length>2?'clip-path:polygon('+o.pts.map(p=>(p[0]-b.x)+'px '+(p[1]-b.y)+'px').join(',')+');':'');
     }else{
       if(!el||el.tagName!=='CANVAS'){if(el)el.remove();el=document.createElement('canvas');mm.set(o.id,el);}
       mh.appendChild(el);
       el.style.cssText='position:absolute;left:'+Math.floor(b.x)+'px;top:'+Math.floor(b.y)+'px;';
       const tok=el._tok=(el._tok||0)+1;
-      mosaicCanvas(o,slide).then(r=>{if(el._tok!==tok||!r)return;el.width=r.cv.width;el.height=r.cv.height;el.getContext('2d').drawImage(r.cv,0,0);});
+      root._pend.push(mosaicCanvas(o,slide).then(r=>{if(el._tok!==tok||!r)return;el.width=r.cv.width;el.height=r.cv.height;el.getContext('2d').drawImage(r.cv,0,0);}));
     }
   }
   for(const [id,el] of mm)if(!seenM.has(id)){el.remove();mm.delete(id);}
@@ -878,4 +878,38 @@ async function exportPNG(){
   const svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'">'+annotations(s.objects)+'</svg>';
   const img=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);});
   g.drawImage(img,0,0);c.toBlob(b=>download(b,(P.title||'슬라이드')+'-'+(cur+1)+'.png'));
+}
+
+/* ===================== 인쇄 / PDF 저장 ===================== */
+async function buildPrintRoot(opts){
+  const root=$('#printRoot');root.innerHTML='';
+  const list=opts.range==='cur'?[curSlide()]:P.slides,pending=[];
+  for(const s of list){
+    const pg=document.createElement('div');pg.className='pp'+(opts.notes?' notes':'');
+    const ph=document.createElement('div');ph.className='ph';const r=document.createElement('div');ph.appendChild(r);pg.appendChild(ph);
+    paintSlide(r,s,null,{print:true});pending.push(...r._pend);
+    if(opts.notes){const n=document.createElement('div');n.className='pn';n.textContent=s.notes||'';pg.appendChild(n);}
+    root.appendChild(pg);
+  }
+  await Promise.all(pending);
+  await Promise.all([...root.querySelectorAll('img')].map(im=>(im.decode?im.decode():Promise.resolve()).catch(()=>{})));
+  await Promise.all([...root.querySelectorAll('iframe')].map(f=>new Promise(res=>{f.addEventListener('load',()=>setTimeout(res,500));setTimeout(res,3500);})));
+  let st=$('#pgstyle');if(!st){st=document.createElement('style');st.id='pgstyle';document.head.appendChild(st);}
+  st.textContent=opts.notes?'@page{size:A4 portrait;margin:12mm}':'@page{size:'+W+'px '+H+'px;margin:0}';
+}
+async function printSlides(opts){
+  toast('인쇄 준비 중…');
+  await buildPrintRoot(opts);
+  const done=()=>{$('#printRoot').innerHTML='';window.removeEventListener('afterprint',done);};
+  window.addEventListener('afterprint',done);
+  window.print();
+}
+function showPrintDialog(){
+  const m=modal('<h3>인쇄 / PDF로 저장</h3>'
+    +'<p><b>범위</b></p><label><input type="radio" name="pr" value="all" checked> 전체 슬라이드 ('+P.slides.length+'장)</label><br><label><input type="radio" name="pr" value="cur"> 지금 슬라이드만</label>'
+    +'<p><b>모양</b></p><label><input type="radio" name="pm" value="slides" checked> 슬라이드만 (한 페이지에 한 장, 16:9)</label><br><label><input type="radio" name="pm" value="notes"> 슬라이드 + 발표자 메모 (A4 세로)</label>'
+    +'<p class="hint">다음에 열리는 인쇄창에서 대상(프린터)을 「PDF로 저장」으로 고르면 PDF 파일이 만들어져요. HTML 슬라이드 위의 모자이크/블러는 인쇄에서 회색 상자로 가려져요.</p>'
+    +'<div class="row"><button class="pri" id="prGo">인쇄창 열기</button><button id="prNo">취소</button></div>');
+  $('#prNo',m).onclick=closeModal;
+  $('#prGo',m).onclick=()=>{const v=n=>m.querySelector('input[name='+n+']:checked').value;const o={range:v('pr'),notes:v('pm')==='notes'};closeModal();printSlides(o);};
 }

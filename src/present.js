@@ -253,7 +253,7 @@ function showHelp(){
   +'<tr><th>도형</th><td><kbd>Delete</kbd> 삭제 · 방향키 1px 이동(Shift 10px) · <kbd>Ctrl</kbd>+<kbd>C</kbd>/<kbd>V</kbd> 복사 · <kbd>Ctrl</kbd>+<kbd>D</kbd> 복제 · 더블클릭 글자/번호 수정 · <kbd>Shift</kbd>+클릭 또는 빈 곳 드래그로 여러 개 선택 · <kbd>Ctrl</kbd>+<kbd>A</kbd> 전체 · <kbd>Ctrl</kbd>+<kbd>G</kbd> 그룹 · <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd> 그룹 풀기 · 선택하면 위쪽에 생기는 동그란 점을 끌어 회전 (<kbd>Shift</kbd>: 15°씩)</td></tr>'
   +'<tr><th>슬라이드</th><td><kbd>PageUp</kbd>/<kbd>PageDown</kbd> 이동 · 방향키(선택 없을 때) · <kbd>E</kbd> HTML 글자 편집</td></tr>'
   +'<tr><th>붙여넣기</th><td><kbd>Ctrl</kbd>+<kbd>V</kbd> 이미지/HTML 코드 · 파일을 창에 끌어놓아도 돼요 (이미지, .html, .lecture)</td></tr>'
-  +'<tr><th>파일</th><td><kbd>Ctrl</kbd>+<kbd>S</kbd> 저장 · <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> 다른 이름 · <kbd>Ctrl</kbd>+<kbd>Z</kbd>/<kbd>Y</kbd> 되돌리기/다시</td></tr>'
+  +'<tr><th>파일</th><td><kbd>Ctrl</kbd>+<kbd>S</kbd> 저장 · <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> 다른 이름 · <kbd>Ctrl</kbd>+<kbd>P</kbd> 인쇄/PDF · <kbd>Ctrl</kbd>+<kbd>Z</kbd>/<kbd>Y</kbd> 되돌리기/다시</td></tr>'
   +'<tr><th>발표 시작</th><td><kbd>F5</kbd> 처음부터 · <kbd>Shift</kbd>+<kbd>F5</kbd> 현재부터</td></tr>'
   +'<tr><th>발표 중</th><td><kbd>→</kbd><kbd>Space</kbd> 다음 · <kbd>←</kbd> 이전 · <kbd>P</kbd> 펜 · <kbd>H</kbd> 형광펜 · <kbd>R</kbd> 사각형 · <kbd>O</kbd> 원 · <kbd>A</kbd> 화살표 · <kbd>L</kbd> 레이저 · <kbd>E</kbd> 지우개 · <kbd>C</kbd> 필기 지우기 · <kbd>B</kbd> 검은 화면 · <kbd>W</kbd> 흰 화면 · <kbd>1</kbd>~<kbd>6</kbd> 색 · <kbd>[</kbd><kbd>]</kbd> 굵기 · <kbd>Esc</kbd> 도구 해제/종료</td></tr>'
   +'</table><p class="hint">한글 입력 상태에서도 단축키는 동작해요. 캡처는 위쪽 「캡처」 버튼이나 Win+Shift+S 후 Ctrl+V 를 쓰세요.</p><div class="row"><button class="pri" id="hOk">닫기</button></div>');
@@ -266,6 +266,7 @@ document.addEventListener('keydown',e=>{
   if($('#cap'))return;
   const t=e.target,tn=t&&t.tagName,c=e.code,ctrl=e.ctrlKey||e.metaKey;
   const typing=(tn==='INPUT'&&!['color','range','checkbox'].includes(t.type))||tn==='TEXTAREA'||(t&&t.isContentEditable);
+  if(ctrl&&c==='KeyP'){e.preventDefault();showPrintDialog();return;}
   if(ctrl&&c==='KeyS'){e.preventDefault();saveProject(e.shiftKey);return;}
   if(typing)return;
   if(ctrl&&c==='KeyZ'){e.preventDefault();e.shiftKey?doRedo():doUndo();return;}
@@ -308,7 +309,7 @@ function initEditor(){
     $('#hGo',m).onclick=()=>{const t=$('#hTxt',m).value;if(!t.trim())return;openImportDialog(t,'붙여넣은 HTML');};
   };
   $('#fHtml').addEventListener('change',async e=>{const f=e.target.files[0];e.target.value='';if(f)openImportDialog(await readFileText(f),f.name);});
-  $('#bPng').onclick=exportPNG;$('#bUndo').onclick=doUndo;$('#bRedo').onclick=doRedo;$('#bHelp').onclick=showHelp;
+  $('#bPng').onclick=exportPNG;$('#bPrint').onclick=showPrintDialog;$('#bUndo').onclick=doUndo;$('#bRedo').onclick=doRedo;$('#bHelp').onclick=showHelp;
   $('#bPlay').onclick=()=>startPresent('single',cur);$('#bPresenter').onclick=()=>startPresent('presenter',cur);
   $('#pasteMode').onchange=e=>{pasteMode=e.target.value;};
   $('#toolbar').addEventListener('click',e=>{const b=e.target.closest('[data-tool]');if(b)setTool(b.dataset.tool);});

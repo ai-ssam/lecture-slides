@@ -160,6 +160,19 @@ body.aud-mode #aud{display:block}
 #audStage{position:absolute;inset:0}
 #audInk{position:absolute;left:0;top:0;width:1280px;height:720px;overflow:visible;pointer-events:none}
 #audMsg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#9CA3AF;font-size:22px;text-align:center;line-height:1.6;z-index:3}
+#printRoot{display:none}
+@media print{
+  html,body{height:auto!important;overflow:visible!important;background:#fff!important}
+  body *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #app,#pres,#modals,#toast,#banner,#cap,#cpop,#aud{display:none!important}
+  #printRoot{display:block}
+  .pp{width:1280px;height:720px;position:relative;overflow:hidden;break-after:page;page-break-after:always}
+  .pp:last-child{break-after:auto;page-break-after:auto}
+  .pp.notes{width:auto;height:auto;overflow:visible}
+  .pp.notes .ph{width:700px;height:393.75px;overflow:hidden;border:1px solid #bbb}
+  .pp.notes .ph>div{transform:scale(.546875);transform-origin:0 0}
+  .pp.notes .pn{margin-top:14px;font:13pt/1.6 "Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;white-space:pre-wrap;color:#111}
+}
 </style>
 </head>
 <body>
@@ -176,6 +189,7 @@ body.aud-mode #aud{display:block}
     <button id="bImg">이미지 넣기</button>
     <button id="bHtml">HTML 가져오기</button>
     <button id="bPng">PNG 저장</button>
+    <button id="bPrint" title="Ctrl+P">인쇄 / PDF</button>
     <select id="pasteMode" title="Ctrl+V 로 붙여넣을 때"><option value="new">붙여넣기 → 새 슬라이드</option><option value="here">붙여넣기 → 현재 슬라이드</option></select>
     <span class="sp"></span>
     <span id="dirty"></span>
@@ -208,6 +222,7 @@ body.aud-mode #aud{display:block}
 <div id="pres" hidden></div>
 <div id="modals"></div>
 <div id="toast"></div>
+<div id="printRoot"></div>
 <input type="file" id="fImg" accept="image/*" multiple hidden>
 <input type="file" id="fHtml" accept=".html,.htm,text/html" hidden>
 <input type="file" id="fOpen" accept=".lecture,.json,application/json" hidden>

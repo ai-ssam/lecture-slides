@@ -160,6 +160,19 @@ body.aud-mode #aud{display:block}
 #audStage{position:absolute;inset:0}
 #audInk{position:absolute;left:0;top:0;width:1280px;height:720px;overflow:visible;pointer-events:none}
 #audMsg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#9CA3AF;font-size:22px;text-align:center;line-height:1.6;z-index:3}
+#printRoot{display:none}
+@media print{
+  html,body{height:auto!important;overflow:visible!important;background:#fff!important}
+  body *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #app,#pres,#modals,#toast,#banner,#cap,#cpop,#aud{display:none!important}
+  #printRoot{display:block}
+  .pp{width:1280px;height:720px;position:relative;overflow:hidden;break-after:page;page-break-after:always}
+  .pp:last-child{break-after:auto;page-break-after:auto}
+  .pp.notes{width:auto;height:auto;overflow:visible}
+  .pp.notes .ph{width:700px;height:393.75px;overflow:hidden;border:1px solid #bbb}
+  .pp.notes .ph>div{transform:scale(.546875);transform-origin:0 0}
+  .pp.notes .pn{margin-top:14px;font:13pt/1.6 "Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif;white-space:pre-wrap;color:#111}
+}
 </style>
 </head>
 <body>
@@ -176,6 +189,7 @@ body.aud-mode #aud{display:block}
     <button id="bImg">이미지 넣기</button>
     <button id="bHtml">HTML 가져오기</button>
     <button id="bPng">PNG 저장</button>
+    <button id="bPrint" title="Ctrl+P">인쇄 / PDF</button>
     <select id="pasteMode" title="Ctrl+V 로 붙여넣을 때"><option value="new">붙여넣기 → 새 슬라이드</option><option value="here">붙여넣기 → 현재 슬라이드</option></select>
     <span class="sp"></span>
     <span id="dirty"></span>
@@ -208,6 +222,7 @@ body.aud-mode #aud{display:block}
 <div id="pres" hidden></div>
 <div id="modals"></div>
 <div id="toast"></div>
+<div id="printRoot"></div>
 <input type="file" id="fImg" accept="image/*" multiple hidden>
 <input type="file" id="fHtml" accept=".html,.htm,text/html" hidden>
 <input type="file" id="fOpen" accept=".lecture,.json,application/json" hidden>
@@ -489,7 +504,7 @@ function frameKey(s){return s.htmlId+'|'+s.pick+'|'+s.sel+'|'+JSON.stringify(s.t
 function buildSrcdoc(s){
   let html=P.htmls[s.htmlId]||'<p style="font:16px sans-serif;padding:30px">HTML 원본을 찾을 수 없어요</p>';
   const cfg={sel:s.sel||'',pick:s.pick==null?-1:s.pick,edits:s.textEdits||{}};
-  const css='<style>'+(cfg.pick>=0?'html,body{overflow:hidden!important}':'')+'</style>';
+  const css='<style>*{-webkit-print-color-adjust:exact;print-color-adjust:exact}'+(cfg.pick>=0?'html,body{overflow:hidden!important}':'')+'</style>';
   const inj=css+'<script>('+frameScript.toString()+')('+JSON.stringify(cfg).replace(/</g,'\\u003c')+');<\/script>';
   const m=html.match(/<head[^>]*>/i);
   if(m)return html.replace(m[0],m[0]+inj);
@@ -498,7 +513,7 @@ function buildSrcdoc(s){
 
 /* ===================== 슬라이드 그리기(공용) ===================== */
 function paintSlide(root,slide,ink,opt){
-  opt=opt||{};
+  opt=opt||{};root._pend=[];
   if(root._sid!==slide.id||!root._ok){
     root.innerHTML='<div class="l-bg"></div><div class="l-frame"></div><div class="l-img"></div><div class="l-mos"></div><svg class="l-ann" viewBox="0 0 1280 720" width="1280" height="720"></svg><svg class="l-ink" viewBox="0 0 1280 720" width="1280" height="720"></svg>';
     root._ok=1;root._sid=slide.id;root._fk=null;root._frame=null;root._maps={img:new Map(),mos:new Map()};
@@ -533,13 +548,13 @@ function paintSlide(root,slide,ink,opt){
     if(slide.type==='html'||opt.thumb&&false){
       if(!el||el.tagName!=='DIV'){if(el)el.remove();el=document.createElement('div');mm.set(o.id,el);}
       mh.appendChild(el);
-      el.style.cssText='position:absolute;left:'+b.x+'px;top:'+b.y+'px;width:'+b.w+'px;height:'+b.h+'px;'+(o.mode==='solid'?'background:'+o.color+';':'backdrop-filter:blur('+Math.max(2,o.strength*0.6)+'px);')+(o.shape==='ellipse'?'border-radius:50%;':'')+(o.shape==='free'&&o.pts.length>2?'clip-path:polygon('+o.pts.map(p=>(p[0]-b.x)+'px '+(p[1]-b.y)+'px').join(',')+');':'');
+      el.style.cssText='position:absolute;left:'+b.x+'px;top:'+b.y+'px;width:'+b.w+'px;height:'+b.h+'px;'+(o.mode==='solid'||opt.print?'background:'+(o.mode==='solid'?o.color:'#6B7280')+';':'backdrop-filter:blur('+Math.max(2,o.strength*0.6)+'px);')+(o.shape==='ellipse'?'border-radius:50%;':'')+(o.shape==='free'&&o.pts.length>2?'clip-path:polygon('+o.pts.map(p=>(p[0]-b.x)+'px '+(p[1]-b.y)+'px').join(',')+');':'');
     }else{
       if(!el||el.tagName!=='CANVAS'){if(el)el.remove();el=document.createElement('canvas');mm.set(o.id,el);}
       mh.appendChild(el);
       el.style.cssText='position:absolute;left:'+Math.floor(b.x)+'px;top:'+Math.floor(b.y)+'px;';
       const tok=el._tok=(el._tok||0)+1;
-      mosaicCanvas(o,slide).then(r=>{if(el._tok!==tok||!r)return;el.width=r.cv.width;el.height=r.cv.height;el.getContext('2d').drawImage(r.cv,0,0);});
+      root._pend.push(mosaicCanvas(o,slide).then(r=>{if(el._tok!==tok||!r)return;el.width=r.cv.width;el.height=r.cv.height;el.getContext('2d').drawImage(r.cv,0,0);}));
     }
   }
   for(const [id,el] of mm)if(!seenM.has(id)){el.remove();mm.delete(id);}
@@ -1095,6 +1110,40 @@ async function exportPNG(){
   g.drawImage(img,0,0);c.toBlob(b=>download(b,(P.title||'슬라이드')+'-'+(cur+1)+'.png'));
 }
 
+/* ===================== 인쇄 / PDF 저장 ===================== */
+async function buildPrintRoot(opts){
+  const root=$('#printRoot');root.innerHTML='';
+  const list=opts.range==='cur'?[curSlide()]:P.slides,pending=[];
+  for(const s of list){
+    const pg=document.createElement('div');pg.className='pp'+(opts.notes?' notes':'');
+    const ph=document.createElement('div');ph.className='ph';const r=document.createElement('div');ph.appendChild(r);pg.appendChild(ph);
+    paintSlide(r,s,null,{print:true});pending.push(...r._pend);
+    if(opts.notes){const n=document.createElement('div');n.className='pn';n.textContent=s.notes||'';pg.appendChild(n);}
+    root.appendChild(pg);
+  }
+  await Promise.all(pending);
+  await Promise.all([...root.querySelectorAll('img')].map(im=>(im.decode?im.decode():Promise.resolve()).catch(()=>{})));
+  await Promise.all([...root.querySelectorAll('iframe')].map(f=>new Promise(res=>{f.addEventListener('load',()=>setTimeout(res,500));setTimeout(res,3500);})));
+  let st=$('#pgstyle');if(!st){st=document.createElement('style');st.id='pgstyle';document.head.appendChild(st);}
+  st.textContent=opts.notes?'@page{size:A4 portrait;margin:12mm}':'@page{size:'+W+'px '+H+'px;margin:0}';
+}
+async function printSlides(opts){
+  toast('인쇄 준비 중…');
+  await buildPrintRoot(opts);
+  const done=()=>{$('#printRoot').innerHTML='';window.removeEventListener('afterprint',done);};
+  window.addEventListener('afterprint',done);
+  window.print();
+}
+function showPrintDialog(){
+  const m=modal('<h3>인쇄 / PDF로 저장</h3>'
+    +'<p><b>범위</b></p><label><input type="radio" name="pr" value="all" checked> 전체 슬라이드 ('+P.slides.length+'장)</label><br><label><input type="radio" name="pr" value="cur"> 지금 슬라이드만</label>'
+    +'<p><b>모양</b></p><label><input type="radio" name="pm" value="slides" checked> 슬라이드만 (한 페이지에 한 장, 16:9)</label><br><label><input type="radio" name="pm" value="notes"> 슬라이드 + 발표자 메모 (A4 세로)</label>'
+    +'<p class="hint">다음에 열리는 인쇄창에서 대상(프린터)을 「PDF로 저장」으로 고르면 PDF 파일이 만들어져요. HTML 슬라이드 위의 모자이크/블러는 인쇄에서 회색 상자로 가려져요.</p>'
+    +'<div class="row"><button class="pri" id="prGo">인쇄창 열기</button><button id="prNo">취소</button></div>');
+  $('#prNo',m).onclick=closeModal;
+  $('#prGo',m).onclick=()=>{const v=n=>m.querySelector('input[name='+n+']:checked').value;const o={range:v('pr'),notes:v('pm')==='notes'};closeModal();printSlides(o);};
+}
+
 /* ===================== HTML 가져오기 ===================== */
 const SKIP=new Set(['SCRIPT','STYLE','SVG','NOSCRIPT','TEMPLATE','IFRAME','CANVAS','VIDEO','AUDIO','TEXTAREA','INPUT','SELECT','OPTION','BUTTON','HEAD']);
 const INLINE=new Set(['B','I','EM','STRONG','SPAN','BR','A','CODE','SMALL','SUP','SUB','MARK','U','S','FONT','TIME','ABBR','WBR']);
@@ -1349,7 +1398,7 @@ function showHelp(){
   +'<tr><th>도형</th><td><kbd>Delete</kbd> 삭제 · 방향키 1px 이동(Shift 10px) · <kbd>Ctrl</kbd>+<kbd>C</kbd>/<kbd>V</kbd> 복사 · <kbd>Ctrl</kbd>+<kbd>D</kbd> 복제 · 더블클릭 글자/번호 수정 · <kbd>Shift</kbd>+클릭 또는 빈 곳 드래그로 여러 개 선택 · <kbd>Ctrl</kbd>+<kbd>A</kbd> 전체 · <kbd>Ctrl</kbd>+<kbd>G</kbd> 그룹 · <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd> 그룹 풀기 · 선택하면 위쪽에 생기는 동그란 점을 끌어 회전 (<kbd>Shift</kbd>: 15°씩)</td></tr>'
   +'<tr><th>슬라이드</th><td><kbd>PageUp</kbd>/<kbd>PageDown</kbd> 이동 · 방향키(선택 없을 때) · <kbd>E</kbd> HTML 글자 편집</td></tr>'
   +'<tr><th>붙여넣기</th><td><kbd>Ctrl</kbd>+<kbd>V</kbd> 이미지/HTML 코드 · 파일을 창에 끌어놓아도 돼요 (이미지, .html, .lecture)</td></tr>'
-  +'<tr><th>파일</th><td><kbd>Ctrl</kbd>+<kbd>S</kbd> 저장 · <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> 다른 이름 · <kbd>Ctrl</kbd>+<kbd>Z</kbd>/<kbd>Y</kbd> 되돌리기/다시</td></tr>'
+  +'<tr><th>파일</th><td><kbd>Ctrl</kbd>+<kbd>S</kbd> 저장 · <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> 다른 이름 · <kbd>Ctrl</kbd>+<kbd>P</kbd> 인쇄/PDF · <kbd>Ctrl</kbd>+<kbd>Z</kbd>/<kbd>Y</kbd> 되돌리기/다시</td></tr>'
   +'<tr><th>발표 시작</th><td><kbd>F5</kbd> 처음부터 · <kbd>Shift</kbd>+<kbd>F5</kbd> 현재부터</td></tr>'
   +'<tr><th>발표 중</th><td><kbd>→</kbd><kbd>Space</kbd> 다음 · <kbd>←</kbd> 이전 · <kbd>P</kbd> 펜 · <kbd>H</kbd> 형광펜 · <kbd>R</kbd> 사각형 · <kbd>O</kbd> 원 · <kbd>A</kbd> 화살표 · <kbd>L</kbd> 레이저 · <kbd>E</kbd> 지우개 · <kbd>C</kbd> 필기 지우기 · <kbd>B</kbd> 검은 화면 · <kbd>W</kbd> 흰 화면 · <kbd>1</kbd>~<kbd>6</kbd> 색 · <kbd>[</kbd><kbd>]</kbd> 굵기 · <kbd>Esc</kbd> 도구 해제/종료</td></tr>'
   +'</table><p class="hint">한글 입력 상태에서도 단축키는 동작해요. 캡처는 위쪽 「캡처」 버튼이나 Win+Shift+S 후 Ctrl+V 를 쓰세요.</p><div class="row"><button class="pri" id="hOk">닫기</button></div>');
@@ -1362,6 +1411,7 @@ document.addEventListener('keydown',e=>{
   if($('#cap'))return;
   const t=e.target,tn=t&&t.tagName,c=e.code,ctrl=e.ctrlKey||e.metaKey;
   const typing=(tn==='INPUT'&&!['color','range','checkbox'].includes(t.type))||tn==='TEXTAREA'||(t&&t.isContentEditable);
+  if(ctrl&&c==='KeyP'){e.preventDefault();showPrintDialog();return;}
   if(ctrl&&c==='KeyS'){e.preventDefault();saveProject(e.shiftKey);return;}
   if(typing)return;
   if(ctrl&&c==='KeyZ'){e.preventDefault();e.shiftKey?doRedo():doUndo();return;}
@@ -1404,7 +1454,7 @@ function initEditor(){
     $('#hGo',m).onclick=()=>{const t=$('#hTxt',m).value;if(!t.trim())return;openImportDialog(t,'붙여넣은 HTML');};
   };
   $('#fHtml').addEventListener('change',async e=>{const f=e.target.files[0];e.target.value='';if(f)openImportDialog(await readFileText(f),f.name);});
-  $('#bPng').onclick=exportPNG;$('#bUndo').onclick=doUndo;$('#bRedo').onclick=doRedo;$('#bHelp').onclick=showHelp;
+  $('#bPng').onclick=exportPNG;$('#bPrint').onclick=showPrintDialog;$('#bUndo').onclick=doUndo;$('#bRedo').onclick=doRedo;$('#bHelp').onclick=showHelp;
   $('#bPlay').onclick=()=>startPresent('single',cur);$('#bPresenter').onclick=()=>startPresent('presenter',cur);
   $('#pasteMode').onchange=e=>{pasteMode=e.target.value;};
   $('#toolbar').addEventListener('click',e=>{const b=e.target.closest('[data-tool]');if(b)setTool(b.dataset.tool);});
