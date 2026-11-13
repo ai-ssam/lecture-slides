@@ -19,7 +19,7 @@ function doImport(text,name,sel){
   tagUnits(doc.body);
   const n=sel?countSel(doc,sel):1;if(sel&&!n){toast('선택자와 맞는 슬라이드가 없어요');return;}
   const hid=uid();P.htmls[hid]='<!DOCTYPE html>\n'+doc.documentElement.outerHTML;
-  const news=[];for(let i=0;i<(sel?n:1);i++)news.push({id:uid(),type:'html',bg:'#FFFFFF',htmlId:hid,sel:sel||'',pick:sel?i:-1,textEdits:{},objects:[],notes:'',label:name});
+  const news=[];for(let i=0;i<(sel?n:1);i++)news.push({id:uid(),type:'html',master:'none',bg:'#FFFFFF',htmlId:hid,sel:sel||'',pick:sel?i:-1,textEdits:{},objects:[],notes:'',label:name});
   snap();
   const only=P.slides.length===1&&P.slides[0].type==='blank'&&!P.slides[0].objects.length;
   if(only){P.slides=news;cur=0;}else{P.slides.splice(cur+1,0,...news);cur++;}
@@ -61,10 +61,10 @@ const PCOL=['#E23B2E','#2563EB','#16A34A','#F59E0B','#111111','#FFFFFF'];
 const inkOf=sid=>pres.ink[sid]||(pres.ink[sid]=[]);
 const presSlide=()=>P.slides[pres.idx];
 function startPresent(mode,from){
-  if(pres)return;
+  if(pres)return;if(editMaster){toast('마스터 편집을 먼저 끝내 주세요');return;}
   pres={idx:clamp(from,0,P.slides.length-1),tool:'none',color:PCOL[0],width:5,ink:{},blank:null,aud:null,t0:Date.now(),mode,draft:null,drag:null,ending:false,timer:null};
   const el=$('#pres');el.hidden=false;el.className=mode;
-  el.innerHTML='<div id="pmain"><div id="pboxOuter"><div id="pbox"><div id="pstage"></div><svg id="pink" viewBox="0 0 1280 720"></svg><div id="plaser"></div><div id="pblank"></div></div></div><div id="pcount"></div><div id="ptools"><div class="bar">'
+  el.innerHTML='<div id="pmain"><div id="pboxOuter"><div id="pbox"><div id="pstage"></div><svg id="pink" viewBox="0 0 1280 '+H+'"></svg><div id="plaser"></div><div id="pblank"></div></div></div><div id="pcount"></div><div id="ptools"><div class="bar">'
     +PTOOLS.map(t=>'<button data-pt="'+t[0]+'" title="'+t[1]+' ('+t[2]+')">'+t[1]+'</button>').join('')
     +'<span class="vs"></span>'+PCOL.map(c=>'<button class="c" data-pc="'+c+'" style="background:'+c+'" title="색"></button>').join('')
     +'<span class="vs"></span><button data-pa="thin" title="[">가늘게</button><button data-pa="thick" title="]">굵게</button>'
@@ -203,7 +203,7 @@ window.addEventListener('resize',()=>{fitP();});
 /* 청중 창 */
 function audSend(m){const a=pres&&pres.aud;if(a&&!a.closed){try{a.postMessage(Object.assign({ls:1},m),'*');}catch(e){}}}
 function slim(s){return JSON.parse(JSON.stringify(s,(k,v)=>k[0]==='_'?undefined:v));}
-function syncAud(){if(!pres)return;const s=presSlide();audSend({t:'show',slide:slim(s),html:s.type==='html'?P.htmls[s.htmlId]:null,ink:inkOf(s.id),blank:pres.blank});}
+function syncAud(){if(!pres)return;const s=presSlide();audSend({t:'show',n:pres.idx,total:P.slides.length,slide:slim(s),html:s.type==='html'?P.htmls[s.htmlId]:null,ink:inkOf(s.id),blank:pres.blank});}
 function sendInk(){if(!pres)return;audSend({t:'ink',sid:presSlide().id,ink:inkOf(presSlide().id)});}
 function openAudience(){
   if(!pres)return;
@@ -215,24 +215,24 @@ function openAudience(){
 }
 window.addEventListener('message',e=>{
   const m=e.data;if(!m||m.ls!==1||IS_AUD)return;
-  if(m.t==='ready'&&pres&&e.source===pres.aud){audSend({t:'init',assets:P.assets});syncAud();}
+  if(m.t==='ready'&&pres&&e.source===pres.aud){audSend({t:'init',assets:P.assets,masters:P.masters||[],ratio:P.ratio||'16:9'});syncAud();}
 });
 /* 청중 창 쪽 */
 function initAudience(){
   document.body.classList.add('aud-mode');document.title='청중 화면';
   const a=$('#aud');
-  a.innerHTML='<div id="audBoxOuter"><div id="audBox"><div id="audStage"></div><svg id="audInk" viewBox="0 0 1280 720"></svg><div id="audLaser"></div><div id="audBlank"></div></div></div><div id="audMsg">발표자 화면과 연결하는 중…<br>이 창을 더블클릭하면 전체화면이 돼요</div>';
+  a.innerHTML='<div id="audBoxOuter"><div id="audBox"><div id="audStage"></div><svg id="audInk" viewBox="0 0 1280 '+H+'"></svg><div id="audLaser"></div><div id="audBlank"></div></div></div><div id="audMsg">발표자 화면과 연결하는 중…<br>이 창을 더블클릭하면 전체화면이 돼요</div>';
   const fit=()=>{const s=Math.min(innerWidth/W,innerHeight/H),o=$('#audBoxOuter');o.style.width=W*s+'px';o.style.height=H*s+'px';o.style.left=(innerWidth-W*s)/2+'px';o.style.top=(innerHeight-H*s)/2+'px';$('#audBox').style.transform='scale('+s+')';};
   fit();addEventListener('resize',fit);
   addEventListener('dblclick',()=>{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen().catch(()=>{});});
   let curId=null;
   addEventListener('message',e=>{
     const m=e.data;if(!m||m.ls!==1||e.source!==window.opener)return;
-    if(m.t==='init'){P.assets=m.assets||{};}
+    if(m.t==='init'){P.assets=m.assets||{};P.masters=m.masters||[];applyRatio(m.ratio||'16:9');fit();}
     else if(m.t==='show'){
       $('#audMsg').style.display='none';
       if(m.html)P.htmls[m.slide.htmlId]=m.html;
-      curId=m.slide.id;paintSlide($('#audStage'),m.slide,null,{interactFrame:false});
+      curId=m.slide.id;paintSlide($('#audStage'),m.slide,null,{interactFrame:false,idx:m.n,total:m.total});
       $('#audInk').innerHTML=annotations(m.ink||[]);audBlank(m.blank);
     }
     else if(m.t==='ink'){if(m.sid===curId)$('#audInk').innerHTML=annotations(m.ink||[]);}
@@ -248,9 +248,12 @@ function initAudience(){
 /* ===================== 단축키/도움말 ===================== */
 function showHelp(){
   modal('<h3>단축키</h3><table>'
-  +'<tr><th>편집</th><td><kbd>V</kbd> 선택 <kbd>R</kbd> 사각형 <kbd>O</kbd> 원 <kbd>A</kbd> 화살표 <kbd>N</kbd> 번호 <kbd>T</kbd> 글자 <kbd>M</kbd> 모자이크 <kbd>P</kbd> 펜</td></tr>'
+  +'<tr><th>편집</th><td><kbd>V</kbd> 선택 <kbd>R</kbd> 사각형 <kbd>O</kbd> 원 <kbd>L</kbd> 직선 <kbd>A</kbd> 화살표 <kbd>N</kbd> 번호 <kbd>T</kbd> 글자 <kbd>M</kbd> 모자이크 <kbd>P</kbd> 펜</td></tr>'
   +'<tr><th>즐겨찾기</th><td><kbd>1</kbd>~<kbd>9</kbd> 해당 스타일로 도구 전환 (도형을 선택해 둔 상태면 그 도형에 스타일 적용)</td></tr>'
   +'<tr><th>도형</th><td><kbd>Delete</kbd> 삭제 · 방향키 1px 이동(Shift 10px) · <kbd>Ctrl</kbd>+<kbd>C</kbd>/<kbd>V</kbd> 복사 · <kbd>Ctrl</kbd>+<kbd>D</kbd> 복제 · 더블클릭 글자/번호 수정 · <kbd>Shift</kbd>+클릭 또는 빈 곳 드래그로 여러 개 선택 · <kbd>Ctrl</kbd>+<kbd>A</kbd> 전체 · <kbd>Ctrl</kbd>+<kbd>G</kbd> 그룹 · <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd> 그룹 풀기 · 선택하면 위쪽에 생기는 동그란 점을 끌어 회전 (<kbd>Shift</kbd>: 15°씩)</td></tr>'
+  +'<tr><th>배치</th><td><kbd>]</kbd>/<kbd>[</kbd> 한 단계 앞/뒤 · <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>]</kbd>/<kbd>[</kbd> 맨 앞/맨 뒤 · <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>C</kbd>/<kbd>V</kbd> 스타일 복사/붙여넣기 · <kbd>Alt</kbd>+클릭 잠긴 도형 선택 · 드래그 중 <kbd>Alt</kbd> 스냅 잠시 끄기</td></tr>'
+  +'<tr><th>화면</th><td><kbd>Ctrl</kbd>+휠 또는 <kbd>Ctrl</kbd>+<kbd>+</kbd>/<kbd>-</kbd> 확대·축소 · <kbd>Ctrl</kbd>+<kbd>0</kbd> 맞춤 · <kbd>Space</kbd>+드래그 또는 휠 버튼 드래그로 이동</td></tr>'
+  +'<tr><th>마스터</th><td>오른쪽 패널 「마스터 만들기/편집」 · 글자에 <kbd>{n}</kbd> 쪽번호, <kbd>{total}</kbd> 전체 쪽수 · 이미지 선택 후 「배경으로 만들기」</td></tr>'
   +'<tr><th>슬라이드</th><td><kbd>PageUp</kbd>/<kbd>PageDown</kbd> 이동 · 방향키(선택 없을 때) · <kbd>E</kbd> HTML 글자 편집</td></tr>'
   +'<tr><th>붙여넣기</th><td><kbd>Ctrl</kbd>+<kbd>V</kbd> 이미지/HTML 코드 · 파일을 창에 끌어놓아도 돼요 (이미지, .html, .lecture)</td></tr>'
   +'<tr><th>파일</th><td><kbd>Ctrl</kbd>+<kbd>S</kbd> 저장 · <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> 다른 이름 · <kbd>Ctrl</kbd>+<kbd>P</kbd> 인쇄/PDF · <kbd>Ctrl</kbd>+<kbd>Z</kbd>/<kbd>Y</kbd> 되돌리기/다시</td></tr>'
@@ -304,12 +307,13 @@ document.addEventListener('keydown',e=>{
 
 /* ===================== 시작 ===================== */
 function initEditor(){
-  renderFavs();fitStage();new ResizeObserver(fitStage).observe($('#viewport'));
+  applyRatio(P.ratio||'16:9');renderFavs();fitStage();new ResizeObserver(fitStage).observe($('#viewport'));
   renderAll();setTool('select');
   $('#title').addEventListener('input',e=>{P.title=e.target.value;markDirty();});
   $('#bNew').onclick=()=>{if(dirty&&!confirm('저장하지 않은 변경이 있어요. 새로 시작할까요?'))return;loadProject({format:'lecture-slides',title:'제목 없는 강의',slides:[blankSlide()],assets:{},htmls:{},presets:P.presets});fileHandle=null;};
   $('#bOpen').onclick=openProject;$('#bSave').onclick=()=>saveProject(false);$('#bSaveAs').onclick=()=>saveProject(true);
-  $('#bCap').onclick=startCapture;
+  $('#bCap').onclick=()=>{if(editMaster){toast('마스터 편집을 먼저 끝내 주세요');return;}startCapture();};
+  $('#mbDone').onclick=exitMaster;
   $('#bSnap').onclick=()=>{snapOn=!snapOn;lsSet('ls.snap',snapOn?'1':'0');updateStatus();toast(snapOn?'스냅 켬: 도형이 가장자리·중앙에 달라붙어요':'스냅 끔');};
   $('#zIn').onclick=()=>zoomAt(1.25);$('#zOut').onclick=()=>zoomAt(1/1.25);$('#zPct').onclick=zoomFit;
   $('#bImg').onclick=()=>$('#fImg').click();
@@ -377,7 +381,7 @@ async function openPdfDialog(file){
         const g=c.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,c.width,c.height);
         await page.render({canvasContext:g,viewport:vp}).promise;
         const url=c.toDataURL('image/jpeg',0.92),aid=uid();P.assets[aid]=url;
-        const sl=blankSlide();sl.objects.push({id:uid(),t:'img',src:aid,x:(W-vw)/2,y:(H-vh)/2,w:vw,h:vh});sl.label='PDF '+pages[i]+'쪽';news.push(sl);
+        const sl=blankSlide();sl.objects.push({id:uid(),t:'img',src:aid,x:(W-vw)/2,y:(H-vh)/2,w:vw,h:vh});sl.label='PDF '+pages[i]+'쪽';sl.master='none';news.push(sl);
         const pp=document.getElementById('pgp');if(pp)pp.textContent=(i+1)+' / '+pages.length;
         page.cleanup();
       }
