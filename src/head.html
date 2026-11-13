@@ -14,7 +14,13 @@ input,textarea,select{font:inherit;color:inherit}
 body.aud-mode #app{display:none}
 #aud{display:none}
 body.aud-mode #aud{display:block}
-#app{display:grid;grid-template-columns:176px 1fr 272px;grid-template-rows:auto 1fr;height:100vh}
+#app{display:grid;grid-template-columns:var(--lw,182px) 5px minmax(0,1fr) 5px var(--rw,272px);grid-template-rows:auto 1fr;height:100vh}
+#top{grid-column:1/-1}
+#thumbs{grid-column:1;grid-row:2}#rzL{grid-column:2;grid-row:2}#center{grid-column:3;grid-row:2}#rzR{grid-column:4;grid-row:2}#inspector{grid-column:5;grid-row:2}
+.rz{cursor:col-resize;background:var(--line);opacity:.55;transition:background .12s,opacity .12s;touch-action:none}.rz:hover,.rz.drag{background:var(--acc);opacity:1}
+body.lc #thumbs,body.lc #rzL,body.rc #inspector,body.rc #rzR{display:none}
+#thumbs .ops.sz{padding:0 0 6px;position:static;top:auto}#thumbs .ops.sz button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+#thumbs .ops{flex-direction:row}
 #top{grid-column:1/-1;background:var(--ink);color:#fff;display:flex;align-items:center;flex-wrap:wrap;gap:4px 6px;padding:5px 10px;min-height:46px;min-width:0}
 #top .logo{font-weight:700;letter-spacing:-.02em;margin-right:6px;white-space:nowrap}
 #top input#title{background:#2A3038;border:1px solid #3a424c;border-radius:6px;color:#fff;padding:5px 8px;width:120px;min-width:60px;flex:0 1 120px;user-select:text}
@@ -32,8 +38,8 @@ body.aud-mode #aud{display:block}
 .th.on{border-color:var(--acc);background:#E8EFFE}
 .th.over{border-top:3px solid var(--acc)}
 .th .n{position:absolute;left:-2px;top:-2px;background:var(--ink);color:#fff;font-size:11px;padding:0 5px;border-radius:5px 0 5px 0;z-index:1}
-.tbox{width:152px;height:var(--thH,85.5px);overflow:hidden;position:relative;background:#fff;box-shadow:0 0 0 1px var(--line)}
-.troot{transform:scale(.11875);transform-origin:0 0;pointer-events:none}
+.tbox{width:var(--tw,152px);height:var(--thH,85.5px);overflow:hidden;position:relative;background:#fff;box-shadow:0 0 0 1px var(--line)}
+.troot{transform:scale(var(--ts,.11875));transform-origin:0 0;pointer-events:none}
 #center{display:flex;flex-direction:column;min-width:0;min-height:0}
 #toolbar{background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:4px;padding:6px 8px;flex-wrap:wrap}
 #toolbar .tb{border:1px solid var(--line);background:#fff;border-radius:6px;padding:4px 8px;white-space:nowrap}
@@ -222,6 +228,7 @@ body.mm #viewport{background:#D9CFF0}
     <button id="bPlay" class="go" title="F5 처음부터 / Shift+F5 현재부터">▶ 발표</button>
   </header>
   <aside id="thumbs"></aside>
+  <div id="rzL" class="rz" title="드래그: 폭 조절 · 더블클릭: 기본 폭"></div>
   <main id="center">
     <div id="toolbar">
       <button class="tb" data-tool="select">선택<small>V</small></button>
@@ -237,11 +244,12 @@ body.mm #viewport{background:#D9CFF0}
       <button class="tb" data-tool="pen">펜<small>P</small></button>
       <span class="vs"></span>
       <div id="favs"></div>
-      <div id="zoomBox"><button id="bSnap" title="다른 도형·슬라이드 가장자리/중앙에 달라붙어요 (드래그 중 Alt: 잠시 끄기)">🧲 스냅</button><span class="vs"></span><button id="zOut" title="축소 (Ctrl+-)">－</button><button id="zPct" title="화면에 맞추기 (Ctrl+0)">맞춤</button><button id="zIn" title="확대 (Ctrl++ / Ctrl+휠)">＋</button></div>
+      <div id="zoomBox"><button id="bTL" title="왼쪽 슬라이드 목록 접기/펴기 (Alt+1)">◧</button><button id="bTR" title="오른쪽 도구 패널 접기/펴기 (Alt+2)">◨</button><span class="vs"></span><button id="bSnap" title="다른 도형·슬라이드 가장자리/중앙에 달라붙어요 (드래그 중 Alt: 잠시 끄기)">🧲 스냅</button><span class="vs"></span><button id="zOut" title="축소 (Ctrl+-)">－</button><button id="zPct" title="화면에 맞추기 (Ctrl+0)">맞춤</button><button id="zIn" title="확대 (Ctrl++ / Ctrl+휠)">＋</button></div>
     </div>
     <div id="viewport"><div id="mbar" hidden><b>🧩 마스터 편집 중</b><span id="mbName"></span><button id="mbDone">편집 끝내기</button></div><div id="boxOuter"><div id="box"><div id="stage"></div><svg id="ui" viewBox="0 0 1280 720"></svg></div></div></div>
     <div id="status"><span id="stTool"></span><span id="stPos"></span><span id="stHint"></span></div>
   </main>
+  <div id="rzR" class="rz" title="드래그: 폭 조절 · 더블클릭: 기본 폭"></div>
   <aside id="inspector"></aside>
 </div>
 <div id="aud"></div>

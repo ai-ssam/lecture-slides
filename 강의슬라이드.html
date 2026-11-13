@@ -14,7 +14,13 @@ input,textarea,select{font:inherit;color:inherit}
 body.aud-mode #app{display:none}
 #aud{display:none}
 body.aud-mode #aud{display:block}
-#app{display:grid;grid-template-columns:176px 1fr 272px;grid-template-rows:auto 1fr;height:100vh}
+#app{display:grid;grid-template-columns:var(--lw,182px) 5px minmax(0,1fr) 5px var(--rw,272px);grid-template-rows:auto 1fr;height:100vh}
+#top{grid-column:1/-1}
+#thumbs{grid-column:1;grid-row:2}#rzL{grid-column:2;grid-row:2}#center{grid-column:3;grid-row:2}#rzR{grid-column:4;grid-row:2}#inspector{grid-column:5;grid-row:2}
+.rz{cursor:col-resize;background:var(--line);opacity:.55;transition:background .12s,opacity .12s;touch-action:none}.rz:hover,.rz.drag{background:var(--acc);opacity:1}
+body.lc #thumbs,body.lc #rzL,body.rc #inspector,body.rc #rzR{display:none}
+#thumbs .ops.sz{padding:0 0 6px;position:static;top:auto}#thumbs .ops.sz button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+#thumbs .ops{flex-direction:row}
 #top{grid-column:1/-1;background:var(--ink);color:#fff;display:flex;align-items:center;flex-wrap:wrap;gap:4px 6px;padding:5px 10px;min-height:46px;min-width:0}
 #top .logo{font-weight:700;letter-spacing:-.02em;margin-right:6px;white-space:nowrap}
 #top input#title{background:#2A3038;border:1px solid #3a424c;border-radius:6px;color:#fff;padding:5px 8px;width:120px;min-width:60px;flex:0 1 120px;user-select:text}
@@ -32,8 +38,8 @@ body.aud-mode #aud{display:block}
 .th.on{border-color:var(--acc);background:#E8EFFE}
 .th.over{border-top:3px solid var(--acc)}
 .th .n{position:absolute;left:-2px;top:-2px;background:var(--ink);color:#fff;font-size:11px;padding:0 5px;border-radius:5px 0 5px 0;z-index:1}
-.tbox{width:152px;height:var(--thH,85.5px);overflow:hidden;position:relative;background:#fff;box-shadow:0 0 0 1px var(--line)}
-.troot{transform:scale(.11875);transform-origin:0 0;pointer-events:none}
+.tbox{width:var(--tw,152px);height:var(--thH,85.5px);overflow:hidden;position:relative;background:#fff;box-shadow:0 0 0 1px var(--line)}
+.troot{transform:scale(var(--ts,.11875));transform-origin:0 0;pointer-events:none}
 #center{display:flex;flex-direction:column;min-width:0;min-height:0}
 #toolbar{background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:4px;padding:6px 8px;flex-wrap:wrap}
 #toolbar .tb{border:1px solid var(--line);background:#fff;border-radius:6px;padding:4px 8px;white-space:nowrap}
@@ -222,6 +228,7 @@ body.mm #viewport{background:#D9CFF0}
     <button id="bPlay" class="go" title="F5 처음부터 / Shift+F5 현재부터">▶ 발표</button>
   </header>
   <aside id="thumbs"></aside>
+  <div id="rzL" class="rz" title="드래그: 폭 조절 · 더블클릭: 기본 폭"></div>
   <main id="center">
     <div id="toolbar">
       <button class="tb" data-tool="select">선택<small>V</small></button>
@@ -237,11 +244,12 @@ body.mm #viewport{background:#D9CFF0}
       <button class="tb" data-tool="pen">펜<small>P</small></button>
       <span class="vs"></span>
       <div id="favs"></div>
-      <div id="zoomBox"><button id="bSnap" title="다른 도형·슬라이드 가장자리/중앙에 달라붙어요 (드래그 중 Alt: 잠시 끄기)">🧲 스냅</button><span class="vs"></span><button id="zOut" title="축소 (Ctrl+-)">－</button><button id="zPct" title="화면에 맞추기 (Ctrl+0)">맞춤</button><button id="zIn" title="확대 (Ctrl++ / Ctrl+휠)">＋</button></div>
+      <div id="zoomBox"><button id="bTL" title="왼쪽 슬라이드 목록 접기/펴기 (Alt+1)">◧</button><button id="bTR" title="오른쪽 도구 패널 접기/펴기 (Alt+2)">◨</button><span class="vs"></span><button id="bSnap" title="다른 도형·슬라이드 가장자리/중앙에 달라붙어요 (드래그 중 Alt: 잠시 끄기)">🧲 스냅</button><span class="vs"></span><button id="zOut" title="축소 (Ctrl+-)">－</button><button id="zPct" title="화면에 맞추기 (Ctrl+0)">맞춤</button><button id="zIn" title="확대 (Ctrl++ / Ctrl+휠)">＋</button></div>
     </div>
     <div id="viewport"><div id="mbar" hidden><b>🧩 마스터 편집 중</b><span id="mbName"></span><button id="mbDone">편집 끝내기</button></div><div id="boxOuter"><div id="box"><div id="stage"></div><svg id="ui" viewBox="0 0 1280 720"></svg></div></div></div>
     <div id="status"><span id="stTool"></span><span id="stPos"></span><span id="stHint"></span></div>
   </main>
+  <div id="rzR" class="rz" title="드래그: 폭 조절 · 더블클릭: 기본 폭"></div>
   <aside id="inspector"></aside>
 </div>
 <div id="aud"></div>
@@ -368,6 +376,30 @@ let P=IS_AUD?{assets:{},htmls:{},slides:[],masters:[],presets:[]}:newProject();
 let cur=0,tool='select',sel=null,nextNum=1,dirty=false,fileHandle=null,undo=[],redo=[],lastSnap=0,editText=false,draft=null,drag=null,clipObj=null,pasteMode='new',editMaster=null;
 const lsGet=k=>{try{return localStorage.getItem(k);}catch(e){return null;}},lsSet=(k,v)=>{try{localStorage.setItem(k,v);}catch(e){}};
 const RECT_VAR={sq:{radius:0,stroke:'#E23B2E',sw:4,fill:'#E23B2E',fillA:0},round:{radius:24,stroke:'#E23B2E',sw:4,fill:'#E23B2E',fillA:0},hl:{stroke:'#FFE066',sw:0,fill:'#FFE066',fillA:.5,radius:2}},VAR_NAME={sq:'직사각',round:'둥근사각',hl:'형광'};let toolVar='sq',cropId=null;
+const LAY_DEF={lw:182,rw:272,lc:0,rc:0};let layout=Object.assign({},LAY_DEF);try{Object.assign(layout,JSON.parse(lsGet('ls.layout')||'{}'));}catch(e){}
+function saveLayout(){lsSet('ls.layout',JSON.stringify(layout));}
+function applyLayout(){
+  const mx=Math.max(240,innerWidth-420);layout.lw=clamp(+layout.lw||182,110,Math.min(420,mx-layout.rw*(layout.rc?0:1)));layout.rw=clamp(+layout.rw||272,220,Math.min(520,mx-layout.lw*(layout.lc?0:1)));
+  const rs=document.documentElement.style,tw=layout.lw-30;
+  rs.setProperty('--lw',(layout.lc?0:layout.lw)+'px');rs.setProperty('--rw',(layout.rc?0:layout.rw)+'px');
+  rs.setProperty('--tw',tw+'px');rs.setProperty('--ts',(tw/W)+'');rs.setProperty('--thH',(tw*H/W)+'px');
+  document.body.classList.toggle('lc',!!layout.lc);document.body.classList.toggle('rc',!!layout.rc);
+  const a=$('#bTL'),b=$('#bTR');if(a)a.classList.toggle('on',!layout.lc);if(b)b.classList.toggle('on',!layout.rc);
+  document.querySelectorAll('#thumbs .sz button').forEach(x=>x.classList.toggle('on',+x.dataset.w===layout.lw));
+}
+function togglePanel(side){layout[side]=layout[side]?0:1;saveLayout();applyLayout();}
+function setThumbSize(w){layout.lw=w;layout.lc=0;saveLayout();applyLayout();}
+function initResizers(){
+  for(const [id,side] of [['#rzL','lw'],['#rzR','rw']]){
+    const r=$(id);
+    r.addEventListener('pointerdown',e=>{e.preventDefault();r.setPointerCapture(e.pointerId);r.classList.add('drag');document.body.style.userSelect='none';});
+    r.addEventListener('pointermove',e=>{if(!r.classList.contains('drag'))return;layout[side]=side==='lw'?e.clientX:innerWidth-e.clientX;applyLayout();});
+    const end=()=>{if(!r.classList.contains('drag'))return;r.classList.remove('drag');document.body.style.userSelect='';saveLayout();};
+    r.addEventListener('pointerup',end);r.addEventListener('pointercancel',end);
+    r.addEventListener('dblclick',()=>{layout[side]=LAY_DEF[side];saveLayout();applyLayout();});
+  }
+  addEventListener('resize',applyLayout);
+}
 const view={s:1,z:1,px:0,py:0};let activeFav=-1,msel=[],marq=null,guides=[],spaceDown=false,styleClip=null;let snapOn=lsGet('ls.snap')!=='0',autoRenum=lsGet('ls.renum')!=='0';
 const TOOL_NAME={select:'선택',rect:'사각형',ellipse:'원',line:'직선',arrow:'화살표',num:'번호',text:'글자',mosaic:'모자이크',pen:'펜'};
 const ST=clone(DEF);
@@ -750,7 +782,7 @@ const thumbEls=new Map();let thumbT;
 function scheduleThumb(){clearTimeout(thumbT);thumbT=setTimeout(()=>{const t=thumbEls.get(curSlide().id);if(t)paintSlide(t.root,curSlide(),null,{thumb:true});},250);}
 function renderThumbs(){
   const box2=$('#thumbs');
-  if(!$('.ops',box2)){box2.innerHTML='<div class="ops"><button data-op="add" title="빈 슬라이드 추가">＋</button><button data-op="dup" title="복제">⧉</button><button data-op="up" title="위로">▲</button><button data-op="down" title="아래로">▼</button><button data-op="del" title="삭제">🗑</button></div>';}
+  if(!$('.ops',box2)){box2.innerHTML='<div class="ops"><button data-op="add" title="빈 슬라이드 추가">＋</button><button data-op="dup" title="복제">⧉</button><button data-op="up" title="위로">▲</button><button data-op="down" title="아래로">▼</button><button data-op="del" title="삭제">🗑</button></div><div class="ops sz"><button data-op="sz" data-w="120" title="섬네일 작게">작게</button><button data-op="sz" data-w="182" title="섬네일 보통">보통</button><button data-op="sz" data-w="290" title="섬네일 크게">크게</button></div>';applyLayout();}
   const seen=new Set();
   P.slides.forEach((s,i)=>{
     seen.add(s.id);let t=thumbEls.get(s.id);
@@ -1283,6 +1315,7 @@ function delSlide(){
 function moveSlide(d){if(editMaster)return;const j=cur+d;if(j<0||j>=P.slides.length)return;snap();const [m]=P.slides.splice(cur,1);P.slides.splice(j,0,m);cur=j;renderAll();}
 $('#thumbs').addEventListener('click',e=>{
   const b=e.target.closest('button[data-op]');if(!b)return;
+  if(b.dataset.op==='sz'){setThumbSize(+b.dataset.w);return;}
   ({add:addBlank,dup:dupSlide,del:delSlide,up:()=>moveSlide(-1),down:()=>moveSlide(1)})[b.dataset.op]();
 });
 function deleteSel(){const s=curSlide(),ids=new Set(selIds().filter(id=>!findObj(id).locked));if(!ids.size){if(sel)toast('잠긴 도형은 지울 수 없어요 · 먼저 잠금을 풀어주세요');return;}snap();const hadNum=s.objects.some(o=>ids.has(o.id)&&o.t==='num');s.objects=s.objects.filter(o=>!ids.has(o.id));sel=null;msel=[];if(hadNum&&autoRenum)renumber();renderStage();renderInspector();}
@@ -1495,10 +1528,10 @@ function cropReset(){
 /* ===================== 화면비 ===================== */
 function applyRatio(r){
   P.ratio=r==='4:3'?'4:3':'16:9';H=P.ratio==='4:3'?960:720;
-  const rs=document.documentElement.style;rs.setProperty('--H',H+'px');rs.setProperty('--thH',(152*H/W)+'px');rs.setProperty('--phH',(700*H/W)+'px');
+  const rs=document.documentElement.style;rs.setProperty('--H',H+'px');rs.setProperty('--phH',(700*H/W)+'px');
   for(const s of ['#ui','#audInk','#pink']){const e=$(s);if(e)e.setAttribute('viewBox','0 0 '+W+' '+H);}
   stageEl._ok=0;for(const [,t] of thumbEls)t.root._ok=0;
-  fitStage();
+  applyLayout();fitStage();
 }
 
 /* ===================== 마스터 편집 ===================== */
@@ -1804,6 +1837,7 @@ function showHelp(){
   +'<tr><th>편집</th><td><kbd>V</kbd> 선택 <kbd>R</kbd> 사각형 <kbd>O</kbd> 원 <kbd>L</kbd> 직선 <kbd>A</kbd> 화살표 <kbd>N</kbd> 번호 <kbd>T</kbd> 글자 <kbd>M</kbd> 모자이크 <kbd>P</kbd> 펜</td></tr>'
   +'<tr><th>즐겨찾기</th><td><kbd>1</kbd>~<kbd>9</kbd> 해당 스타일로 도구 전환 (도형을 선택해 둔 상태면 그 도형에 스타일 적용)</td></tr>'
   +'<tr><th>도형</th><td><kbd>Delete</kbd> 삭제 · 방향키 1px 이동(Shift 10px) · <kbd>Ctrl</kbd>+<kbd>C</kbd>/<kbd>V</kbd> 복사 · <kbd>Ctrl</kbd>+<kbd>D</kbd> 복제 · 더블클릭 글자/번호 수정 · <kbd>Shift</kbd>+클릭 또는 빈 곳 드래그로 여러 개 선택 · <kbd>Ctrl</kbd>+<kbd>A</kbd> 전체 · <kbd>Ctrl</kbd>+<kbd>G</kbd> 그룹 · <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd> 그룹 풀기 · 선택하면 위쪽에 생기는 동그란 점을 끌어 회전 (<kbd>Shift</kbd>: 15°씩)</td></tr>'
+  +'<tr><th>패널</th><td><kbd>Alt</kbd>+<kbd>1</kbd> 왼쪽 목록 접기/펴기 · <kbd>Alt</kbd>+<kbd>2</kbd> 오른쪽 도구 접기/펴기 · 패널 사이 경계선을 드래그하면 폭 조절(더블클릭: 기본 폭) · 목록 아래 작게/보통/크게로 섬네일 크기 · 설정은 자동 기억</td></tr>'
   +'<tr><th>배치</th><td><kbd>]</kbd>/<kbd>[</kbd> 한 단계 앞/뒤 · <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>]</kbd>/<kbd>[</kbd> 맨 앞/맨 뒤 · <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>C</kbd>/<kbd>V</kbd> 스타일 복사/붙여넣기 · <kbd>Alt</kbd>+클릭 잠긴 도형 선택 · 드래그 중 <kbd>Alt</kbd> 스냅 잠시 끄기</td></tr>'
   +'<tr><th>화면</th><td><kbd>Ctrl</kbd>+휠 또는 <kbd>Ctrl</kbd>+<kbd>+</kbd>/<kbd>-</kbd> 확대·축소 · <kbd>Ctrl</kbd>+<kbd>0</kbd> 맞춤 · <kbd>Space</kbd>+드래그 또는 휠 버튼 드래그로 이동</td></tr>'
   +'<tr><th>마스터</th><td>오른쪽 패널 「마스터 만들기/편집」 · 글자에 <kbd>{n}</kbd> 쪽번호, <kbd>{total}</kbd> 전체 쪽수 · 이미지 선택 후 「배경으로 만들기」</td></tr>'
@@ -1822,6 +1856,7 @@ document.addEventListener('keydown',e=>{
   if($('#cap'))return;
   const t=e.target,tn=t&&t.tagName,c=e.code,ctrl=e.ctrlKey||e.metaKey;
   const typing=(tn==='INPUT'&&!['color','range','checkbox'].includes(t.type))||tn==='TEXTAREA'||(t&&t.isContentEditable);
+  if(e.altKey&&!ctrl&&!typing&&(c==='Digit1'||c==='Digit2')){e.preventDefault();togglePanel(c==='Digit1'?'lc':'rc');return;}
   if(ctrl&&c==='KeyP'){e.preventDefault();showPrintDialog();return;}
   if(ctrl&&c==='KeyS'){e.preventDefault();saveProject(e.shiftKey);return;}
   if(typing)return;
@@ -1860,6 +1895,7 @@ document.addEventListener('keydown',e=>{
 
 /* ===================== 시작 ===================== */
 function initEditor(){
+  initResizers();$('#bTL').onclick=()=>togglePanel('lc');$('#bTR').onclick=()=>togglePanel('rc');
   applyRatio(P.ratio||'16:9');renderFavs();fitStage();new ResizeObserver(fitStage).observe($('#viewport'));
   renderAll();setTool('select');
   $('#title').addEventListener('input',e=>{P.title=e.target.value;markDirty();});

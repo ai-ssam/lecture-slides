@@ -65,6 +65,30 @@ let P=IS_AUD?{assets:{},htmls:{},slides:[],masters:[],presets:[]}:newProject();
 let cur=0,tool='select',sel=null,nextNum=1,dirty=false,fileHandle=null,undo=[],redo=[],lastSnap=0,editText=false,draft=null,drag=null,clipObj=null,pasteMode='new',editMaster=null;
 const lsGet=k=>{try{return localStorage.getItem(k);}catch(e){return null;}},lsSet=(k,v)=>{try{localStorage.setItem(k,v);}catch(e){}};
 const RECT_VAR={sq:{radius:0,stroke:'#E23B2E',sw:4,fill:'#E23B2E',fillA:0},round:{radius:24,stroke:'#E23B2E',sw:4,fill:'#E23B2E',fillA:0},hl:{stroke:'#FFE066',sw:0,fill:'#FFE066',fillA:.5,radius:2}},VAR_NAME={sq:'직사각',round:'둥근사각',hl:'형광'};let toolVar='sq',cropId=null;
+const LAY_DEF={lw:182,rw:272,lc:0,rc:0};let layout=Object.assign({},LAY_DEF);try{Object.assign(layout,JSON.parse(lsGet('ls.layout')||'{}'));}catch(e){}
+function saveLayout(){lsSet('ls.layout',JSON.stringify(layout));}
+function applyLayout(){
+  const mx=Math.max(240,innerWidth-420);layout.lw=clamp(+layout.lw||182,110,Math.min(420,mx-layout.rw*(layout.rc?0:1)));layout.rw=clamp(+layout.rw||272,220,Math.min(520,mx-layout.lw*(layout.lc?0:1)));
+  const rs=document.documentElement.style,tw=layout.lw-30;
+  rs.setProperty('--lw',(layout.lc?0:layout.lw)+'px');rs.setProperty('--rw',(layout.rc?0:layout.rw)+'px');
+  rs.setProperty('--tw',tw+'px');rs.setProperty('--ts',(tw/W)+'');rs.setProperty('--thH',(tw*H/W)+'px');
+  document.body.classList.toggle('lc',!!layout.lc);document.body.classList.toggle('rc',!!layout.rc);
+  const a=$('#bTL'),b=$('#bTR');if(a)a.classList.toggle('on',!layout.lc);if(b)b.classList.toggle('on',!layout.rc);
+  document.querySelectorAll('#thumbs .sz button').forEach(x=>x.classList.toggle('on',+x.dataset.w===layout.lw));
+}
+function togglePanel(side){layout[side]=layout[side]?0:1;saveLayout();applyLayout();}
+function setThumbSize(w){layout.lw=w;layout.lc=0;saveLayout();applyLayout();}
+function initResizers(){
+  for(const [id,side] of [['#rzL','lw'],['#rzR','rw']]){
+    const r=$(id);
+    r.addEventListener('pointerdown',e=>{e.preventDefault();r.setPointerCapture(e.pointerId);r.classList.add('drag');document.body.style.userSelect='none';});
+    r.addEventListener('pointermove',e=>{if(!r.classList.contains('drag'))return;layout[side]=side==='lw'?e.clientX:innerWidth-e.clientX;applyLayout();});
+    const end=()=>{if(!r.classList.contains('drag'))return;r.classList.remove('drag');document.body.style.userSelect='';saveLayout();};
+    r.addEventListener('pointerup',end);r.addEventListener('pointercancel',end);
+    r.addEventListener('dblclick',()=>{layout[side]=LAY_DEF[side];saveLayout();applyLayout();});
+  }
+  addEventListener('resize',applyLayout);
+}
 const view={s:1,z:1,px:0,py:0};let activeFav=-1,msel=[],marq=null,guides=[],spaceDown=false,styleClip=null;let snapOn=lsGet('ls.snap')!=='0',autoRenum=lsGet('ls.renum')!=='0';
 const TOOL_NAME={select:'선택',rect:'사각형',ellipse:'원',line:'직선',arrow:'화살표',num:'번호',text:'글자',mosaic:'모자이크',pen:'펜'};
 const ST=clone(DEF);
@@ -447,7 +471,7 @@ const thumbEls=new Map();let thumbT;
 function scheduleThumb(){clearTimeout(thumbT);thumbT=setTimeout(()=>{const t=thumbEls.get(curSlide().id);if(t)paintSlide(t.root,curSlide(),null,{thumb:true});},250);}
 function renderThumbs(){
   const box2=$('#thumbs');
-  if(!$('.ops',box2)){box2.innerHTML='<div class="ops"><button data-op="add" title="빈 슬라이드 추가">＋</button><button data-op="dup" title="복제">⧉</button><button data-op="up" title="위로">▲</button><button data-op="down" title="아래로">▼</button><button data-op="del" title="삭제">🗑</button></div>';}
+  if(!$('.ops',box2)){box2.innerHTML='<div class="ops"><button data-op="add" title="빈 슬라이드 추가">＋</button><button data-op="dup" title="복제">⧉</button><button data-op="up" title="위로">▲</button><button data-op="down" title="아래로">▼</button><button data-op="del" title="삭제">🗑</button></div><div class="ops sz"><button data-op="sz" data-w="120" title="섬네일 작게">작게</button><button data-op="sz" data-w="182" title="섬네일 보통">보통</button><button data-op="sz" data-w="290" title="섬네일 크게">크게</button></div>';applyLayout();}
   const seen=new Set();
   P.slides.forEach((s,i)=>{
     seen.add(s.id);let t=thumbEls.get(s.id);
@@ -980,6 +1004,7 @@ function delSlide(){
 function moveSlide(d){if(editMaster)return;const j=cur+d;if(j<0||j>=P.slides.length)return;snap();const [m]=P.slides.splice(cur,1);P.slides.splice(j,0,m);cur=j;renderAll();}
 $('#thumbs').addEventListener('click',e=>{
   const b=e.target.closest('button[data-op]');if(!b)return;
+  if(b.dataset.op==='sz'){setThumbSize(+b.dataset.w);return;}
   ({add:addBlank,dup:dupSlide,del:delSlide,up:()=>moveSlide(-1),down:()=>moveSlide(1)})[b.dataset.op]();
 });
 function deleteSel(){const s=curSlide(),ids=new Set(selIds().filter(id=>!findObj(id).locked));if(!ids.size){if(sel)toast('잠긴 도형은 지울 수 없어요 · 먼저 잠금을 풀어주세요');return;}snap();const hadNum=s.objects.some(o=>ids.has(o.id)&&o.t==='num');s.objects=s.objects.filter(o=>!ids.has(o.id));sel=null;msel=[];if(hadNum&&autoRenum)renumber();renderStage();renderInspector();}
@@ -1192,10 +1217,10 @@ function cropReset(){
 /* ===================== 화면비 ===================== */
 function applyRatio(r){
   P.ratio=r==='4:3'?'4:3':'16:9';H=P.ratio==='4:3'?960:720;
-  const rs=document.documentElement.style;rs.setProperty('--H',H+'px');rs.setProperty('--thH',(152*H/W)+'px');rs.setProperty('--phH',(700*H/W)+'px');
+  const rs=document.documentElement.style;rs.setProperty('--H',H+'px');rs.setProperty('--phH',(700*H/W)+'px');
   for(const s of ['#ui','#audInk','#pink']){const e=$(s);if(e)e.setAttribute('viewBox','0 0 '+W+' '+H);}
   stageEl._ok=0;for(const [,t] of thumbEls)t.root._ok=0;
-  fitStage();
+  applyLayout();fitStage();
 }
 
 /* ===================== 마스터 편집 ===================== */
