@@ -51,6 +51,10 @@ body.aud-mode #aud{display:block}
 .arow.ic button{min-width:36px;display:flex;flex-direction:column;align-items:center;gap:1px;padding:4px 2px 3px}
 .arow.ic button span{font-size:10px;line-height:1.1;white-space:nowrap;color:#444}
 .arow.ic svg{width:22px;height:22px;display:block}
+.tglrow{display:flex;gap:4px;align-items:center;margin:4px 0 6px}
+.tglrow button{min-width:30px;height:28px;border:1px solid var(--line);background:#fff;border-radius:6px;padding:0 6px}
+.tglrow button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.tglrow .tsep{width:1px;height:20px;background:var(--line);margin:0 3px}
 .chk{display:flex;gap:6px;align-items:center;margin:6px 0;color:#444}
 #zoomBox{margin-left:auto;display:flex;gap:4px;align-items:center}
 #zoomBox button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:3px 8px}
@@ -99,7 +103,7 @@ body.aud-mode #aud{display:block}
 .te{position:absolute;margin:0;border:2px solid var(--acc);outline:none;resize:none;overflow:hidden;background:#fff;color:#000;user-select:text;z-index:5;line-height:1.25;font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif}
 /* 슬라이드 내부 레이어 */
 .l-bg,.l-img,.l-frame,.l-mos,.l-ann,.l-ink{position:absolute;left:0;top:0;width:1280px;height:720px}
-.l-img img{position:absolute;display:block}
+.l-img img{position:absolute;display:block;box-sizing:border-box}
 .l-bg,.l-img,.l-mos,.l-ann,.l-ink{pointer-events:none}
 .l-ann,.l-ink{overflow:visible}
 .html-frame{width:1280px;height:720px;border:0;background:#fff;display:block}
@@ -213,8 +217,11 @@ body.aud-mode #aud{display:block}
   <main id="center">
     <div id="toolbar">
       <button class="tb" data-tool="select">선택<small>V</small></button>
-      <button class="tb" data-tool="rect">사각형<small>R</small></button>
+      <button class="tb" data-tool="rect" data-var="sq" title="직사각형 (R)">직사각<small>R</small></button>
+      <button class="tb" data-tool="rect" data-var="round" title="모서리가 둥근 사각형">둥근사각</button>
+      <button class="tb" data-tool="rect" data-var="hl" title="반투명 노란 형광펜 사각형">형광</button>
       <button class="tb" data-tool="ellipse">원<small>O</small></button>
+      <button class="tb" data-tool="line">직선<small>L</small></button>
       <button class="tb" data-tool="arrow">화살표<small>A</small></button>
       <button class="tb" data-tool="num">번호<small>N</small></button>
       <button class="tb" data-tool="text">글자<small>T</small></button>

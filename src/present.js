@@ -286,10 +286,12 @@ document.addEventListener('keydown',e=>{
   if((tn==='SELECT'||(tn==='INPUT'&&t.type==='range'))&&c.startsWith('Arrow'))return;
   if(c==='F5'){e.preventDefault();startPresent('single',e.shiftKey?cur:0);return;}
   const m=c.match(/^(?:Digit|Numpad)([1-9])$/);if(m){applyPreset(+m[1]-1);return;}
-  const tk={KeyV:'select',KeyR:'rect',KeyO:'ellipse',KeyA:'arrow',KeyN:'num',KeyT:'text',KeyM:'mosaic',KeyP:'pen'};
+  const tk={KeyV:'select',KeyR:'rect',KeyO:'ellipse',KeyL:'line',KeyA:'arrow',KeyN:'num',KeyT:'text',KeyM:'mosaic',KeyP:'pen'};
   if(tk[c]){e.preventDefault();setTool(tk[c]);return;}
   if(c==='KeyE'){toggleTextEdit();return;}
   if(c==='Delete'||c==='Backspace'){if(sel){e.preventDefault();deleteSel();}return;}
+  if(c==='Escape'&&cropId){cropId=null;renderUI();renderInspector();return;}
+  if(c==='Enter'&&cropId){cropId=null;renderUI();renderInspector();return;}
   if(c==='Escape'){if(editText)toggleTextEdit();else if(sel){sel=null;renderUI();renderInspector();}else setTool('select');return;}
   if(c==='PageDown'){e.preventDefault();go(cur+1);return;}if(c==='PageUp'){e.preventDefault();go(cur-1);return;}
   if(c==='Home'){go(0);return;}if(c==='End'){go(P.slides.length-1);return;}
@@ -323,7 +325,7 @@ function initEditor(){
   $('#bPng').onclick=exportPNG;$('#bPrint').onclick=showPrintDialog;$('#bUndo').onclick=doUndo;$('#bRedo').onclick=doRedo;$('#bHelp').onclick=showHelp;
   $('#bPlay').onclick=()=>startPresent('single',cur);$('#bPresenter').onclick=()=>startPresent('presenter',cur);
   $('#pasteMode').onchange=e=>{pasteMode=e.target.value;};
-  $('#toolbar').addEventListener('click',e=>{const b=e.target.closest('[data-tool]');if(b)setTool(b.dataset.tool);});
+  $('#toolbar').addEventListener('click',e=>{const b=e.target.closest('[data-tool]');if(!b)return;setTool(b.dataset.tool);if(b.dataset.var){toolVar=b.dataset.var;Object.assign(ST.rect,clone(RECT_VAR[toolVar]));markTools();markFavs();renderInspector();}});
   window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
   offerRestore();
 }
