@@ -248,7 +248,7 @@ function initAudience(){
 /* ===================== 단축키/도움말 ===================== */
 function showHelp(){
   modal('<h3>단축키</h3><table>'
-  +'<tr><th>편집</th><td><kbd>V</kbd> 선택 <kbd>R</kbd> 사각형 <kbd>O</kbd> 원 <kbd>L</kbd> 직선 <kbd>A</kbd> 화살표 <kbd>N</kbd> 번호 <kbd>T</kbd> 글자 <kbd>M</kbd> 모자이크 <kbd>P</kbd> 펜</td></tr>'
+  +'<tr><th>편집</th><td><kbd>V</kbd> 선택 <kbd>R</kbd> 직사각형 <kbd>H</kbd> 형광 <kbd>O</kbd> 원 <kbd>L</kbd> 직선 <kbd>A</kbd> 화살표 <kbd>N</kbd> 번호 <kbd>T</kbd> 글자 <kbd>M</kbd> 모자이크 <kbd>P</kbd> 펜</td></tr>'
   +'<tr><th>즐겨찾기</th><td><kbd>1</kbd>~<kbd>9</kbd> 해당 스타일로 도구 전환 (도형을 선택해 둔 상태면 그 도형에 스타일 적용)</td></tr>'
   +'<tr><th>도형</th><td><kbd>Delete</kbd> 삭제 · 방향키 1px 이동(Shift 10px) · <kbd>Ctrl</kbd>+<kbd>C</kbd>/<kbd>V</kbd> 복사 · <kbd>Ctrl</kbd>+<kbd>D</kbd> 복제 · 더블클릭 글자/번호 수정 · <kbd>Shift</kbd>+클릭 또는 빈 곳 드래그로 여러 개 선택 · <kbd>Ctrl</kbd>+<kbd>A</kbd> 전체 · <kbd>Ctrl</kbd>+<kbd>G</kbd> 그룹 · <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd> 그룹 풀기 · 선택하면 위쪽에 생기는 동그란 점을 끌어 회전 (<kbd>Shift</kbd>: 15°씩)</td></tr>'
   +'<tr><th>패널</th><td><kbd>Alt</kbd>+<kbd>1</kbd> 왼쪽 목록 접기/펴기 · <kbd>Alt</kbd>+<kbd>2</kbd> 오른쪽 도구 접기/펴기 · 패널 사이 경계선을 드래그하면 폭 조절(더블클릭: 기본 폭) · 목록 아래 작게/보통/크게로 섬네일 크기 · 설정은 자동 기억</td></tr>'
@@ -294,6 +294,8 @@ document.addEventListener('keydown',e=>{
   if(c==='F5'){e.preventDefault();startPresent('single',e.shiftKey?cur:0);return;}
   const m=c.match(/^(?:Digit|Numpad)([1-9])$/);if(m){applyPreset(+m[1]-1);return;}
   const tk={KeyV:'select',KeyR:'rect',KeyO:'ellipse',KeyL:'line',KeyA:'arrow',KeyN:'num',KeyT:'text',KeyM:'mosaic',KeyP:'pen'};
+  if(c==='KeyH'&&!ctrl&&!e.altKey){e.preventDefault();setTool('rect');toolVar='hl';Object.assign(ST.rect,clone(RECT_VAR.hl));markTools();markFavs();renderInspector();return;}
+  if(c==='KeyR'&&!ctrl&&!e.altKey){e.preventDefault();setTool('rect');toolVar='sq';Object.assign(ST.rect,clone(RECT_VAR.sq));markTools();markFavs();renderInspector();return;}
   if(tk[c]){e.preventDefault();setTool(tk[c]);return;}
   if(c==='KeyE'){toggleTextEdit();return;}
   if(c==='Delete'||c==='Backspace'){if(sel){e.preventDefault();deleteSel();}return;}

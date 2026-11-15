@@ -5,7 +5,7 @@
 <title>강의슬라이드</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
-:root{--ink:#1C2026;--ink2:#2A3038;--line:#D9DDE3;--bg:#EEF0F3;--panel:#fff;--mark:#E23B2E;--hl:#FFE066;--acc:#2563EB;--mut:#6B7280}
+:root{--ink:#1C2026;--ink2:#2A3038;--line:#D9DDE3;--bg:#EEF0F3;--panel:#fff;--mark:#E23B2E;--hl:#FFE066;--acc:#2563EB;--sel:#F97316;--mut:#6B7280}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
 body{font:13px/1.4 "Pretendard","Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;color:var(--ink);background:var(--bg);overflow:hidden;user-select:none}
@@ -19,18 +19,18 @@ body.aud-mode #aud{display:block}
 #thumbs{grid-column:1;grid-row:2}#rzL{grid-column:2;grid-row:2}#center{grid-column:3;grid-row:2}#rzR{grid-column:4;grid-row:2}#inspector{grid-column:5;grid-row:2}
 .rz{cursor:col-resize;background:var(--line);opacity:.55;transition:background .12s,opacity .12s;touch-action:none}.rz:hover,.rz.drag{background:var(--acc);opacity:1}
 body.lc #thumbs,body.lc #rzL,body.rc #inspector,body.rc #rzR{display:none}
-#thumbs .ops.sz{padding:0 0 6px;position:static;top:auto}#thumbs .ops.sz button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+#thumbs .ops.sz{padding:0 0 6px;position:static;top:auto}#thumbs .ops.sz button.on{background:var(--sel);color:#fff;border-color:var(--sel)}
 #thumbs .ops{flex-direction:row}
-#top{grid-column:1/-1;background:var(--ink);color:#fff;display:flex;align-items:center;flex-wrap:wrap;gap:4px 6px;padding:5px 10px;min-height:46px;min-width:0}
+#top{grid-column:1/-1;background:#F4F5F7;color:#1C2026;border-bottom:1px solid var(--line);display:flex;align-items:center;flex-wrap:wrap;gap:4px 6px;padding:5px 10px;min-height:46px;min-width:0}
 #top .logo{font-weight:700;letter-spacing:-.02em;margin-right:6px;white-space:nowrap}
-#top input#title{background:#2A3038;border:1px solid #3a424c;border-radius:6px;color:#fff;padding:5px 8px;width:120px;min-width:60px;flex:0 1 120px;user-select:text}
-#top button{background:#2A3038;border:1px solid #3a424c;border-radius:6px;color:#E8EAED;padding:5px 7px;white-space:nowrap}
-#top button:hover{background:#38414c}
+#top input#title{background:#fff;border:1px solid #C4CAD3;border-radius:6px;color:#1C2026;padding:5px 8px;width:120px;min-width:60px;flex:0 1 120px;user-select:text}
+#top button{background:#fff;border:1px solid #C4CAD3;border-radius:6px;color:#1C2026;padding:5px 7px;white-space:nowrap}
+#top button:hover{background:#FFF1E6;border-color:#F97316}
 #top button.go{background:var(--mark);border-color:var(--mark);color:#fff;font-weight:600}
-#top select{background:#2A3038;border:1px solid #3a424c;border-radius:6px;color:#E8EAED;padding:4px 6px}
+#top select{background:#fff;border:1px solid #C4CAD3;border-radius:6px;color:#1C2026;padding:4px 6px}
 #top .sp{flex:1}
-#top .sep{width:1px;height:20px;background:#3a424c;margin:0 4px}
-#dirty{color:#FBBF24;font-size:12px;min-width:56px}
+#top .sep{width:1px;height:20px;background:#C4CAD3;margin:0 4px}
+#dirty{color:#C2410C;font-weight:600;font-size:12px;min-width:56px}
 #thumbs{background:#F7F8FA;border-right:1px solid var(--line);overflow:auto;padding:8px;display:flex;flex-direction:column;gap:8px}
 #thumbs .ops{display:flex;gap:4px;flex-wrap:wrap;position:sticky;top:-8px;background:#F7F8FA;padding:2px 0 6px;z-index:2}
 #thumbs .ops button{flex:1;min-width:24px;padding:4px 0;border:1px solid var(--line);background:#fff;border-radius:6px}
@@ -43,13 +43,14 @@ body.lc #thumbs,body.lc #rzL,body.rc #inspector,body.rc #rzR{display:none}
 #center{display:flex;flex-direction:column;min-width:0;min-height:0}
 #toolbar{background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:4px;padding:6px 8px;flex-wrap:wrap}
 #toolbar .tb{border:1px solid var(--line);background:#fff;border-radius:6px;padding:4px 8px;white-space:nowrap}
-#toolbar .tb.on{background:var(--acc);color:#fff;border-color:var(--acc);font-weight:700;box-shadow:0 0 0 3px rgba(37,99,235,.28)}
+#toolbar .tb.on{background:var(--sel);color:#fff;border-color:var(--sel);font-weight:700;box-shadow:0 0 0 3px rgba(249,115,22,.3)}
+#toolbar .ur{border:1px solid #C4CAD3;background:#fff;border-radius:6px;padding:4px 10px;font-weight:600;white-space:nowrap}#toolbar .ur:hover{background:#FFF1E6;border-color:var(--sel)}
 #toolbar .tb.on small{opacity:.85}
 #toolbar .tb small{opacity:.6;margin-left:3px}
 #toolbar .vs{width:1px;height:26px;background:var(--line);margin:0 6px}
 #favs{display:flex;gap:4px;flex-wrap:wrap;align-items:center}
 .fav{position:relative;width:48px;height:36px;border:1px solid var(--line);border-radius:6px;background:#fff;padding:2px}
-.fav:hover{border-color:var(--acc)}
+.fav:hover{border-color:var(--sel)}
 .fav svg{width:100%;height:100%;display:block}
 .fav b{position:absolute;right:2px;bottom:0;font-size:10px;color:var(--mut)}
 .arow{display:flex;gap:4px;flex-wrap:wrap;margin:4px 0}
@@ -69,10 +70,10 @@ body.lc #thumbs,body.lc #rzL,body.rc #inspector,body.rc #rzR{display:none}
 .chk{display:flex;gap:6px;align-items:center;margin:6px 0;color:#444}
 #zoomBox{margin-left:auto;display:flex;gap:4px;align-items:center}
 #zoomBox button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:3px 8px}
-#zoomBox button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+#zoomBox button.on{background:var(--sel);color:#fff;border-color:var(--sel)}
 #zPct{min-width:56px}
 .arow button:hover{border-color:var(--acc);background:#EEF3FF}
-.fav.on{border-color:var(--acc);box-shadow:0 0 0 2px var(--acc);background:#E8EFFE}
+.fav.on{border-color:var(--sel);box-shadow:0 0 0 2px var(--sel);background:#FFF1E6}
 #stTool{color:var(--acc);font-weight:700}
 .cbtn{width:44px;height:24px;border:1px solid #9CA3AF;border-radius:4px;padding:0}
 .cbtn:hover{border-color:var(--acc)}
@@ -229,8 +230,6 @@ body.mm #viewport{background:#D9CFF0}
     <select id="pasteMode" title="Ctrl+V 로 붙여넣을 때"><option value="new">붙여넣기 → 새 슬라이드</option><option value="here">붙여넣기 → 현재 슬라이드</option></select>
     <span class="sp"></span>
     <span id="dirty"></span>
-    <button id="bUndo" title="Ctrl+Z">↶</button>
-    <button id="bRedo" title="Ctrl+Y">↷</button>
     <button id="bHelp">단축키</button>
     <button id="bPresenter" title="발표자 화면 + 청중 창">발표자 보기</button>
     <button id="bPlay" class="go" title="F5 처음부터 / Shift+F5 현재부터">▶ 발표</button>
@@ -239,10 +238,11 @@ body.mm #viewport{background:#D9CFF0}
   <div id="rzL" class="rz" title="드래그: 폭 조절 · 더블클릭: 기본 폭"></div>
   <main id="center">
     <div id="toolbar">
+      <button id="bUndo" class="ur" title="되돌리기 (Ctrl+Z)">↶ 되돌리기</button><button id="bRedo" class="ur" title="다시 실행 (Ctrl+Y)">↷ 다시</button><span class="vs"></span>
       <button class="tb" data-tool="select">선택<small>V</small></button>
       <button class="tb" data-tool="rect" data-var="sq" title="직사각형 (R)">직사각<small>R</small></button>
       <button class="tb" data-tool="rect" data-var="round" title="모서리가 둥근 사각형">둥근사각</button>
-      <button class="tb" data-tool="rect" data-var="hl" title="반투명 노란 형광펜 사각형">형광</button>
+      <button class="tb" data-tool="rect" data-var="hl" title="반투명 노란 형광펜 사각형 (H)">형광<small>H</small></button>
       <button class="tb" data-tool="ellipse">원<small>O</small></button>
       <button class="tb" data-tool="line">직선<small>L</small></button>
       <button class="tb" data-tool="arrow">화살표<small>A</small></button>
