@@ -36,6 +36,7 @@ body.lc #thumbs,body.lc #rzL,body.rc #inspector,body.rc #rzR{display:none}
 .ti{vertical-align:-2px;margin-right:4px}
 button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--sel);outline-offset:1px}
 button:focus:not(:focus-visible){outline:none}
+.boxsec{border-left:3px solid var(--sel);padding-left:8px;margin:6px 0}.boxsec .rl{margin-top:0}
 .rl{display:block;font-size:11px;color:var(--mut);margin:6px 0 -2px}
 details.alg{margin:8px 0;border:1px solid var(--line);border-radius:6px;padding:0 8px 6px}details.alg summary{cursor:pointer;font-weight:600;padding:6px 0}details.alg h4{margin-top:6px}
 #top .sep{width:1px;height:20px;background:#C4CAD3;margin:0 4px}
@@ -346,7 +347,7 @@ const DEF={
   line:{stroke:'#2563EB',sw:5,dash:0},
   img:{bw:0,bc:'#111111',radius:0,shadow:0,opacity:1,flip:0},
   num:{shape:'circle',fill:'#E23B2E',stroke:'#FFFFFF',sw:3,color:'#FFFFFF',size:44},
-  text:{color:'#1C2026',size:28,bg:'#FFE066',bgA:0.9,bold:1,italic:0,underline:0,strike:0,align:'left',lh:1.25,font:'sans',outline:0,outlineC:'#FFFFFF',shadow:0},
+  text:{color:'#1C2026',size:28,bg:'#FFE066',bgA:0.9,bold:1,italic:0,underline:0,strike:0,align:'left',lh:1.25,font:'sans',outline:0,outlineC:'#FFFFFF',shadow:0,boxW:0,boxC:'#F97316',boxR:12,boxPad:4},
   mosaic:{shape:'rect',mode:'pixel',strength:14,color:'#000000'},
   pen:{stroke:'#E23B2E',sw:5,alpha:1}
 };
@@ -359,7 +360,7 @@ const FIELDS={
   img:[['bw','테두리 굵기','range',0,24,1],['bc','테두리 색','color'],['radius','모서리 둥글기','range',0,200,1],['shadow','그림자','check'],['opacity','투명도(1=불투명)','range',.1,1,.05],['flip','좌우 반전','check']],
   arrow:[['stroke','색','color'],['sw','굵기','range',1,24,1],['head','화살촉','select',[[1,'한쪽'],[2,'양쪽'],[0,'없음']]],['dash','선 모양','select',DASH]],
   num:[['shape','모양','select',[['circle','원'],['square','사각'],['round','둥근 사각']]],['fill','채움 색','color'],['color','숫자 색','color'],['stroke','테두리 색','color'],['sw','테두리 굵기','range',0,10,1],['size','크기','range',20,120,1]],
-  text:[['color','글자 색','color'],['size','글자 크기','range',12,120,1],['font','글꼴','select',[['sans','고딕'],['serif','명조'],['mono','고정폭']]],['bold','굵게','check'],['italic','기울임','check'],['underline','밑줄','check'],['strike','취소선','check'],['align','정렬','select',[['left','왼쪽'],['center','가운데'],['right','오른쪽']]],['lh','줄 간격','range',1,2.4,.05],['bg','배경 색','color'],['bgA','배경 농도','range',0,1,.05],['outline','외곽선 굵기','range',0,10,.5],['outlineC','외곽선 색','color'],['shadow','그림자','check']],
+  text:[['color','글자 색','color'],['size','글자 크기','range',12,120,1],['font','글꼴','select',[['sans','고딕'],['serif','명조'],['mono','고정폭']]],['bold','굵게','check'],['italic','기울임','check'],['underline','밑줄','check'],['strike','취소선','check'],['align','정렬','select',[['left','왼쪽'],['center','가운데'],['right','오른쪽']]],['lh','줄 간격','range',1,2.4,.05],['bg','배경 색','color'],['bgA','배경 농도','range',0,1,.05],['outline','외곽선 굵기','range',0,10,.5],['outlineC','외곽선 색','color'],['shadow','그림자','check'],['boxW','상자 테두리 굵기','range',0,16,.5],['boxC','상자 테두리 색','color'],['boxR','상자 모서리 둥글기','range',0,80,1],['boxPad','상자 안쪽 여백','range',0,60,1]],
   mosaic:[['shape','모양','select',[['rect','사각형'],['ellipse','원'],['free','자유 영역']]],['mode','종류','select',[['pixel','모자이크'],['blur','흐리게(블러)'],['solid','단색 가림']]],['strength','강도','range',4,60,1],['color','단색 가림 색','color']],
   pen:[['stroke','색','color'],['sw','굵기','range',1,60,1],['alpha','투명도(1=불투명)','range',.1,1,.05]]
 };
@@ -431,7 +432,7 @@ function markDirty(){dirty=true;$('#dirty').textContent='● 변경됨';clearTim
 function ptsBox(pts,pad){pad=pad||0;let x1=1e9,y1=1e9,x2=-1e9,y2=-1e9;for(const p of pts){x1=Math.min(x1,p[0]);y1=Math.min(y1,p[1]);x2=Math.max(x2,p[0]);y2=Math.max(y2,p[1]);}if(x1>x2)return {x:0,y:0,w:0,h:0};return {x:x1-pad,y:y1-pad,w:x2-x1+pad*2,h:y2-y1+pad*2};}
 const FONTS={sans:FONT,serif:'"Batang","Noto Serif KR","Nanum Myeongjo","Times New Roman",serif',mono:'"D2Coding","Consolas","Courier New",monospace'};
 const fontOf=o=>FONTS[o.font]||FONT;
-function textMetrics(o){const lines=String(o.text||'').split('\n');mctx.font=(o.italic?'italic ':'')+(o.bold?700:400)+' '+o.size+'px '+fontOf(o);let w=0;for(const l of lines)w=Math.max(w,mctx.measureText(l).width);const pad=o.size*0.3,vp=o.size*0.2,lh=o.size*(o.lh||1.25);return {w:Math.max(o.size,w)+pad*2,h:lines.length*lh+vp*2,pad,vp,lh,lines};}
+function textMetrics(o){const lines=String(o.text||'').split('\n');mctx.font=(o.italic?'italic ':'')+(o.bold?700:400)+' '+o.size+'px '+fontOf(o);let w=0;for(const l of lines)w=Math.max(w,mctx.measureText(l).width);const ex=(o.boxPad||0),pad=o.size*0.3+ex,vp=o.size*0.2+ex,lh=o.size*(o.lh||1.25);return {w:Math.max(o.size,w)+pad*2,h:lines.length*lh+vp*2,pad,vp,lh,lines};}
 function bbox(o){
   switch(o.t){
     case 'rect':case 'ellipse':case 'img':return {x:o.x,y:o.y,w:o.w,h:o.h};
@@ -473,6 +474,7 @@ function rbox(o){
   const x1=Math.min(...xs),y1=Math.min(...ys);return {x:x1,y:y1,w:Math.max(...xs)-x1,h:Math.max(...ys)-y1};
 }
 const ROTT=['rect','ellipse','img','text','num'];
+const isNumSel=fr=>fr&&fr.single&&fr.single.t==='num';
 function rotatable(list){return list.length>0&&list.every(o=>o.t!=='mosaic');}
 function rotateObj(o,og,fc,deg){
   const rp=(x,y)=>rotP(x,y,fc.x,fc.y,deg);
@@ -541,7 +543,7 @@ function annRaw(o){
     }
     case 'text':{
       const m=textMetrics(o);let s='';
-      if(o.bgA>0)s+='<rect x="'+o.x+'" y="'+o.y+'" width="'+m.w+'" height="'+m.h+'" rx="'+(o.size*0.2)+'" fill="'+o.bg+'" fill-opacity="'+o.bgA+'"/>';
+      if(o.bgA>0||o.boxW>0){const bw=o.boxW>0?o.boxW:0,rr=Math.min(o.boxR!=null?o.boxR:o.size*0.2,m.h/2,m.w/2);s+='<rect x="'+(o.x+bw/2)+'" y="'+(o.y+bw/2)+'" width="'+Math.max(1,m.w-bw)+'" height="'+Math.max(1,m.h-bw)+'" rx="'+Math.max(0,rr-bw/2)+'" fill="'+(o.bgA>0?o.bg:'none')+'" fill-opacity="'+(o.bgA>0?o.bgA:0)+'"'+(bw?' stroke="'+(o.boxC||'#F97316')+'" stroke-width="'+bw+'"':'')+'/>';}
       const al=o.align||'left',tx=al==='center'?o.x+m.w/2:al==='right'?o.x+m.w-m.pad:o.x+m.pad,anc=al==='center'?'middle':al==='right'?'end':'start',dec=((o.underline?'underline ':'')+(o.strike?'line-through':'')).trim();
       const common=' text-anchor="'+anc+'" font-size="'+o.size+'" font-weight="'+(o.bold?700:400)+'"'+(o.italic?' font-style="italic"':'')+(dec?' text-decoration="'+dec+'"':'')+" font-family='"+fontOf(o)+"' xml:space=\"preserve\"";
       const ol=o.outline>0?' stroke="'+(o.outlineC||'#FFFFFF')+'" stroke-width="'+(o.outline*2)+'" stroke-linejoin="round" paint-order="stroke"':'';
@@ -833,13 +835,16 @@ function ctl(f,val){
 function pickStyle(kind,src){const r={};for(const f of FIELDS[kind]){let v=src[f[0]];if(v==null&&DEF[kind])v=DEF[kind][f[0]];r[f[0]]=v;}return r;}
 
 /* ---- 꾸미기: 아이콘 버튼 줄 + 내 꾸미기 칩 ---- */
-const DECO_KEYS={text:['color','bold','italic','underline','strike','font','bg','bgA','outline','outlineC','shadow'],img:['bw','bc','radius','shadow','opacity','flip']};
+const DECO_KEYS={text:['color','bold','italic','underline','strike','font','bg','bgA','outline','outlineC','shadow','boxW','boxC','boxR','boxPad'],img:['bw','bc','radius','shadow','opacity','flip']};
 const DECO_BUILTIN={
   text:[
-    {name:'강조 노란띠',style:{color:'#1C2026',bold:1,bg:'#FFE066',bgA:.9,outline:0,shadow:0}},
-    {name:'제목',style:{color:'#111827',bold:1,size:44,bgA:0,outline:0,shadow:0}},
-    {name:'캡처용',style:{color:'#FFFFFF',bold:1,bgA:0,outline:3,outlineC:'#111111',shadow:1}},
-    {name:'파란 라벨',style:{color:'#FFFFFF',bold:1,bg:'#2563EB',bgA:.95,outline:0,shadow:0}}
+    {name:'강조 노란띠',style:{color:'#1C2026',bold:1,bg:'#FFE066',bgA:.9,outline:0,shadow:0,boxW:0}},
+    {name:'주황 상자',style:{color:'#C2410C',bold:1,bg:'#FFF1E6',bgA:1,outline:0,shadow:0,boxW:4,boxC:'#F97316',boxR:14,boxPad:6}},
+    {name:'노랑 형광 상자',style:{color:'#B45309',bold:0,bg:'#FFFF00',bgA:1,outline:0,shadow:0,boxW:5,boxC:'#F97316',boxR:12,boxPad:4}},
+    {name:'파란 선 상자',style:{color:'#1D4ED8',bold:1,bgA:0,outline:0,shadow:0,boxW:3,boxC:'#2563EB',boxR:8,boxPad:6}},
+    {name:'제목',style:{color:'#111827',bold:1,size:44,bgA:0,outline:0,shadow:0,boxW:0}},
+    {name:'캡처용',style:{color:'#FFFFFF',bold:1,bgA:0,outline:3,outlineC:'#111111',shadow:1,boxW:0}},
+    {name:'파란 라벨',style:{color:'#FFFFFF',bold:1,bg:'#2563EB',bgA:.95,outline:0,shadow:0,boxW:0}}
   ],
   img:[
     {name:'캡처용',style:{bw:2,bc:'#CBD5E1',radius:0,shadow:1,opacity:1}},
@@ -858,7 +863,8 @@ function decoRow(kind,src){
   if(kind==='text'){
     h+=B('shadow',g('shadow'),'<span style="text-shadow:2px 2px 2px #888">가</span>','그림자 켜기/끄기')
       +B('outline',g('outline')>0,'<span style="-webkit-text-stroke:1.2px #111;color:#fff">가</span>','외곽선 켜기/끄기 (색은 글자 색에 맞춰 자동)')
-      +B('tbg',g('bgA')>0,'<span style="background:#FFE066;padding:0 4px;border-radius:2px">가</span>','배경 띠 켜기/끄기');
+      +B('tbg',g('bgA')>0,'<span style="background:#FFE066;padding:0 4px;border-radius:2px">가</span>','배경 띠 켜기/끄기')
+      +B('box',g('boxW')>0,'<span style="border:2px solid #F97316;border-radius:4px;padding:0 3px">가</span>','상자 테두리 켜기/끄기 (색·굵기·모서리·여백은 아래에서)');
   }else{
     h+=B('bw',g('bw')>0,'▢','테두리 켜기/끄기')+B('radius',g('radius')>0,'◜','둥근 모서리 켜기/끄기')+B('ishadow',g('shadow'),'◪','그림자 켜기/끄기')+B('flip',g('flip'),'⇋','좌우 반전')+B('opacity',g('opacity')<1,'◔','반투명 켜기/끄기');
   }
@@ -880,6 +886,7 @@ function decoClick(b){
     const id=b.dataset.dec;
     if(id==='shadow'||id==='ishadow')applyDeco(kind,{shadow:g('shadow')?0:1});
     else if(id==='outline')applyDeco(kind,g('outline')>0?{outline:0}:{outline:3,outlineC:contrastOf(g('color'))});
+    else if(id==='box')applyDeco(kind,g('boxW')>0?{boxW:0}:{boxW:4,boxC:g('boxC')||'#F97316',boxR:g('boxR')==null?12:g('boxR')});
     else if(id==='tbg')applyDeco(kind,{bgA:g('bgA')>0?0:.9});
     else if(id==='bw')applyDeco(kind,g('bw')>0?{bw:0}:{bw:4});
     else if(id==='radius')applyDeco(kind,{radius:g('radius')>0?0:24});
@@ -907,8 +914,9 @@ function renderInspector(){
     h+='<h4>'+KIND_NAME[kind]+' 스타일'+(list.length>1?' · 선택한 '+list.length+'개':o?' · 선택한 도형':' · 다음에 그릴 도형')+'</h4>';
     if(kind==='text')h+=textToggleRow(src);
     if(kind==='text'||kind==='img')h+=decoRow(kind,src);
-    let hd='';const DET=kind==='img'?null:new Set(['bg','bgA','outline','outlineC','shadow']);
-    for(const f of FIELDS[kind]){if(list.length&&list[0].t==='mosaic'&&f[0]==='shape')continue;if(kind==='text'&&TXT_TGL.has(f[0]))continue;let v=src[f[0]];if(v==null&&DEF[kind])v=DEF[kind][f[0]];const c=ctl(f,v);if(kind==='img'||(DET&&DET.has(f[0])&&kind==='text'))hd+=c;else h+=c;}
+    let hd='',hb='';const DET=kind==='img'?null:new Set(['bg','bgA','outline','outlineC','shadow']),BOXF=new Set(['boxW','boxC','boxR','boxPad']),boxOn=kind==='text'&&((src.boxW!=null?src.boxW:DEF.text.boxW)>0);
+    for(const f of FIELDS[kind]){if(list.length&&list[0].t==='mosaic'&&f[0]==='shape')continue;if(kind==='text'&&TXT_TGL.has(f[0]))continue;let v=src[f[0]];if(v==null&&DEF[kind])v=DEF[kind][f[0]];const c=ctl(f,v);if(kind==='text'&&BOXF.has(f[0])){if(boxOn)hb+=c;else hd+=c;}else if(kind==='img'||(DET&&DET.has(f[0])&&kind==='text'))hd+=c;else h+=c;}
+    if(hb)h+='<div class="boxsec"><span class="rl">상자</span>'+hb+'</div>';
     if(hd)h+='<details id="detBox"'+(detOpen?' open':'')+'><summary>자세히 (색·굵기·투명도 직접 조절)</summary>'+hd+'</details>';
     if(kind==='num'){h+='<div class="fld"><label>다음 번호</label><input type="number" id="nn" min="0" value="'+nextNum+'"></div>';h+='<label class="chk"><input type="checkbox" id="autoRenum"'+(autoRenum?' checked':'')+'> 번호를 지우면 자동으로 다시 매기기</label><div class="arow ic">'+AB('renum','다시 매기기','이 슬라이드의 번호를 1부터 순서대로 다시 매겨요')+'</div>';}
     if(o&&ROTT.includes(o.t))h+=ctl(['rot','회전(°)','range',0,360,1],Math.round(o.rot||0));
@@ -1233,6 +1241,7 @@ function frameHandles(fr){
   if(fr.locked)return [];
   const b=fr.box,cx=b.x+b.w/2,cy=b.y+b.h/2;let hs=[];
   if(fr.single&&fr.single.t==='arrow')hs=handlesOf(fr.single);
+  else if(isNumSel(fr))hs=boxHandles(b).filter(h=>h.n.length===2).map(h=>{const q=rotP(h.x,h.y,cx,cy,fr.rot);return {n:h.n,x:q.x,y:q.y};});
   else if(!fr.single||isBoxy(fr.single))hs=boxHandles(b).map(h=>{const q=rotP(h.x,h.y,cx,cy,fr.rot);return {n:h.n,x:q.x,y:q.y};});
   if(rotatable(fr.list)&&!(cropId&&fr.single&&fr.single.id===cropId)){const q=rotP(cx,b.y-34/view.s,cx,cy,fr.rot);hs.push({n:'rot',x:q.x,y:q.y});}
   return hs;
@@ -1351,7 +1360,9 @@ function resizeObj(o,d,p,shift){
   if(d.h==='a2'){o.x2=p.x;o.y2=p.y;if(shift){const dx=o.x2-o.x1,dy=o.y2-o.y1,L=Math.hypot(dx,dy),a=Math.round(Math.atan2(dy,dx)/(Math.PI/4))*(Math.PI/4);o.x2=o.x1+Math.cos(a)*L;o.y2=o.y1+Math.sin(a)*L;}return;}
   /* 회전된 도형도 맞는 방향으로 늘어나도록 변화량을 도형 기준 좌표로 바꿔서 계산 */
   const rot=(og.rot||0)*Math.PI/180,cs=Math.cos(rot),sn=Math.sin(rot),dx=p.x-d.start.x,dy=p.y-d.start.y;
-  const dxl=dx*cs+dy*sn,dyl=-dx*sn+dy*cs,b0={x:og.x,y:og.y,w:og.w,h:og.h};
+  const dxl=dx*cs+dy*sn,dyl=-dx*sn+dy*cs;
+  if(o.t==='num'){const sz=og.size,nb={x:og.x-sz/2,y:og.y-sz/2,w:sz,h:sz},nb1=boxResize(nb,d.h,dxl,dyl,true),nc0={x:og.x,y:og.y},noff={x:nb1.x+nb1.w/2-nc0.x,y:nb1.y+nb1.h/2-nc0.y};o.size=Math.max(14,Math.round(nb1.w));o.x=nc0.x+noff.x*cs-noff.y*sn;o.y=nc0.y+noff.x*sn+noff.y*cs;return;}
+  const b0={x:og.x,y:og.y,w:og.w,h:og.h};
   const b1=boxResize(b0,d.h,dxl,dyl,(o.t==='img')!==shift);
   const c0={x:b0.x+b0.w/2,y:b0.y+b0.h/2},off={x:b1.x+b1.w/2-c0.x,y:b1.y+b1.h/2-c0.y};
   const cw={x:c0.x+off.x*cs-off.y*sn,y:c0.y+off.x*sn+off.y*cs};
