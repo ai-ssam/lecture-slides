@@ -472,7 +472,7 @@ const thumbEls=new Map();let thumbT;
 function scheduleThumb(){clearTimeout(thumbT);thumbT=setTimeout(()=>{const t=thumbEls.get(curSlide().id);if(t)paintSlide(t.root,curSlide(),null,{thumb:true});},250);}
 function renderThumbs(){
   const box2=$('#thumbs');
-  if(!$('.ops',box2)){box2.innerHTML='<div class="ops"><button data-op="add" title="빈 슬라이드 추가">＋</button><button data-op="dup" title="복제">⧉</button><button data-op="up" title="위로">▲</button><button data-op="down" title="아래로">▼</button><button data-op="del" title="삭제">🗑</button></div><div class="ops sz"><button data-op="sz" data-w="120" title="섬네일 작게">작게</button><button data-op="sz" data-w="182" title="섬네일 보통">보통</button><button data-op="sz" data-w="290" title="섬네일 크게">크게</button></div>';applyLayout();}
+  if(!$('.ops',box2)){box2.innerHTML='<div class="ops"><button data-op="add" title="빈 슬라이드 추가"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M12 4v16M4 12h16" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" fill="none"/></svg></button><button data-op="dup" title="복제">⧉</button><button data-op="up" title="위로">▲</button><button data-op="down" title="아래로">▼</button><button data-op="del" title="슬라이드 삭제"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></button></div><div class="ops sz"><button data-op="sz" data-w="120" title="섬네일 작게">작게</button><button data-op="sz" data-w="182" title="섬네일 보통">보통</button><button data-op="sz" data-w="290" title="섬네일 크게">크게</button></div>';applyLayout();}
   const seen=new Set();
   P.slides.forEach((s,i)=>{
     seen.add(s.id);let t=thumbEls.get(s.id);
