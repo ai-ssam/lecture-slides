@@ -5,7 +5,7 @@
 <title>강의슬라이드</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
-:root{--ink:#1C2026;--ink2:#2A3038;--line:#D9DDE3;--bg:#EEF0F3;--panel:#fff;--mark:#E23B2E;--hl:#FFE066;--acc:#2563EB;--sel:#F97316;--mut:#6B7280}
+:root{--ink3:#4B5563;--ink:#1C2026;--ink2:#2A3038;--line:#D9DDE3;--bg:#EEF0F3;--panel:#fff;--mark:#E23B2E;--hl:#FFE066;--acc:#2563EB;--sel:#F97316;--mut:#4B5563}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
 body{font:13px/1.4 "Pretendard","Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;color:var(--ink);background:var(--bg);overflow:hidden;user-select:none}
@@ -28,14 +28,23 @@ body.lc #thumbs,body.lc #rzL,body.rc #inspector,body.rc #rzR{display:none}
 #top button:hover{background:#FFF1E6;border-color:#F97316}
 #top button.go{background:var(--mark);border-color:var(--mark);color:#fff;font-weight:600}
 #top select{background:#fff;border:1px solid #C4CAD3;border-radius:6px;color:#1C2026;padding:4px 6px}
+.grp{display:inline-flex;gap:4px;align-items:center}
 #top .sp{flex:1}
+#top button.pri{background:#1C2026;border-color:#1C2026;color:#fff;font-weight:600}#top button.pri:hover{background:#000;border-color:#000}
+#expMenu{position:absolute;top:100%;left:0;margin-top:4px;background:#fff;border:1px solid #C4CAD3;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:4px;display:flex;flex-direction:column;gap:2px;z-index:3500;min-width:130px}
+#expMenu[hidden]{display:none}#expMenu button{text-align:left;border:0!important;background:none!important;padding:6px 10px!important}#expMenu button:hover{background:#FFF1E6!important}
+.ti{vertical-align:-2px;margin-right:4px}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--sel);outline-offset:1px}
+button:focus:not(:focus-visible){outline:none}
+.rl{display:block;font-size:11px;color:var(--mut);margin:6px 0 -2px}
+details.alg{margin:8px 0;border:1px solid var(--line);border-radius:6px;padding:0 8px 6px}details.alg summary{cursor:pointer;font-weight:600;padding:6px 0}details.alg h4{margin-top:6px}
 #top .sep{width:1px;height:20px;background:#C4CAD3;margin:0 4px}
-#dirty{color:#C2410C;font-weight:600;font-size:12px;min-width:56px}
+#dirty{color:#C2410C;font-weight:600;font-size:13px;min-width:56px}
 #thumbs{background:#F7F8FA;border-right:1px solid var(--line);overflow:auto;padding:8px;display:flex;flex-direction:column;gap:8px}
 #thumbs .ops{display:flex;gap:4px;flex-wrap:wrap;position:sticky;top:-8px;background:#F7F8FA;padding:2px 0 6px;z-index:2}
 #thumbs .ops button{flex:1;min-width:24px;padding:4px 0;border:1px solid var(--line);background:#fff;border-radius:6px}
 .th{position:relative;border:2px solid transparent;border-radius:6px;padding:2px;cursor:pointer}
-.th.on{border-color:var(--acc);background:#E8EFFE}
+.th.on{border-color:var(--sel);background:#FFF1E6}
 .th.over{border-top:3px solid var(--acc)}
 .th .n{position:absolute;left:-2px;top:-2px;background:var(--ink);color:#fff;font-size:11px;padding:0 5px;border-radius:5px 0 5px 0;z-index:1}
 .tbox{width:var(--tw,152px);height:var(--thH,85.5px);overflow:hidden;position:relative;background:#fff;box-shadow:0 0 0 1px var(--line)}
@@ -54,27 +63,27 @@ body.lc #thumbs,body.lc #rzL,body.rc #inspector,body.rc #rzR{display:none}
 .fav svg{width:100%;height:100%;display:block}
 .fav b{position:absolute;right:2px;bottom:0;font-size:10px;color:var(--mut)}
 .arow{display:flex;gap:4px;flex-wrap:wrap;margin:4px 0}
-.arow button{flex:1;min-width:48px;padding:5px 4px;border:1px solid var(--line);border-radius:6px;background:#F7F8FA;font-size:12px}
+.arow button{flex:1;min-width:48px;padding:5px 4px;border:1px solid var(--line);border-radius:6px;background:#F7F8FA;font-size:13px}
 .arow.ic button{min-width:36px;display:flex;flex-direction:column;align-items:center;gap:1px;padding:4px 2px 3px}
 .arow.ic button span{font-size:10px;line-height:1.1;white-space:nowrap;color:#444}
 .arow.ic svg{width:22px;height:22px;display:block}
 .tglrow{display:flex;gap:4px;align-items:center;margin:4px 0 6px}
 .tglrow button{min-width:30px;height:28px;border:1px solid var(--line);background:#fff;border-radius:6px;padding:0 6px}
-.tglrow button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.tglrow button.on{background:var(--sel);color:#fff;border-color:var(--sel)}
 .decrow{margin-bottom:2px}.chips{display:flex;flex-wrap:wrap;gap:4px;margin:2px 0 6px}
-.chip{border:1px solid var(--line);background:#fff;border-radius:12px;padding:2px 9px;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:2px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:12px;padding:2px 9px;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:2px}
 .chip:hover{border-color:var(--acc)}.chip.add{border-style:dashed;color:var(--acc)}
-.chip.my{padding:0;gap:0;overflow:hidden;background:#EEF4FF;border-color:#BFD2FF}.chip.my button{border:0;background:none;padding:2px 6px;font-size:12px;cursor:pointer}.chip.my .cx{padding:2px 3px;color:#6b7280}.chip.my .cx:hover{color:#E23B2E}
-#detBox{margin:6px 0;border:1px solid var(--line);border-radius:6px;padding:2px 8px 4px}#detBox summary{cursor:pointer;font-size:12px;color:#556;padding:3px 0}
+.chip.my{padding:0;gap:0;overflow:hidden;background:#EEF4FF;border-color:#BFD2FF}.chip.my button{border:0;background:none;padding:2px 6px;font-size:13px;cursor:pointer}.chip.my .cx{padding:2px 3px;color:#6b7280}.chip.my .cx:hover{color:#E23B2E}
+#detBox{margin:6px 0;border:1px solid var(--line);border-radius:6px;padding:2px 8px 4px}#detBox summary{cursor:pointer;font-size:13px;color:#556;padding:3px 0}
 .tglrow .tsep{width:1px;height:20px;background:var(--line);margin:0 3px}
 .chk{display:flex;gap:6px;align-items:center;margin:6px 0;color:#444}
 #zoomBox{margin-left:auto;display:flex;gap:4px;align-items:center}
 #zoomBox button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:3px 8px}
-#zoomBox button.on{background:var(--sel);color:#fff;border-color:var(--sel)}
-#zPct{min-width:56px}
+#zoomBox button.on{background:#FFF1E6;color:#C2410C;border-color:var(--sel);box-shadow:inset 0 0 0 1px var(--sel);font-weight:700}
+#zPct{width:56px;text-align:center;border:1px solid var(--line);border-radius:6px;padding:3px 4px;background:#fff;user-select:text}
 .arow button:hover{border-color:var(--acc);background:#EEF3FF}
 .fav.on{border-color:var(--sel);box-shadow:0 0 0 2px var(--sel);background:#FFF1E6}
-#stTool{color:var(--acc);font-weight:700}
+#stTool{color:#C2410C;font-weight:700}
 .cbtn{width:44px;height:24px;border:1px solid #9CA3AF;border-radius:4px;padding:0}
 .cbtn:hover{border-color:var(--acc)}
 .rg{display:flex;gap:6px;align-items:center}
@@ -105,11 +114,11 @@ body.mm #viewport{background:#D9CFF0}
 #stage{position:absolute;inset:0;pointer-events:none}
 #stage.edit{pointer-events:auto}
 #ui{position:absolute;inset:0;width:1280px;height:var(--H,720px);pointer-events:none;overflow:visible}
-#status{background:#fff;border-top:1px solid var(--line);padding:4px 10px;color:var(--mut);display:flex;gap:14px;font-size:12px}
+#status{background:#fff;border-top:1px solid var(--line);padding:4px 10px;color:var(--mut);display:flex;gap:14px;font-size:13px}
 #status span{white-space:nowrap}
 #stHint{overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1}
 #inspector{background:#fff;border-left:1px solid var(--line);overflow:auto;padding:10px 12px}
-#inspector h4{margin:12px 0 6px;font-size:12px;color:var(--mut);font-weight:600}
+#inspector h4{margin:12px 0 6px;font-size:13px;color:var(--mut);font-weight:600}
 #inspector h4:first-child{margin-top:0}
 .fstat{margin:6px 0;padding:6px 8px;background:#F7F8FA;border:1px solid var(--line);border-radius:6px}.modal.folder{width:min(520px,92vw)}
 #top button.on{box-shadow:inset 0 0 0 2px #22c55e}
@@ -120,7 +129,7 @@ body.mm #viewport{background:#D9CFF0}
 .fld select,.fld input[type=number]{width:100%;padding:3px 4px;border:1px solid var(--line);border-radius:5px}
 .btn{width:100%;margin-top:8px;padding:6px;border:1px solid var(--line);border-radius:6px;background:#F7F8FA}
 .btn:hover{border-color:var(--acc)}
-.hint{color:var(--mut);font-size:12px;margin:4px 0}
+.hint{color:var(--mut);font-size:13px;margin:4px 0}
 #inspector textarea{width:100%;height:96px;border:1px solid var(--line);border-radius:6px;padding:6px;resize:vertical;user-select:text}
 .te{position:absolute;margin:0;border:2px solid var(--acc);outline:none;resize:none;overflow:hidden;background:#fff;color:#000;user-select:text;z-index:5;line-height:1.25;font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif}
 /* 슬라이드 내부 레이어 */
@@ -156,7 +165,7 @@ body.mm #viewport{background:#D9CFF0}
 #cap{position:fixed;inset:0;background:#000;z-index:2800;cursor:crosshair;user-select:none}
 #cap video{position:absolute;left:0;top:44px;width:100%;height:calc(100% - 44px);object-fit:contain;background:#000}
 #cap .capbar{position:absolute;left:0;right:0;top:0;height:44px;background:#1C2026;color:#fff;display:flex;gap:14px;align-items:center;padding:0 14px;cursor:default}
-#cap .capbar span{color:#9CA3AF;font-size:12px}
+#cap .capbar span{color:#9CA3AF;font-size:13px}
 #cap .capbar button{padding:4px 10px;border-radius:6px;border:1px solid #4b5563;background:#2A3038;color:#fff}
 #cap .capsel{position:absolute;border:2px solid #38BDF8;background:rgba(56,189,248,.14);display:none;pointer-events:none}
 #cap .flash{position:absolute;inset:44px 0 0 0;background:#fff;opacity:0;pointer-events:none;transition:opacity .35s}
@@ -177,7 +186,7 @@ body.mm #viewport{background:#D9CFF0}
 #pnext{width:286px;height:161px;overflow:hidden;position:relative;background:#222;border-radius:4px}
 #pnext .r{transform:scale(.2234);transform-origin:0 0}
 #pnotes{flex:1;min-height:120px;background:#1C2026;border:1px solid #2A3038;border-radius:6px;padding:8px;color:#E5E7EB;font-size:15px;line-height:1.5;white-space:pre-wrap;overflow:auto;user-select:text}
-#pside .cap{color:#9CA3AF;font-size:12px}
+#pside .cap{color:#9CA3AF;font-size:13px}
 #pside button{padding:5px 9px;border:1px solid #3a424c;border-radius:6px;background:#2A3038;color:#fff}
 #ptools{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:center;padding:34px 0 12px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:5}
 #ptools:hover,#pres.presenter #ptools{opacity:1}
@@ -187,7 +196,7 @@ body.mm #viewport{background:#D9CFF0}
 #ptools .c{width:18px;height:18px;border-radius:50%;padding:0;border:2px solid #fff}
 #ptools .c.on{box-shadow:0 0 0 2px var(--mark)}
 #ptools .vs{width:1px;height:20px;background:#4b5563;margin:0 4px}
-#pcount{position:absolute;right:10px;top:8px;color:#9CA3AF;font-size:12px;z-index:5;background:rgba(0,0,0,.4);padding:1px 8px;border-radius:10px}
+#pcount{position:absolute;right:10px;top:8px;color:#9CA3AF;font-size:13px;z-index:5;background:rgba(0,0,0,.4);padding:1px 8px;border-radius:10px}
 /* 청중 창 */
 #aud{position:fixed;inset:0;background:#000;overflow:hidden}
 #audBoxOuter{position:absolute}
@@ -215,18 +224,11 @@ body.mm #viewport{background:#D9CFF0}
   <header id="top">
     <span class="logo">강의슬라이드</span>
     <input id="title" value="제목 없는 강의" title="프로젝트 이름">
-    <button id="bNew">새로 만들기</button>
-    <button id="bOpen">열기</button>
-    <button id="bSave" title="Ctrl+S">저장</button>
-    <button id="bSaveAs">다른 이름으로</button>
-    <button id="bFolder" title="동기화 폴더 연결 (Google Drive·OneDrive·Dropbox)">📁 폴더</button>
+    <span class="grp"><button id="bNew">새로 만들기</button><button id="bOpen">열기</button><button id="bSave" class="pri" title="Ctrl+S">💾 저장</button><button id="bSaveAs">다른 이름으로</button><button id="bFolder" title="동기화 폴더 연결 (Google Drive·OneDrive·Dropbox)">📁 폴더</button></span>
     <span class="sep"></span>
-    <button id="bCap" title="다른 창이나 화면의 영역을 캡처">📷 캡처</button>
-    <button id="bImg">이미지 넣기</button>
-    <button id="bHtml">HTML 가져오기</button>
-    <button id="bPdf">PDF 가져오기</button>
-    <button id="bPng">PNG 저장</button>
-    <button id="bPrint" title="Ctrl+P">인쇄 / PDF</button>
+    <span class="grp"><button id="bCap" title="다른 창이나 화면의 영역을 캡처">📷 캡처</button><button id="bImg">이미지 넣기</button><button id="bHtml">HTML 가져오기</button><button id="bPdf">PDF 가져오기</button></span>
+    <span class="sep"></span>
+    <span class="grp" style="position:relative"><button id="bExport" title="PNG 저장 · 인쇄/PDF">내보내기 ▾</button><div id="expMenu" hidden><button id="bPng">PNG로 저장</button><button id="bPrint" title="Ctrl+P">인쇄 / PDF</button></div></span>
     <select id="pasteMode" title="Ctrl+V 로 붙여넣을 때"><option value="new">붙여넣기 → 새 슬라이드</option><option value="here">붙여넣기 → 현재 슬라이드</option></select>
     <span class="sp"></span>
     <span id="dirty"></span>
@@ -239,20 +241,20 @@ body.mm #viewport{background:#D9CFF0}
   <main id="center">
     <div id="toolbar">
       <button id="bUndo" class="ur" title="되돌리기 (Ctrl+Z)">↶ 되돌리기</button><button id="bRedo" class="ur" title="다시 실행 (Ctrl+Y)">↷ 다시</button><span class="vs"></span>
-      <button class="tb" data-tool="select">선택<small>V</small></button>
-      <button class="tb" data-tool="rect" data-var="sq" title="직사각형 (R)">직사각<small>R</small></button>
-      <button class="tb" data-tool="rect" data-var="round" title="모서리가 둥근 사각형">둥근사각</button>
-      <button class="tb" data-tool="rect" data-var="hl" title="반투명 노란 형광펜 사각형 (H)">형광<small>H</small></button>
-      <button class="tb" data-tool="ellipse">원<small>O</small></button>
-      <button class="tb" data-tool="line">직선<small>L</small></button>
-      <button class="tb" data-tool="arrow">화살표<small>A</small></button>
-      <button class="tb" data-tool="num">번호<small>N</small></button>
-      <button class="tb" data-tool="text">글자<small>T</small></button>
-      <button class="tb" data-tool="mosaic">모자이크<small>M</small></button>
-      <button class="tb" data-tool="pen">펜<small>P</small></button>
+      <button class="tb" data-tool="select"><svg class="ti" viewBox="0 0 16 16" width="15" height="15"><path d="M3 2l9 6-4 1 3 5-2 1-3-5-3 3z" fill="currentColor"/></svg>선택<small>V</small></button>
+      <button class="tb" data-tool="rect" data-var="sq" title="직사각형 (R)"><svg class="ti" viewBox="0 0 16 16" width="15" height="15"><rect x="2" y="3" width="12" height="10" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>직사각<small>R</small></button>
+      <button class="tb" data-tool="rect" data-var="round" title="모서리가 둥근 사각형"><svg class="ti" viewBox="0 0 16 16" width="15" height="15"><rect x="2" y="3" width="12" height="10" rx="4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>둥근사각</button>
+      <button class="tb" data-tool="rect" data-var="hl" title="반투명 노란 형광펜 사각형 (H)"><svg class="ti" viewBox="0 0 16 16" width="15" height="15"><rect x="2" y="4" width="12" height="8" fill="#FFE066" stroke="#D9B600" stroke-width="1"/></svg>형광<small>H</small></button>
+      <button class="tb" data-tool="ellipse"><svg class="ti" viewBox="0 0 16 16" width="15" height="15"><ellipse cx="8" cy="8" rx="6" ry="4.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>원<small>O</small></button>
+      <button class="tb" data-tool="line"><svg class="ti" viewBox="0 0 16 16" width="15" height="15"><path d="M2 13L14 3" stroke="currentColor" stroke-width="1.8" fill="none"/></svg>직선<small>L</small></button>
+      <button class="tb" data-tool="arrow"><svg class="ti" viewBox="0 0 16 16" width="15" height="15"><path d="M2 13L13 4M13 4H8M13 4v5" stroke="currentColor" stroke-width="1.8" fill="none"/></svg>화살표<small>A</small></button>
+      <button class="tb" data-tool="num"><svg class="ti" viewBox="0 0 16 16" width="15" height="15"><circle cx="8" cy="8" r="6" fill="currentColor"/><text x="8" y="11.5" font-size="9" font-weight="700" text-anchor="middle" fill="#fff">1</text></svg>번호<small>N</small></button>
+      <button class="tb" data-tool="text"><svg class="ti" viewBox="0 0 16 16" width="15" height="15"><path d="M3 4h10M8 4v9" stroke="currentColor" stroke-width="1.8" fill="none"/></svg>글자<small>T</small></button>
+      <button class="tb" data-tool="mosaic"><svg class="ti" viewBox="0 0 16 16" width="15" height="15"><path d="M2 2h4v4H2zM10 2h4v4h-4zM6 6h4v4H6zM2 10h4v4H2zM10 10h4v4h-4z" fill="currentColor"/></svg>모자이크<small>M</small></button>
+      <button class="tb" data-tool="pen"><svg class="ti" viewBox="0 0 16 16" width="15" height="15"><path d="M2 14l1-4 8-8 3 3-8 8z" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>펜<small>P</small></button>
       <span class="vs"></span>
       <div id="favs"></div>
-      <div id="zoomBox"><button id="bTL" title="왼쪽 슬라이드 목록 접기/펴기 (Alt+1)">◧</button><button id="bTR" title="오른쪽 도구 패널 접기/펴기 (Alt+2)">◨</button><span class="vs"></span><button id="bSnap" title="다른 도형·슬라이드 가장자리/중앙에 달라붙어요 (드래그 중 Alt: 잠시 끄기)">🧲 스냅</button><span class="vs"></span><button id="zOut" title="축소 (Ctrl+-)">－</button><button id="zPct" title="화면에 맞추기 (Ctrl+0)">맞춤</button><button id="zIn" title="확대 (Ctrl++ / Ctrl+휠)">＋</button></div>
+      <div id="zoomBox"><button id="bTL" title="왼쪽 슬라이드 목록 접기/펴기 (Alt+1)">◧</button><button id="bTR" title="오른쪽 도구 패널 접기/펴기 (Alt+2)">◨</button><span class="vs"></span><button id="bSnap" title="다른 도형·슬라이드 가장자리/중앙에 달라붙어요 (드래그 중 Alt: 잠시 끄기)">🧲 스냅</button><span class="vs"></span><button id="zOut" title="축소 (Ctrl+-)">－</button><input id="zPct" type="text" inputmode="numeric" value="100%" title="화면 배율 · 숫자를 직접 입력하고 Enter (10~400)"><button id="zIn" title="확대 (Ctrl++ / Ctrl+휠)">＋</button><button id="zFit" title="화면에 맞추기 (Ctrl+0)">맞춤</button><button id="z100" title="실제 크기 100% (Ctrl+1)">100%</button></div>
     </div>
     <div id="viewport"><div id="mbar" hidden><b>🧩 마스터 편집 중</b><span id="mbName"></span><button id="mbDone">편집 끝내기</button></div><div id="boxOuter"><div id="box"><div id="stage"></div><svg id="ui" viewBox="0 0 1280 720"></svg></div></div></div>
     <div id="status"><span id="stTool"></span><span id="stPos"></span><span id="stHint"></span></div>
@@ -744,13 +746,14 @@ function fitStage(){
   const vp=$('#viewport'),vw=vp.clientWidth-32,vh=vp.clientHeight-32,sf=Math.max(.1,Math.min(vw/W,vh/H)),s=sf*view.z;
   view.s=s;const o=$('#boxOuter');o.style.width=W*s+'px';o.style.height=H*s+'px';
   const cl=(vp.clientWidth-W*s)/2,ct=(vp.clientHeight-H*s)/2;
-  if(view.z<=1.001){view.px=0;view.py=0;}
-  const l=clamp(cl+view.px,60-W*s,vp.clientWidth-60),t=clamp(ct+view.py,60-H*s,vp.clientHeight-60);view.px=l-cl;view.py=t-ct;
+  if(Math.abs(view.z-1)<.001){view.px=0;view.py=0;}
+  if(W*s<=vp.clientWidth)view.px=0;if(H*s<=vp.clientHeight)view.py=0;
+  const l=W*s<=vp.clientWidth?cl:clamp(cl+view.px,vp.clientWidth-W*s-60,60),t=H*s<=vp.clientHeight?ct:clamp(ct+view.py,vp.clientHeight-H*s-60,60);view.px=l-cl;view.py=t-ct;
   o.style.left=l+'px';o.style.top=t+'px';
   box.style.transform='scale('+s+')';
   updateStatus();
 }
-function updateStatus(){if(editMaster){const mm=(P.masters||[]).find(x=>x.id===editMaster);$('#stPos').textContent='마스터 편집 중'+(mm?' · '+mm.name:'')+'   ·   화면 '+Math.round(view.s*100)+'%';const zp=$('#zPct');if(zp)zp.textContent=Math.round(view.s*100)+'%';return;}const zp=$('#zPct');if(zp)zp.textContent=Math.round(view.s*100)+'%';const sb=$('#bSnap');if(sb)sb.classList.toggle('on',snapOn);$('#stPos').textContent='슬라이드 '+(cur+1)+' / '+P.slides.length+'   ·   화면 '+Math.round(view.s*100)+'%';}
+function updateStatus(){if(editMaster){const mm=(P.masters||[]).find(x=>x.id===editMaster);$('#stPos').textContent='마스터 편집 중'+(mm?' · '+mm.name:'')+'   ·   화면 '+Math.round(view.s*100)+'%';const zp=$('#zPct');if(zp&&document.activeElement!==zp)zp.value=Math.round(view.s*100)+'%';return;}const zp=$('#zPct');if(zp&&document.activeElement!==zp)zp.value=Math.round(view.s*100)+'%';const sb=$('#bSnap');if(sb)sb.classList.toggle('on',snapOn);$('#stPos').textContent='슬라이드 '+(cur+1)+' / '+P.slides.length+'   ·   화면 '+Math.round(view.s*100)+'%';}
 function renderStage(){
   const s=curSlide();
   stageEl.classList.toggle('edit',editText&&s.type==='html');
@@ -815,7 +818,7 @@ function go(i){if(editMaster)return;cur=clamp(i,0,P.slides.length-1);sel=null;dr
 function markTools(){$$('#toolbar .tb').forEach(b=>b.classList.toggle('on',b.dataset.tool===tool&&(!b.dataset.var||b.dataset.var===toolVar)));}
 function setTool(t,keep){if(editMaster&&t==='mosaic'){toast('마스터에서는 모자이크를 쓸 수 없어요');return;}tool=t;if(!keep)activeFav=-1;sel=null;draft=null;editText=false;cropId=null;markTools();box.classList.toggle('sel',t==='select');box.style.cursor=t==='select'?'default':(t==='text'?'text':'crosshair');renderUI();renderInspector();$('#stHint').textContent=HINTS[t]||'';markFavs();}
 function markFavs(){$$('#favs .fav').forEach(b=>b.classList.toggle('on',+b.dataset.i===activeFav));const el=$('#stTool');if(el)el.textContent='현재 도구: '+((tool==='rect'?VAR_NAME[toolVar]:TOOL_NAME[tool])||'')+(activeFav>=0&&P.presets[activeFav]?' · 즐겨찾기 '+(activeFav+1)+'번 ('+P.presets[activeFav].name+')':'');}
-const HINTS={select:'클릭: 선택 · Shift+클릭 또는 빈 곳 드래그: 여러 개 선택 · Ctrl+G: 그룹 · 모서리 점: 크기 · 위쪽 동그란 점: 회전(Shift: 15° 단위) · Delete: 삭제 · 숫자키 1~9: 즐겨찾기 스타일 적용 · Alt+클릭: 잠긴 도형 선택 · 스페이스+드래그: 화면 이동',rect:'드래그해서 사각형 그리기 (Shift: 정사각형)',ellipse:'드래그해서 원 그리기 (Shift: 정원)',arrow:'드래그해서 화살표 그리기 (Shift: 각도 고정)',line:'드래그해서 직선 그리기 (Shift: 각도 고정)',num:'클릭하면 번호가 하나씩 늘어나며 찍혀요',text:'클릭해서 글자 넣기 (Ctrl+Enter: 확정)',mosaic:'드래그해서 가리기 · 오른쪽 패널에서 사각/원/자유 영역 선택',pen:'드래그해서 자유롭게 그리기'};
+const HINTS={select:'클릭 선택 · Shift+클릭 여러 개 · 모서리 점 크기 · 위 동그란 점 회전 · Delete 삭제 · 숫자 1~9 즐겨찾기 (전체 단축키는 우측 위 버튼)',rect:'드래그해서 사각형 그리기 (Shift: 정사각형)',ellipse:'드래그해서 원 그리기 (Shift: 정원)',arrow:'드래그해서 화살표 그리기 (Shift: 각도 고정)',line:'드래그해서 직선 그리기 (Shift: 각도 고정)',num:'클릭하면 번호가 하나씩 늘어나며 찍혀요',text:'클릭해서 글자 넣기 (Ctrl+Enter: 확정)',mosaic:'드래그해서 가리기 · 오른쪽 패널에서 사각/원/자유 영역 선택',pen:'드래그해서 자유롭게 그리기'};
 
 /* ===================== 인스펙터 ===================== */
 function ctl(f,val){
@@ -846,11 +849,11 @@ const DECO_BUILTIN={
 };
 let myDeco=(()=>{try{const v=JSON.parse(lsGet('ls.decos')||'null');if(v&&Array.isArray(v.text)&&Array.isArray(v.img))return v;}catch(e){}return{text:[],img:[]};})();
 function saveDecos(){lsSet('ls.decos',JSON.stringify(myDeco));}
-let detOpen=lsGet('ls.det')==='1';
+let detOpen=lsGet('ls.det')==='1',algOpen=lsGet('ls.alg')==='1';
 function contrastOf(hex){const m=/^#?([0-9a-f]{6})$/i.exec(hex||'');if(!m)return '#FFFFFF';const n=parseInt(m[1],16),r=n>>16,g=(n>>8)&255,b=n&255;return (0.299*r+0.587*g+0.114*b)>150?'#111111':'#FFFFFF';}
 function decoRow(kind,src){
   const g=k=>src[k]!=null?src[k]:DEF[kind][k],B=(id,on,inner,tip)=>'<button type="button" data-dec="'+id+'" class="'+(on?'on':'')+'" title="'+tip+'">'+inner+'</button>';
-  let h='<div class="tglrow decrow">';
+  let h='<span class="rl">효과</span><div class="tglrow decrow">';
   if(kind==='text'){
     h+=B('shadow',g('shadow'),'<span style="text-shadow:2px 2px 2px #888">가</span>','그림자 켜기/끄기')
       +B('outline',g('outline')>0,'<span style="-webkit-text-stroke:1.2px #111;color:#fff">가</span>','외곽선 켜기/끄기 (색은 글자 색에 맞춰 자동)')
@@ -892,13 +895,13 @@ function curKind(){const list=selList();if(list.length){return list.every(q=>q.t
 const TXT_TGL=new Set(['bold','italic','underline','strike','align']);
 function textToggleRow(src){
   const g=(k)=>src[k]!=null?src[k]:DEF.text[k],T=(k,lab)=>'<button type="button" data-tgl="'+k+'" class="'+(g(k)?'on':'')+'" title="'+lab+'">'+({bold:'<b>가</b>',italic:'<i>가</i>',underline:'<u>가</u>',strike:'<s>가</s>'})[k]+'</button>',A=(v,lab)=>'<button type="button" data-tgl="align" data-v="'+v+'" class="'+(g('align')===v?'on':'')+'" title="'+lab+' 정렬">'+({left:'◧',center:'▣',right:'◨'})[v]+'</button>';
-  return '<div class="tglrow">'+T('bold','굵게')+T('italic','기울임')+T('underline','밑줄')+T('strike','취소선')+'<span class="tsep"></span>'+A('left','왼쪽')+A('center','가운데')+A('right','오른쪽')+'</div>';
+  return '<span class="rl">서식</span><div class="tglrow">'+T('bold','굵게')+T('italic','기울임')+T('underline','밑줄')+T('strike','취소선')+'<span class="tsep"></span>'+A('left','왼쪽')+A('center','가운데')+A('right','오른쪽')+'</div>';
 }
 function renderInspector(){
   const list=selList(),o=list.length===1?list[0]:null,s=curSlide();
   let kind=null;if(list.length){if(list.every(q=>q.t===list[0].t))kind=kindOf(list[0]);}else if(tool!=='select')kind=tool;
   const src=list.length?list[0]:(kind?ST[kind]:null);
-  let h='';if(list.length)h+=alignPanelHTML(list);
+  let h='',alH='';if(list.length)alH='<details class="alg" id="algBox"'+(list.length>1||algOpen?' open':'')+'><summary>정렬 · 배치 · 잠금'+(list.length>1?' ('+list.length+'개 선택)':'')+'</summary>'+alignPanelHTML(list)+'</details>';
   if(kind&&src){
     h+='<h4>'+KIND_NAME[kind]+' 스타일'+(list.length>1?' · 선택한 '+list.length+'개':o?' · 선택한 도형':' · 다음에 그릴 도형')+'</h4>';
     if(kind==='text')h+=textToggleRow(src);
@@ -913,6 +916,7 @@ function renderInspector(){
     }else h+='<button class="btn" id="addFav">★ 이 스타일을 즐겨찾기에 저장</button>';
   }
   else if(!list.length){h+='<h4>도구</h4><p class="hint">위쪽 도구를 고르거나, 도형을 클릭해서 스타일을 바꿔요. 자주 쓰는 모양은 ★로 저장하고 숫자키 1~9 로 불러오세요.</p>';const nl=s.objects.filter(o=>o.locked).length;if(nl)h+='<p class="hint">🔒 잠긴 도형 '+nl+'개 (Alt+클릭으로 선택)</p><button class="btn" data-act="unlockAll">모두 잠금 해제</button>';}
+  h+=alH;
   if(editMaster){
     h+='<h4>🧩 마스터 · 모든 슬라이드 뒤에 깔려요</h4>';
     h+='<div class="fld"><label>이름</label><input type="text" id="mName" value="'+esc(s.name||'')+'"></div>';
@@ -935,7 +939,7 @@ function renderInspector(){
   h+='<h4>발표자 메모</h4><textarea id="notes" placeholder="발표자 화면에만 보여요">'+esc(s.notes||'')+'</textarea>';
   $('#inspector').innerHTML=h;
 }
-$('#inspector').addEventListener('toggle',e=>{if(e.target.id==='detBox'){detOpen=e.target.open;lsSet('ls.det',detOpen?'1':'0');}},true);
+$('#inspector').addEventListener('toggle',e=>{if(e.target.id==='detBox'){detOpen=e.target.open;lsSet('ls.det',detOpen?'1':'0');}if(e.target.id==='algBox'){algOpen=e.target.open;lsSet('ls.alg',algOpen?'1':'0');}},true);
 $('#inspector').addEventListener('input',e=>{
   const t=e.target;
   if(t.id==='mName'){const m=curSlide();m.name=t.value;markDirty();return;}
@@ -1668,17 +1672,21 @@ function makeThumb(s){
 }
 
 /* ===================== 확대/축소 · 화면 이동 ===================== */
-function zoomAt(f,cx,cy){
+function fitScale(){const vp=$('#viewport');return Math.max(.05,Math.min((vp.clientWidth-32)/W,(vp.clientHeight-32)/H));}
+const ZMIN=.1,ZMAX=4;
+function zoomTo(target,cx,cy){
   const vp=$('#viewport'),vr=vp.getBoundingClientRect();if(cx==null){cx=vr.left+vr.width/2;cy=vr.top+vr.height/2;}
   const r=$('#boxOuter').getBoundingClientRect(),s0=view.s,lx=(cx-r.left)/s0,ly=(cy-r.top)/s0;
-  view.z=clamp(view.z*f,1,8);fitStage();
+  view.z=clamp(target,ZMIN,ZMAX)/fitScale();fitStage();
   const r2=$('#boxOuter').getBoundingClientRect();view.px+=cx-(r2.left+lx*view.s);view.py+=cy-(r2.top+ly*view.s);fitStage();renderUI();
 }
+function zoomAt(f,cx,cy){zoomTo(view.s*f,cx,cy);}
+function zoom100(){zoomTo(1);}
 function zoomFit(){view.z=1;view.px=0;view.py=0;fitStage();renderUI();}
 $('#viewport').addEventListener('wheel',e=>{
   if(IS_AUD||pres)return;
   if(e.ctrlKey||e.metaKey){e.preventDefault();zoomAt(e.deltaY<0?1.15:1/1.15,e.clientX,e.clientY);}
-  else if(view.z>1){e.preventDefault();if(e.shiftKey)view.px-=e.deltaY;else{view.px-=e.deltaX;view.py-=e.deltaY;}fitStage();}
+  else if(W*view.s>$('#viewport').clientWidth||H*view.s>$('#viewport').clientHeight){e.preventDefault();if(e.shiftKey)view.px-=e.deltaY;else{view.px-=e.deltaX;view.py-=e.deltaY;}fitStage();}
 },{passive:false});
 $('#viewport').addEventListener('pointerdown',e=>{
   if(IS_AUD||pres)return;
@@ -2036,7 +2044,7 @@ function showHelp(){
   +'<tr><th>도형</th><td><kbd>Delete</kbd> 삭제 · 방향키 1px 이동(Shift 10px) · <kbd>Ctrl</kbd>+<kbd>C</kbd>/<kbd>V</kbd> 복사 · <kbd>Ctrl</kbd>+<kbd>D</kbd> 복제 · 더블클릭 글자/번호 수정 · <kbd>Shift</kbd>+클릭 또는 빈 곳 드래그로 여러 개 선택 · <kbd>Ctrl</kbd>+<kbd>A</kbd> 전체 · <kbd>Ctrl</kbd>+<kbd>G</kbd> 그룹 · <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd> 그룹 풀기 · 선택하면 위쪽에 생기는 동그란 점을 끌어 회전 (<kbd>Shift</kbd>: 15°씩)</td></tr>'
   +'<tr><th>패널</th><td><kbd>Alt</kbd>+<kbd>1</kbd> 왼쪽 목록 접기/펴기 · <kbd>Alt</kbd>+<kbd>2</kbd> 오른쪽 도구 접기/펴기 · 패널 사이 경계선을 드래그하면 폭 조절(더블클릭: 기본 폭) · 목록 아래 작게/보통/크게로 섬네일 크기 · 설정은 자동 기억</td></tr>'
   +'<tr><th>배치</th><td><kbd>]</kbd>/<kbd>[</kbd> 한 단계 앞/뒤 · <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>]</kbd>/<kbd>[</kbd> 맨 앞/맨 뒤 · <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>C</kbd>/<kbd>V</kbd> 스타일 복사/붙여넣기 · <kbd>Alt</kbd>+클릭 잠긴 도형 선택 · 드래그 중 <kbd>Alt</kbd> 스냅 잠시 끄기</td></tr>'
-  +'<tr><th>화면</th><td><kbd>Ctrl</kbd>+휠 또는 <kbd>Ctrl</kbd>+<kbd>+</kbd>/<kbd>-</kbd> 확대·축소 · <kbd>Ctrl</kbd>+<kbd>0</kbd> 맞춤 · <kbd>Space</kbd>+드래그 또는 휠 버튼 드래그로 이동</td></tr>'
+  +'<tr><th>화면</th><td><kbd>Ctrl</kbd>+휠 또는 <kbd>Ctrl</kbd>+<kbd>+</kbd>/<kbd>-</kbd> 확대·축소 · <kbd>Ctrl</kbd>+<kbd>0</kbd> 맞춤 · <kbd>Ctrl</kbd>+<kbd>1</kbd> 실제 크기(100%) · 아래쪽 %칸에 숫자 직접 입력 · <kbd>Space</kbd>+드래그 또는 휠 버튼 드래그로 이동</td></tr>'
   +'<tr><th>꾸미기</th><td>글자/이미지를 고르면 오른쪽에 <b>아이콘 버튼</b>(그림자·외곽선·배경띠 / 테두리·둥근 모서리·그림자·반전·반투명)과 <b>기본 세트</b>가 떠요. 「＋ 내 꾸미기 저장」으로 이름 붙여 저장하고, 칩을 누르면 적용 · ✎ 이름 변경 · × 삭제. 세밀한 값은 「자세히」</td></tr>'
   +'<tr><th>📁 폴더</th><td>「📁 폴더」에서 Google Drive·OneDrive·Dropbox 동기화 폴더를 연결하면 저장(Ctrl+S)·자동 저장이 그 폴더로 가고 목록에서 바로 열어요. 설정(즐겨찾기·내 꾸미기·화면)도 파일로 내보내고 불러올 수 있어요. 다른 기기에서 파일이 바뀌면 경고해요</td></tr>'
   +'<tr><th>마스터</th><td>오른쪽 패널 「마스터 만들기/편집」 · 글자에 <kbd>{n}</kbd> 쪽번호, <kbd>{total}</kbd> 전체 쪽수 · 이미지 선택 후 「배경으로 만들기」</td></tr>'
@@ -2066,6 +2074,7 @@ document.addEventListener('keydown',e=>{
   if(ctrl&&(c==='Equal'||c==='NumpadAdd')){e.preventDefault();zoomAt(1.25);return;}
   if(ctrl&&(c==='Minus'||c==='NumpadSubtract')){e.preventDefault();zoomAt(1/1.25);return;}
   if(ctrl&&(c==='Digit0'||c==='Numpad0')){e.preventDefault();zoomFit();return;}
+  if(ctrl&&(c==='Digit1'||c==='Numpad1')){e.preventDefault();zoom100();return;}
   if(ctrl&&e.shiftKey&&(c==='BracketRight'||c==='BracketLeft')){e.preventDefault();doAct(c==='BracketRight'?'front':'back');return;}
   if(ctrl&&c==='KeyC'){const l=selList();if(l.length){clipObj=l.map(cloneObj);e.preventDefault();toast('복사했어요 · Ctrl+V 로 붙여넣기');}return;}
   if(ctrl&&c==='KeyA'){e.preventDefault();setSel(curSlide().objects.filter(o=>!o.locked).map(o=>o.id));renderUI();renderInspector();return;}
@@ -2105,7 +2114,10 @@ function initEditor(){
   $('#bCap').onclick=()=>{if(editMaster){toast('마스터 편집을 먼저 끝내 주세요');return;}startCapture();};
   $('#mbDone').onclick=exitMaster;
   $('#bSnap').onclick=()=>{snapOn=!snapOn;lsSet('ls.snap',snapOn?'1':'0');updateStatus();toast(snapOn?'스냅 켬: 도형이 가장자리·중앙에 달라붙어요':'스냅 끔');};
-  $('#zIn').onclick=()=>zoomAt(1.25);$('#zOut').onclick=()=>zoomAt(1/1.25);$('#zPct').onclick=zoomFit;
+  $('#zIn').onclick=()=>zoomAt(1.25);$('#zOut').onclick=()=>zoomAt(1/1.25);$('#zFit').onclick=zoomFit;$('#z100').onclick=zoom100;
+  const zi=$('#zPct');zi.onfocus=()=>zi.select();zi.onkeydown=e=>{e.stopPropagation();if(e.key==='Enter'){const v=parseFloat(String(zi.value).replace('%',''));if(v>0)zoomTo(v/100);zi.blur();updateStatus();}else if(e.key==='Escape'){zi.blur();updateStatus();}};zi.onblur=()=>updateStatus();
+  $('#bExport').onclick=e=>{e.stopPropagation();const m=$('#expMenu');m.hidden=!m.hidden;};document.addEventListener('click',e=>{if(!e.target.closest('#expMenu'))$('#expMenu').hidden=true;});$('#expMenu').addEventListener('click',()=>{$('#expMenu').hidden=true;});
+  new MutationObserver(()=>{$('#stHint').title=$('#stHint').textContent;}).observe($('#stHint'),{childList:true,characterData:true,subtree:true});
   $('#bImg').onclick=()=>$('#fImg').click();
   $('#fImg').addEventListener('change',async e=>{const fs=[...e.target.files];e.target.value='';await addImageFiles(fs);});
   $('#bHtml').onclick=()=>{

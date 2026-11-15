@@ -425,13 +425,14 @@ function fitStage(){
   const vp=$('#viewport'),vw=vp.clientWidth-32,vh=vp.clientHeight-32,sf=Math.max(.1,Math.min(vw/W,vh/H)),s=sf*view.z;
   view.s=s;const o=$('#boxOuter');o.style.width=W*s+'px';o.style.height=H*s+'px';
   const cl=(vp.clientWidth-W*s)/2,ct=(vp.clientHeight-H*s)/2;
-  if(view.z<=1.001){view.px=0;view.py=0;}
-  const l=clamp(cl+view.px,60-W*s,vp.clientWidth-60),t=clamp(ct+view.py,60-H*s,vp.clientHeight-60);view.px=l-cl;view.py=t-ct;
+  if(Math.abs(view.z-1)<.001){view.px=0;view.py=0;}
+  if(W*s<=vp.clientWidth)view.px=0;if(H*s<=vp.clientHeight)view.py=0;
+  const l=W*s<=vp.clientWidth?cl:clamp(cl+view.px,vp.clientWidth-W*s-60,60),t=H*s<=vp.clientHeight?ct:clamp(ct+view.py,vp.clientHeight-H*s-60,60);view.px=l-cl;view.py=t-ct;
   o.style.left=l+'px';o.style.top=t+'px';
   box.style.transform='scale('+s+')';
   updateStatus();
 }
-function updateStatus(){if(editMaster){const mm=(P.masters||[]).find(x=>x.id===editMaster);$('#stPos').textContent='마스터 편집 중'+(mm?' · '+mm.name:'')+'   ·   화면 '+Math.round(view.s*100)+'%';const zp=$('#zPct');if(zp)zp.textContent=Math.round(view.s*100)+'%';return;}const zp=$('#zPct');if(zp)zp.textContent=Math.round(view.s*100)+'%';const sb=$('#bSnap');if(sb)sb.classList.toggle('on',snapOn);$('#stPos').textContent='슬라이드 '+(cur+1)+' / '+P.slides.length+'   ·   화면 '+Math.round(view.s*100)+'%';}
+function updateStatus(){if(editMaster){const mm=(P.masters||[]).find(x=>x.id===editMaster);$('#stPos').textContent='마스터 편집 중'+(mm?' · '+mm.name:'')+'   ·   화면 '+Math.round(view.s*100)+'%';const zp=$('#zPct');if(zp&&document.activeElement!==zp)zp.value=Math.round(view.s*100)+'%';return;}const zp=$('#zPct');if(zp&&document.activeElement!==zp)zp.value=Math.round(view.s*100)+'%';const sb=$('#bSnap');if(sb)sb.classList.toggle('on',snapOn);$('#stPos').textContent='슬라이드 '+(cur+1)+' / '+P.slides.length+'   ·   화면 '+Math.round(view.s*100)+'%';}
 function renderStage(){
   const s=curSlide();
   stageEl.classList.toggle('edit',editText&&s.type==='html');
@@ -496,7 +497,7 @@ function go(i){if(editMaster)return;cur=clamp(i,0,P.slides.length-1);sel=null;dr
 function markTools(){$$('#toolbar .tb').forEach(b=>b.classList.toggle('on',b.dataset.tool===tool&&(!b.dataset.var||b.dataset.var===toolVar)));}
 function setTool(t,keep){if(editMaster&&t==='mosaic'){toast('마스터에서는 모자이크를 쓸 수 없어요');return;}tool=t;if(!keep)activeFav=-1;sel=null;draft=null;editText=false;cropId=null;markTools();box.classList.toggle('sel',t==='select');box.style.cursor=t==='select'?'default':(t==='text'?'text':'crosshair');renderUI();renderInspector();$('#stHint').textContent=HINTS[t]||'';markFavs();}
 function markFavs(){$$('#favs .fav').forEach(b=>b.classList.toggle('on',+b.dataset.i===activeFav));const el=$('#stTool');if(el)el.textContent='현재 도구: '+((tool==='rect'?VAR_NAME[toolVar]:TOOL_NAME[tool])||'')+(activeFav>=0&&P.presets[activeFav]?' · 즐겨찾기 '+(activeFav+1)+'번 ('+P.presets[activeFav].name+')':'');}
-const HINTS={select:'클릭: 선택 · Shift+클릭 또는 빈 곳 드래그: 여러 개 선택 · Ctrl+G: 그룹 · 모서리 점: 크기 · 위쪽 동그란 점: 회전(Shift: 15° 단위) · Delete: 삭제 · 숫자키 1~9: 즐겨찾기 스타일 적용 · Alt+클릭: 잠긴 도형 선택 · 스페이스+드래그: 화면 이동',rect:'드래그해서 사각형 그리기 (Shift: 정사각형)',ellipse:'드래그해서 원 그리기 (Shift: 정원)',arrow:'드래그해서 화살표 그리기 (Shift: 각도 고정)',line:'드래그해서 직선 그리기 (Shift: 각도 고정)',num:'클릭하면 번호가 하나씩 늘어나며 찍혀요',text:'클릭해서 글자 넣기 (Ctrl+Enter: 확정)',mosaic:'드래그해서 가리기 · 오른쪽 패널에서 사각/원/자유 영역 선택',pen:'드래그해서 자유롭게 그리기'};
+const HINTS={select:'클릭 선택 · Shift+클릭 여러 개 · 모서리 점 크기 · 위 동그란 점 회전 · Delete 삭제 · 숫자 1~9 즐겨찾기 (전체 단축키는 우측 위 버튼)',rect:'드래그해서 사각형 그리기 (Shift: 정사각형)',ellipse:'드래그해서 원 그리기 (Shift: 정원)',arrow:'드래그해서 화살표 그리기 (Shift: 각도 고정)',line:'드래그해서 직선 그리기 (Shift: 각도 고정)',num:'클릭하면 번호가 하나씩 늘어나며 찍혀요',text:'클릭해서 글자 넣기 (Ctrl+Enter: 확정)',mosaic:'드래그해서 가리기 · 오른쪽 패널에서 사각/원/자유 영역 선택',pen:'드래그해서 자유롭게 그리기'};
 
 /* ===================== 인스펙터 ===================== */
 function ctl(f,val){
@@ -527,11 +528,11 @@ const DECO_BUILTIN={
 };
 let myDeco=(()=>{try{const v=JSON.parse(lsGet('ls.decos')||'null');if(v&&Array.isArray(v.text)&&Array.isArray(v.img))return v;}catch(e){}return{text:[],img:[]};})();
 function saveDecos(){lsSet('ls.decos',JSON.stringify(myDeco));}
-let detOpen=lsGet('ls.det')==='1';
+let detOpen=lsGet('ls.det')==='1',algOpen=lsGet('ls.alg')==='1';
 function contrastOf(hex){const m=/^#?([0-9a-f]{6})$/i.exec(hex||'');if(!m)return '#FFFFFF';const n=parseInt(m[1],16),r=n>>16,g=(n>>8)&255,b=n&255;return (0.299*r+0.587*g+0.114*b)>150?'#111111':'#FFFFFF';}
 function decoRow(kind,src){
   const g=k=>src[k]!=null?src[k]:DEF[kind][k],B=(id,on,inner,tip)=>'<button type="button" data-dec="'+id+'" class="'+(on?'on':'')+'" title="'+tip+'">'+inner+'</button>';
-  let h='<div class="tglrow decrow">';
+  let h='<span class="rl">효과</span><div class="tglrow decrow">';
   if(kind==='text'){
     h+=B('shadow',g('shadow'),'<span style="text-shadow:2px 2px 2px #888">가</span>','그림자 켜기/끄기')
       +B('outline',g('outline')>0,'<span style="-webkit-text-stroke:1.2px #111;color:#fff">가</span>','외곽선 켜기/끄기 (색은 글자 색에 맞춰 자동)')
@@ -573,13 +574,13 @@ function curKind(){const list=selList();if(list.length){return list.every(q=>q.t
 const TXT_TGL=new Set(['bold','italic','underline','strike','align']);
 function textToggleRow(src){
   const g=(k)=>src[k]!=null?src[k]:DEF.text[k],T=(k,lab)=>'<button type="button" data-tgl="'+k+'" class="'+(g(k)?'on':'')+'" title="'+lab+'">'+({bold:'<b>가</b>',italic:'<i>가</i>',underline:'<u>가</u>',strike:'<s>가</s>'})[k]+'</button>',A=(v,lab)=>'<button type="button" data-tgl="align" data-v="'+v+'" class="'+(g('align')===v?'on':'')+'" title="'+lab+' 정렬">'+({left:'◧',center:'▣',right:'◨'})[v]+'</button>';
-  return '<div class="tglrow">'+T('bold','굵게')+T('italic','기울임')+T('underline','밑줄')+T('strike','취소선')+'<span class="tsep"></span>'+A('left','왼쪽')+A('center','가운데')+A('right','오른쪽')+'</div>';
+  return '<span class="rl">서식</span><div class="tglrow">'+T('bold','굵게')+T('italic','기울임')+T('underline','밑줄')+T('strike','취소선')+'<span class="tsep"></span>'+A('left','왼쪽')+A('center','가운데')+A('right','오른쪽')+'</div>';
 }
 function renderInspector(){
   const list=selList(),o=list.length===1?list[0]:null,s=curSlide();
   let kind=null;if(list.length){if(list.every(q=>q.t===list[0].t))kind=kindOf(list[0]);}else if(tool!=='select')kind=tool;
   const src=list.length?list[0]:(kind?ST[kind]:null);
-  let h='';if(list.length)h+=alignPanelHTML(list);
+  let h='',alH='';if(list.length)alH='<details class="alg" id="algBox"'+(list.length>1||algOpen?' open':'')+'><summary>정렬 · 배치 · 잠금'+(list.length>1?' ('+list.length+'개 선택)':'')+'</summary>'+alignPanelHTML(list)+'</details>';
   if(kind&&src){
     h+='<h4>'+KIND_NAME[kind]+' 스타일'+(list.length>1?' · 선택한 '+list.length+'개':o?' · 선택한 도형':' · 다음에 그릴 도형')+'</h4>';
     if(kind==='text')h+=textToggleRow(src);
@@ -594,6 +595,7 @@ function renderInspector(){
     }else h+='<button class="btn" id="addFav">★ 이 스타일을 즐겨찾기에 저장</button>';
   }
   else if(!list.length){h+='<h4>도구</h4><p class="hint">위쪽 도구를 고르거나, 도형을 클릭해서 스타일을 바꿔요. 자주 쓰는 모양은 ★로 저장하고 숫자키 1~9 로 불러오세요.</p>';const nl=s.objects.filter(o=>o.locked).length;if(nl)h+='<p class="hint">🔒 잠긴 도형 '+nl+'개 (Alt+클릭으로 선택)</p><button class="btn" data-act="unlockAll">모두 잠금 해제</button>';}
+  h+=alH;
   if(editMaster){
     h+='<h4>🧩 마스터 · 모든 슬라이드 뒤에 깔려요</h4>';
     h+='<div class="fld"><label>이름</label><input type="text" id="mName" value="'+esc(s.name||'')+'"></div>';
@@ -616,7 +618,7 @@ function renderInspector(){
   h+='<h4>발표자 메모</h4><textarea id="notes" placeholder="발표자 화면에만 보여요">'+esc(s.notes||'')+'</textarea>';
   $('#inspector').innerHTML=h;
 }
-$('#inspector').addEventListener('toggle',e=>{if(e.target.id==='detBox'){detOpen=e.target.open;lsSet('ls.det',detOpen?'1':'0');}},true);
+$('#inspector').addEventListener('toggle',e=>{if(e.target.id==='detBox'){detOpen=e.target.open;lsSet('ls.det',detOpen?'1':'0');}if(e.target.id==='algBox'){algOpen=e.target.open;lsSet('ls.alg',algOpen?'1':'0');}},true);
 $('#inspector').addEventListener('input',e=>{
   const t=e.target;
   if(t.id==='mName'){const m=curSlide();m.name=t.value;markDirty();return;}
@@ -1349,17 +1351,21 @@ function makeThumb(s){
 }
 
 /* ===================== 확대/축소 · 화면 이동 ===================== */
-function zoomAt(f,cx,cy){
+function fitScale(){const vp=$('#viewport');return Math.max(.05,Math.min((vp.clientWidth-32)/W,(vp.clientHeight-32)/H));}
+const ZMIN=.1,ZMAX=4;
+function zoomTo(target,cx,cy){
   const vp=$('#viewport'),vr=vp.getBoundingClientRect();if(cx==null){cx=vr.left+vr.width/2;cy=vr.top+vr.height/2;}
   const r=$('#boxOuter').getBoundingClientRect(),s0=view.s,lx=(cx-r.left)/s0,ly=(cy-r.top)/s0;
-  view.z=clamp(view.z*f,1,8);fitStage();
+  view.z=clamp(target,ZMIN,ZMAX)/fitScale();fitStage();
   const r2=$('#boxOuter').getBoundingClientRect();view.px+=cx-(r2.left+lx*view.s);view.py+=cy-(r2.top+ly*view.s);fitStage();renderUI();
 }
+function zoomAt(f,cx,cy){zoomTo(view.s*f,cx,cy);}
+function zoom100(){zoomTo(1);}
 function zoomFit(){view.z=1;view.px=0;view.py=0;fitStage();renderUI();}
 $('#viewport').addEventListener('wheel',e=>{
   if(IS_AUD||pres)return;
   if(e.ctrlKey||e.metaKey){e.preventDefault();zoomAt(e.deltaY<0?1.15:1/1.15,e.clientX,e.clientY);}
-  else if(view.z>1){e.preventDefault();if(e.shiftKey)view.px-=e.deltaY;else{view.px-=e.deltaX;view.py-=e.deltaY;}fitStage();}
+  else if(W*view.s>$('#viewport').clientWidth||H*view.s>$('#viewport').clientHeight){e.preventDefault();if(e.shiftKey)view.px-=e.deltaY;else{view.px-=e.deltaX;view.py-=e.deltaY;}fitStage();}
 },{passive:false});
 $('#viewport').addEventListener('pointerdown',e=>{
   if(IS_AUD||pres)return;

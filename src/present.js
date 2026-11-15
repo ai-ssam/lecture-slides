@@ -253,7 +253,7 @@ function showHelp(){
   +'<tr><th>도형</th><td><kbd>Delete</kbd> 삭제 · 방향키 1px 이동(Shift 10px) · <kbd>Ctrl</kbd>+<kbd>C</kbd>/<kbd>V</kbd> 복사 · <kbd>Ctrl</kbd>+<kbd>D</kbd> 복제 · 더블클릭 글자/번호 수정 · <kbd>Shift</kbd>+클릭 또는 빈 곳 드래그로 여러 개 선택 · <kbd>Ctrl</kbd>+<kbd>A</kbd> 전체 · <kbd>Ctrl</kbd>+<kbd>G</kbd> 그룹 · <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd> 그룹 풀기 · 선택하면 위쪽에 생기는 동그란 점을 끌어 회전 (<kbd>Shift</kbd>: 15°씩)</td></tr>'
   +'<tr><th>패널</th><td><kbd>Alt</kbd>+<kbd>1</kbd> 왼쪽 목록 접기/펴기 · <kbd>Alt</kbd>+<kbd>2</kbd> 오른쪽 도구 접기/펴기 · 패널 사이 경계선을 드래그하면 폭 조절(더블클릭: 기본 폭) · 목록 아래 작게/보통/크게로 섬네일 크기 · 설정은 자동 기억</td></tr>'
   +'<tr><th>배치</th><td><kbd>]</kbd>/<kbd>[</kbd> 한 단계 앞/뒤 · <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>]</kbd>/<kbd>[</kbd> 맨 앞/맨 뒤 · <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>C</kbd>/<kbd>V</kbd> 스타일 복사/붙여넣기 · <kbd>Alt</kbd>+클릭 잠긴 도형 선택 · 드래그 중 <kbd>Alt</kbd> 스냅 잠시 끄기</td></tr>'
-  +'<tr><th>화면</th><td><kbd>Ctrl</kbd>+휠 또는 <kbd>Ctrl</kbd>+<kbd>+</kbd>/<kbd>-</kbd> 확대·축소 · <kbd>Ctrl</kbd>+<kbd>0</kbd> 맞춤 · <kbd>Space</kbd>+드래그 또는 휠 버튼 드래그로 이동</td></tr>'
+  +'<tr><th>화면</th><td><kbd>Ctrl</kbd>+휠 또는 <kbd>Ctrl</kbd>+<kbd>+</kbd>/<kbd>-</kbd> 확대·축소 · <kbd>Ctrl</kbd>+<kbd>0</kbd> 맞춤 · <kbd>Ctrl</kbd>+<kbd>1</kbd> 실제 크기(100%) · 아래쪽 %칸에 숫자 직접 입력 · <kbd>Space</kbd>+드래그 또는 휠 버튼 드래그로 이동</td></tr>'
   +'<tr><th>꾸미기</th><td>글자/이미지를 고르면 오른쪽에 <b>아이콘 버튼</b>(그림자·외곽선·배경띠 / 테두리·둥근 모서리·그림자·반전·반투명)과 <b>기본 세트</b>가 떠요. 「＋ 내 꾸미기 저장」으로 이름 붙여 저장하고, 칩을 누르면 적용 · ✎ 이름 변경 · × 삭제. 세밀한 값은 「자세히」</td></tr>'
   +'<tr><th>📁 폴더</th><td>「📁 폴더」에서 Google Drive·OneDrive·Dropbox 동기화 폴더를 연결하면 저장(Ctrl+S)·자동 저장이 그 폴더로 가고 목록에서 바로 열어요. 설정(즐겨찾기·내 꾸미기·화면)도 파일로 내보내고 불러올 수 있어요. 다른 기기에서 파일이 바뀌면 경고해요</td></tr>'
   +'<tr><th>마스터</th><td>오른쪽 패널 「마스터 만들기/편집」 · 글자에 <kbd>{n}</kbd> 쪽번호, <kbd>{total}</kbd> 전체 쪽수 · 이미지 선택 후 「배경으로 만들기」</td></tr>'
@@ -283,6 +283,7 @@ document.addEventListener('keydown',e=>{
   if(ctrl&&(c==='Equal'||c==='NumpadAdd')){e.preventDefault();zoomAt(1.25);return;}
   if(ctrl&&(c==='Minus'||c==='NumpadSubtract')){e.preventDefault();zoomAt(1/1.25);return;}
   if(ctrl&&(c==='Digit0'||c==='Numpad0')){e.preventDefault();zoomFit();return;}
+  if(ctrl&&(c==='Digit1'||c==='Numpad1')){e.preventDefault();zoom100();return;}
   if(ctrl&&e.shiftKey&&(c==='BracketRight'||c==='BracketLeft')){e.preventDefault();doAct(c==='BracketRight'?'front':'back');return;}
   if(ctrl&&c==='KeyC'){const l=selList();if(l.length){clipObj=l.map(cloneObj);e.preventDefault();toast('복사했어요 · Ctrl+V 로 붙여넣기');}return;}
   if(ctrl&&c==='KeyA'){e.preventDefault();setSel(curSlide().objects.filter(o=>!o.locked).map(o=>o.id));renderUI();renderInspector();return;}
@@ -322,7 +323,10 @@ function initEditor(){
   $('#bCap').onclick=()=>{if(editMaster){toast('마스터 편집을 먼저 끝내 주세요');return;}startCapture();};
   $('#mbDone').onclick=exitMaster;
   $('#bSnap').onclick=()=>{snapOn=!snapOn;lsSet('ls.snap',snapOn?'1':'0');updateStatus();toast(snapOn?'스냅 켬: 도형이 가장자리·중앙에 달라붙어요':'스냅 끔');};
-  $('#zIn').onclick=()=>zoomAt(1.25);$('#zOut').onclick=()=>zoomAt(1/1.25);$('#zPct').onclick=zoomFit;
+  $('#zIn').onclick=()=>zoomAt(1.25);$('#zOut').onclick=()=>zoomAt(1/1.25);$('#zFit').onclick=zoomFit;$('#z100').onclick=zoom100;
+  const zi=$('#zPct');zi.onfocus=()=>zi.select();zi.onkeydown=e=>{e.stopPropagation();if(e.key==='Enter'){const v=parseFloat(String(zi.value).replace('%',''));if(v>0)zoomTo(v/100);zi.blur();updateStatus();}else if(e.key==='Escape'){zi.blur();updateStatus();}};zi.onblur=()=>updateStatus();
+  $('#bExport').onclick=e=>{e.stopPropagation();const m=$('#expMenu');m.hidden=!m.hidden;};document.addEventListener('click',e=>{if(!e.target.closest('#expMenu'))$('#expMenu').hidden=true;});$('#expMenu').addEventListener('click',()=>{$('#expMenu').hidden=true;});
+  new MutationObserver(()=>{$('#stHint').title=$('#stHint').textContent;}).observe($('#stHint'),{childList:true,characterData:true,subtree:true});
   $('#bImg').onclick=()=>$('#fImg').click();
   $('#fImg').addEventListener('change',async e=>{const fs=[...e.target.files];e.target.value='';await addImageFiles(fs);});
   $('#bHtml').onclick=()=>{

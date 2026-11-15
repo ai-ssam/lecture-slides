@@ -5,7 +5,7 @@
 <title>강의슬라이드</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
-:root{--ink:#1C2026;--ink2:#2A3038;--line:#D9DDE3;--bg:#EEF0F3;--panel:#fff;--mark:#E23B2E;--hl:#FFE066;--acc:#2563EB;--sel:#F97316;--mut:#6B7280}
+:root{--ink3:#4B5563;--ink:#1C2026;--ink2:#2A3038;--line:#D9DDE3;--bg:#EEF0F3;--panel:#fff;--mark:#E23B2E;--hl:#FFE066;--acc:#2563EB;--sel:#F97316;--mut:#4B5563}
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
 body{font:13px/1.4 "Pretendard","Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;color:var(--ink);background:var(--bg);overflow:hidden;user-select:none}
@@ -28,14 +28,23 @@ body.lc #thumbs,body.lc #rzL,body.rc #inspector,body.rc #rzR{display:none}
 #top button:hover{background:#FFF1E6;border-color:#F97316}
 #top button.go{background:var(--mark);border-color:var(--mark);color:#fff;font-weight:600}
 #top select{background:#fff;border:1px solid #C4CAD3;border-radius:6px;color:#1C2026;padding:4px 6px}
+.grp{display:inline-flex;gap:4px;align-items:center}
 #top .sp{flex:1}
+#top button.pri{background:#1C2026;border-color:#1C2026;color:#fff;font-weight:600}#top button.pri:hover{background:#000;border-color:#000}
+#expMenu{position:absolute;top:100%;left:0;margin-top:4px;background:#fff;border:1px solid #C4CAD3;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:4px;display:flex;flex-direction:column;gap:2px;z-index:3500;min-width:130px}
+#expMenu[hidden]{display:none}#expMenu button{text-align:left;border:0!important;background:none!important;padding:6px 10px!important}#expMenu button:hover{background:#FFF1E6!important}
+.ti{vertical-align:-2px;margin-right:4px}
+button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--sel);outline-offset:1px}
+button:focus:not(:focus-visible){outline:none}
+.rl{display:block;font-size:11px;color:var(--mut);margin:6px 0 -2px}
+details.alg{margin:8px 0;border:1px solid var(--line);border-radius:6px;padding:0 8px 6px}details.alg summary{cursor:pointer;font-weight:600;padding:6px 0}details.alg h4{margin-top:6px}
 #top .sep{width:1px;height:20px;background:#C4CAD3;margin:0 4px}
-#dirty{color:#C2410C;font-weight:600;font-size:12px;min-width:56px}
+#dirty{color:#C2410C;font-weight:600;font-size:13px;min-width:56px}
 #thumbs{background:#F7F8FA;border-right:1px solid var(--line);overflow:auto;padding:8px;display:flex;flex-direction:column;gap:8px}
 #thumbs .ops{display:flex;gap:4px;flex-wrap:wrap;position:sticky;top:-8px;background:#F7F8FA;padding:2px 0 6px;z-index:2}
 #thumbs .ops button{flex:1;min-width:24px;padding:4px 0;border:1px solid var(--line);background:#fff;border-radius:6px}
 .th{position:relative;border:2px solid transparent;border-radius:6px;padding:2px;cursor:pointer}
-.th.on{border-color:var(--acc);background:#E8EFFE}
+.th.on{border-color:var(--sel);background:#FFF1E6}
 .th.over{border-top:3px solid var(--acc)}
 .th .n{position:absolute;left:-2px;top:-2px;background:var(--ink);color:#fff;font-size:11px;padding:0 5px;border-radius:5px 0 5px 0;z-index:1}
 .tbox{width:var(--tw,152px);height:var(--thH,85.5px);overflow:hidden;position:relative;background:#fff;box-shadow:0 0 0 1px var(--line)}
@@ -54,27 +63,27 @@ body.lc #thumbs,body.lc #rzL,body.rc #inspector,body.rc #rzR{display:none}
 .fav svg{width:100%;height:100%;display:block}
 .fav b{position:absolute;right:2px;bottom:0;font-size:10px;color:var(--mut)}
 .arow{display:flex;gap:4px;flex-wrap:wrap;margin:4px 0}
-.arow button{flex:1;min-width:48px;padding:5px 4px;border:1px solid var(--line);border-radius:6px;background:#F7F8FA;font-size:12px}
+.arow button{flex:1;min-width:48px;padding:5px 4px;border:1px solid var(--line);border-radius:6px;background:#F7F8FA;font-size:13px}
 .arow.ic button{min-width:36px;display:flex;flex-direction:column;align-items:center;gap:1px;padding:4px 2px 3px}
 .arow.ic button span{font-size:10px;line-height:1.1;white-space:nowrap;color:#444}
 .arow.ic svg{width:22px;height:22px;display:block}
 .tglrow{display:flex;gap:4px;align-items:center;margin:4px 0 6px}
 .tglrow button{min-width:30px;height:28px;border:1px solid var(--line);background:#fff;border-radius:6px;padding:0 6px}
-.tglrow button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.tglrow button.on{background:var(--sel);color:#fff;border-color:var(--sel)}
 .decrow{margin-bottom:2px}.chips{display:flex;flex-wrap:wrap;gap:4px;margin:2px 0 6px}
-.chip{border:1px solid var(--line);background:#fff;border-radius:12px;padding:2px 9px;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:2px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:12px;padding:2px 9px;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:2px}
 .chip:hover{border-color:var(--acc)}.chip.add{border-style:dashed;color:var(--acc)}
-.chip.my{padding:0;gap:0;overflow:hidden;background:#EEF4FF;border-color:#BFD2FF}.chip.my button{border:0;background:none;padding:2px 6px;font-size:12px;cursor:pointer}.chip.my .cx{padding:2px 3px;color:#6b7280}.chip.my .cx:hover{color:#E23B2E}
-#detBox{margin:6px 0;border:1px solid var(--line);border-radius:6px;padding:2px 8px 4px}#detBox summary{cursor:pointer;font-size:12px;color:#556;padding:3px 0}
+.chip.my{padding:0;gap:0;overflow:hidden;background:#EEF4FF;border-color:#BFD2FF}.chip.my button{border:0;background:none;padding:2px 6px;font-size:13px;cursor:pointer}.chip.my .cx{padding:2px 3px;color:#6b7280}.chip.my .cx:hover{color:#E23B2E}
+#detBox{margin:6px 0;border:1px solid var(--line);border-radius:6px;padding:2px 8px 4px}#detBox summary{cursor:pointer;font-size:13px;color:#556;padding:3px 0}
 .tglrow .tsep{width:1px;height:20px;background:var(--line);margin:0 3px}
 .chk{display:flex;gap:6px;align-items:center;margin:6px 0;color:#444}
 #zoomBox{margin-left:auto;display:flex;gap:4px;align-items:center}
 #zoomBox button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:3px 8px}
-#zoomBox button.on{background:var(--sel);color:#fff;border-color:var(--sel)}
-#zPct{min-width:56px}
+#zoomBox button.on{background:#FFF1E6;color:#C2410C;border-color:var(--sel);box-shadow:inset 0 0 0 1px var(--sel);font-weight:700}
+#zPct{width:56px;text-align:center;border:1px solid var(--line);border-radius:6px;padding:3px 4px;background:#fff;user-select:text}
 .arow button:hover{border-color:var(--acc);background:#EEF3FF}
 .fav.on{border-color:var(--sel);box-shadow:0 0 0 2px var(--sel);background:#FFF1E6}
-#stTool{color:var(--acc);font-weight:700}
+#stTool{color:#C2410C;font-weight:700}
 .cbtn{width:44px;height:24px;border:1px solid #9CA3AF;border-radius:4px;padding:0}
 .cbtn:hover{border-color:var(--acc)}
 .rg{display:flex;gap:6px;align-items:center}
@@ -105,11 +114,11 @@ body.mm #viewport{background:#D9CFF0}
 #stage{position:absolute;inset:0;pointer-events:none}
 #stage.edit{pointer-events:auto}
 #ui{position:absolute;inset:0;width:1280px;height:var(--H,720px);pointer-events:none;overflow:visible}
-#status{background:#fff;border-top:1px solid var(--line);padding:4px 10px;color:var(--mut);display:flex;gap:14px;font-size:12px}
+#status{background:#fff;border-top:1px solid var(--line);padding:4px 10px;color:var(--mut);display:flex;gap:14px;font-size:13px}
 #status span{white-space:nowrap}
 #stHint{overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1}
 #inspector{background:#fff;border-left:1px solid var(--line);overflow:auto;padding:10px 12px}
-#inspector h4{margin:12px 0 6px;font-size:12px;color:var(--mut);font-weight:600}
+#inspector h4{margin:12px 0 6px;font-size:13px;color:var(--mut);font-weight:600}
 #inspector h4:first-child{margin-top:0}
 .fstat{margin:6px 0;padding:6px 8px;background:#F7F8FA;border:1px solid var(--line);border-radius:6px}.modal.folder{width:min(520px,92vw)}
 #top button.on{box-shadow:inset 0 0 0 2px #22c55e}
@@ -120,7 +129,7 @@ body.mm #viewport{background:#D9CFF0}
 .fld select,.fld input[type=number]{width:100%;padding:3px 4px;border:1px solid var(--line);border-radius:5px}
 .btn{width:100%;margin-top:8px;padding:6px;border:1px solid var(--line);border-radius:6px;background:#F7F8FA}
 .btn:hover{border-color:var(--acc)}
-.hint{color:var(--mut);font-size:12px;margin:4px 0}
+.hint{color:var(--mut);font-size:13px;margin:4px 0}
 #inspector textarea{width:100%;height:96px;border:1px solid var(--line);border-radius:6px;padding:6px;resize:vertical;user-select:text}
 .te{position:absolute;margin:0;border:2px solid var(--acc);outline:none;resize:none;overflow:hidden;background:#fff;color:#000;user-select:text;z-index:5;line-height:1.25;font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif}
 /* 슬라이드 내부 레이어 */
@@ -156,7 +165,7 @@ body.mm #viewport{background:#D9CFF0}
 #cap{position:fixed;inset:0;background:#000;z-index:2800;cursor:crosshair;user-select:none}
 #cap video{position:absolute;left:0;top:44px;width:100%;height:calc(100% - 44px);object-fit:contain;background:#000}
 #cap .capbar{position:absolute;left:0;right:0;top:0;height:44px;background:#1C2026;color:#fff;display:flex;gap:14px;align-items:center;padding:0 14px;cursor:default}
-#cap .capbar span{color:#9CA3AF;font-size:12px}
+#cap .capbar span{color:#9CA3AF;font-size:13px}
 #cap .capbar button{padding:4px 10px;border-radius:6px;border:1px solid #4b5563;background:#2A3038;color:#fff}
 #cap .capsel{position:absolute;border:2px solid #38BDF8;background:rgba(56,189,248,.14);display:none;pointer-events:none}
 #cap .flash{position:absolute;inset:44px 0 0 0;background:#fff;opacity:0;pointer-events:none;transition:opacity .35s}
@@ -177,7 +186,7 @@ body.mm #viewport{background:#D9CFF0}
 #pnext{width:286px;height:161px;overflow:hidden;position:relative;background:#222;border-radius:4px}
 #pnext .r{transform:scale(.2234);transform-origin:0 0}
 #pnotes{flex:1;min-height:120px;background:#1C2026;border:1px solid #2A3038;border-radius:6px;padding:8px;color:#E5E7EB;font-size:15px;line-height:1.5;white-space:pre-wrap;overflow:auto;user-select:text}
-#pside .cap{color:#9CA3AF;font-size:12px}
+#pside .cap{color:#9CA3AF;font-size:13px}
 #pside button{padding:5px 9px;border:1px solid #3a424c;border-radius:6px;background:#2A3038;color:#fff}
 #ptools{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:center;padding:34px 0 12px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:5}
 #ptools:hover,#pres.presenter #ptools{opacity:1}
@@ -187,7 +196,7 @@ body.mm #viewport{background:#D9CFF0}
 #ptools .c{width:18px;height:18px;border-radius:50%;padding:0;border:2px solid #fff}
 #ptools .c.on{box-shadow:0 0 0 2px var(--mark)}
 #ptools .vs{width:1px;height:20px;background:#4b5563;margin:0 4px}
-#pcount{position:absolute;right:10px;top:8px;color:#9CA3AF;font-size:12px;z-index:5;background:rgba(0,0,0,.4);padding:1px 8px;border-radius:10px}
+#pcount{position:absolute;right:10px;top:8px;color:#9CA3AF;font-size:13px;z-index:5;background:rgba(0,0,0,.4);padding:1px 8px;border-radius:10px}
 /* 청중 창 */
 #aud{position:fixed;inset:0;background:#000;overflow:hidden}
 #audBoxOuter{position:absolute}
@@ -215,18 +224,11 @@ body.mm #viewport{background:#D9CFF0}
   <header id="top">
     <span class="logo">강의슬라이드</span>
     <input id="title" value="제목 없는 강의" title="프로젝트 이름">
-    <button id="bNew">새로 만들기</button>
-    <button id="bOpen">열기</button>
-    <button id="bSave" title="Ctrl+S">저장</button>
-    <button id="bSaveAs">다른 이름으로</button>
-    <button id="bFolder" title="동기화 폴더 연결 (Google Drive·OneDrive·Dropbox)">📁 폴더</button>
+    <span class="grp"><button id="bNew">새로 만들기</button><button id="bOpen">열기</button><button id="bSave" class="pri" title="Ctrl+S">💾 저장</button><button id="bSaveAs">다른 이름으로</button><button id="bFolder" title="동기화 폴더 연결 (Google Drive·OneDrive·Dropbox)">📁 폴더</button></span>
     <span class="sep"></span>
-    <button id="bCap" title="다른 창이나 화면의 영역을 캡처">📷 캡처</button>
-    <button id="bImg">이미지 넣기</button>
-    <button id="bHtml">HTML 가져오기</button>
-    <button id="bPdf">PDF 가져오기</button>
-    <button id="bPng">PNG 저장</button>
-    <button id="bPrint" title="Ctrl+P">인쇄 / PDF</button>
+    <span class="grp"><button id="bCap" title="다른 창이나 화면의 영역을 캡처">📷 캡처</button><button id="bImg">이미지 넣기</button><button id="bHtml">HTML 가져오기</button><button id="bPdf">PDF 가져오기</button></span>
+    <span class="sep"></span>
+    <span class="grp" style="position:relative"><button id="bExport" title="PNG 저장 · 인쇄/PDF">내보내기 ▾</button><div id="expMenu" hidden><button id="bPng">PNG로 저장</button><button id="bPrint" title="Ctrl+P">인쇄 / PDF</button></div></span>
     <select id="pasteMode" title="Ctrl+V 로 붙여넣을 때"><option value="new">붙여넣기 → 새 슬라이드</option><option value="here">붙여넣기 → 현재 슬라이드</option></select>
     <span class="sp"></span>
     <span id="dirty"></span>
@@ -239,20 +241,20 @@ body.mm #viewport{background:#D9CFF0}
   <main id="center">
     <div id="toolbar">
       <button id="bUndo" class="ur" title="되돌리기 (Ctrl+Z)">↶ 되돌리기</button><button id="bRedo" class="ur" title="다시 실행 (Ctrl+Y)">↷ 다시</button><span class="vs"></span>
-      <button class="tb" data-tool="select">선택<small>V</small></button>
-      <button class="tb" data-tool="rect" data-var="sq" title="직사각형 (R)">직사각<small>R</small></button>
-      <button class="tb" data-tool="rect" data-var="round" title="모서리가 둥근 사각형">둥근사각</button>
-      <button class="tb" data-tool="rect" data-var="hl" title="반투명 노란 형광펜 사각형 (H)">형광<small>H</small></button>
-      <button class="tb" data-tool="ellipse">원<small>O</small></button>
-      <button class="tb" data-tool="line">직선<small>L</small></button>
-      <button class="tb" data-tool="arrow">화살표<small>A</small></button>
-      <button class="tb" data-tool="num">번호<small>N</small></button>
-      <button class="tb" data-tool="text">글자<small>T</small></button>
-      <button class="tb" data-tool="mosaic">모자이크<small>M</small></button>
-      <button class="tb" data-tool="pen">펜<small>P</small></button>
+      <button class="tb" data-tool="select"><svg class="ti" viewBox="0 0 16 16" width="15" height="15"><path d="M3 2l9 6-4 1 3 5-2 1-3-5-3 3z" fill="currentColor"/></svg>선택<small>V</small></button>
+      <button class="tb" data-tool="rect" data-var="sq" title="직사각형 (R)"><svg class="ti" viewBox="0 0 16 16" width="15" height="15"><rect x="2" y="3" width="12" height="10" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>직사각<small>R</small></button>
+      <button class="tb" data-tool="rect" data-var="round" title="모서리가 둥근 사각형"><svg class="ti" viewBox="0 0 16 16" width="15" height="15"><rect x="2" y="3" width="12" height="10" rx="4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>둥근사각</button>
+      <button class="tb" data-tool="rect" data-var="hl" title="반투명 노란 형광펜 사각형 (H)"><svg class="ti" viewBox="0 0 16 16" width="15" height="15"><rect x="2" y="4" width="12" height="8" fill="#FFE066" stroke="#D9B600" stroke-width="1"/></svg>형광<small>H</small></button>
+      <button class="tb" data-tool="ellipse"><svg class="ti" viewBox="0 0 16 16" width="15" height="15"><ellipse cx="8" cy="8" rx="6" ry="4.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>원<small>O</small></button>
+      <button class="tb" data-tool="line"><svg class="ti" viewBox="0 0 16 16" width="15" height="15"><path d="M2 13L14 3" stroke="currentColor" stroke-width="1.8" fill="none"/></svg>직선<small>L</small></button>
+      <button class="tb" data-tool="arrow"><svg class="ti" viewBox="0 0 16 16" width="15" height="15"><path d="M2 13L13 4M13 4H8M13 4v5" stroke="currentColor" stroke-width="1.8" fill="none"/></svg>화살표<small>A</small></button>
+      <button class="tb" data-tool="num"><svg class="ti" viewBox="0 0 16 16" width="15" height="15"><circle cx="8" cy="8" r="6" fill="currentColor"/><text x="8" y="11.5" font-size="9" font-weight="700" text-anchor="middle" fill="#fff">1</text></svg>번호<small>N</small></button>
+      <button class="tb" data-tool="text"><svg class="ti" viewBox="0 0 16 16" width="15" height="15"><path d="M3 4h10M8 4v9" stroke="currentColor" stroke-width="1.8" fill="none"/></svg>글자<small>T</small></button>
+      <button class="tb" data-tool="mosaic"><svg class="ti" viewBox="0 0 16 16" width="15" height="15"><path d="M2 2h4v4H2zM10 2h4v4h-4zM6 6h4v4H6zM2 10h4v4H2zM10 10h4v4h-4z" fill="currentColor"/></svg>모자이크<small>M</small></button>
+      <button class="tb" data-tool="pen"><svg class="ti" viewBox="0 0 16 16" width="15" height="15"><path d="M2 14l1-4 8-8 3 3-8 8z" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>펜<small>P</small></button>
       <span class="vs"></span>
       <div id="favs"></div>
-      <div id="zoomBox"><button id="bTL" title="왼쪽 슬라이드 목록 접기/펴기 (Alt+1)">◧</button><button id="bTR" title="오른쪽 도구 패널 접기/펴기 (Alt+2)">◨</button><span class="vs"></span><button id="bSnap" title="다른 도형·슬라이드 가장자리/중앙에 달라붙어요 (드래그 중 Alt: 잠시 끄기)">🧲 스냅</button><span class="vs"></span><button id="zOut" title="축소 (Ctrl+-)">－</button><button id="zPct" title="화면에 맞추기 (Ctrl+0)">맞춤</button><button id="zIn" title="확대 (Ctrl++ / Ctrl+휠)">＋</button></div>
+      <div id="zoomBox"><button id="bTL" title="왼쪽 슬라이드 목록 접기/펴기 (Alt+1)">◧</button><button id="bTR" title="오른쪽 도구 패널 접기/펴기 (Alt+2)">◨</button><span class="vs"></span><button id="bSnap" title="다른 도형·슬라이드 가장자리/중앙에 달라붙어요 (드래그 중 Alt: 잠시 끄기)">🧲 스냅</button><span class="vs"></span><button id="zOut" title="축소 (Ctrl+-)">－</button><input id="zPct" type="text" inputmode="numeric" value="100%" title="화면 배율 · 숫자를 직접 입력하고 Enter (10~400)"><button id="zIn" title="확대 (Ctrl++ / Ctrl+휠)">＋</button><button id="zFit" title="화면에 맞추기 (Ctrl+0)">맞춤</button><button id="z100" title="실제 크기 100% (Ctrl+1)">100%</button></div>
     </div>
     <div id="viewport"><div id="mbar" hidden><b>🧩 마스터 편집 중</b><span id="mbName"></span><button id="mbDone">편집 끝내기</button></div><div id="boxOuter"><div id="box"><div id="stage"></div><svg id="ui" viewBox="0 0 1280 720"></svg></div></div></div>
     <div id="status"><span id="stTool"></span><span id="stPos"></span><span id="stHint"></span></div>
