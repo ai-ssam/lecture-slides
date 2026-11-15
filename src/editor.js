@@ -842,18 +842,19 @@ window.addEventListener('message',e=>{
 
 /* ===================== 즐겨찾기 ===================== */
 function presetPreview(p){
-  const s=p.style;let o;const lw=Math.min(s.sw==null?3:s.sw,4);
+  /* 실제 도형과 같은 규칙(굵기·모서리·점선·화살촉)으로 220×140 칸에 그린 뒤 축소 */
+  const s=p.style,cap=(v,m,d)=>Math.min(v==null?d:v,m);let o;
   switch(p.kind){
-    case 'rect':o={t:'rect',x:5,y:5,w:34,h:20,...s,sw:lw};break;
-    case 'ellipse':o={t:'ellipse',x:5,y:4,w:34,h:22,...s,sw:lw};break;
-    case 'arrow':o={t:'arrow',x1:5,y1:23,x2:38,y2:7,...s,sw:Math.min(lw,3)};break;
-    case 'line':o={t:'arrow',x1:5,y1:23,x2:38,y2:7,...s,head:0,sw:Math.min(lw,3)};break;
-    case 'num':o={t:'num',x:22,y:15,n:1,...s,size:24,sw:Math.min(lw,2)};break;
-    case 'text':o={t:'text',x:4,y:6,text:'Aa',...s,size:14};break;
-    case 'pen':o={t:'pen',pts:[[5,22],[15,8],[25,22],[38,8]],...s,sw:lw};break;
-    case 'mosaic':{let g='';for(let i=0;i<5;i++)for(let j=0;j<3;j++)g+='<rect x="'+(6+i*6.4)+'" y="'+(5+j*6.6)+'" width="6.4" height="6.6" fill="'+((i+j)%2?'#9CA3AF':'#D1D5DB')+'"/>';return '<svg viewBox="0 0 44 30">'+g+'</svg>';}
+    case 'rect':o={t:'rect',x:14,y:20,w:192,h:100,...s,sw:cap((s.sw==null?4:s.sw)*2,30,8)};break;
+    case 'ellipse':o={t:'ellipse',x:14,y:16,w:192,h:108,...s,sw:cap((s.sw==null?4:s.sw)*2,30,8)};break;
+    case 'arrow':o={t:'arrow',x1:22,y1:118,x2:198,y2:22,...s,sw:cap((s.sw==null?5:s.sw)*2,28,10)};break;
+    case 'line':o={t:'arrow',x1:22,y1:118,x2:198,y2:22,...s,head:0,sw:cap((s.sw==null?5:s.sw)*2,28,10)};break;
+    case 'num':{const sz=cap((s.size||44)*2.2,120,96);o={t:'num',x:110,y:70,n:1,...s,size:sz,sw:cap((s.sw==null?3:s.sw)*2,16,6)};break;}
+    case 'text':{const sz=cap((s.size||28)*2.4,84,66);o={t:'text',x:22,y:70-sz*.8,text:'Aa',...s,size:sz};break;}
+    case 'pen':o={t:'pen',pts:[[22,110],[80,28],[130,110],[198,28]],...s,sw:cap((s.sw==null?5:s.sw)*2,30,10)};break;
+    case 'mosaic':{let g='';for(let i=0;i<5;i++)for(let j=0;j<3;j++)g+='<rect x="'+(25+i*34)+'" y="'+(22+j*34)+'" width="34" height="34" fill="'+((i+j)%2?'#9CA3AF':'#D1D5DB')+'"/>';return '<svg viewBox="0 0 220 140">'+g+'</svg>';}
   }
-  return '<svg viewBox="0 0 44 30">'+annItem(o)+'</svg>';
+  return '<svg viewBox="0 0 220 140">'+annItem(o)+'</svg>';
 }
 function renderFavs(){
   $('#favs').innerHTML=P.presets.map((p,i)=>'<button class="fav" data-i="'+i+'" title="'+esc((i<9?(i+1)+'번 · ':'')+p.name)+'">'+presetPreview(p)+(i<9?'<b>'+(i+1)+'</b>':'')+'</button>').join('')+'<button class="favbtn" id="favAdd" title="현재 스타일을 즐겨찾기로 저장">★＋</button><button class="favbtn" id="favMng">관리</button>';markFavs();
