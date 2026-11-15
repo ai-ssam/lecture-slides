@@ -7,8 +7,9 @@ OUT=강의슬라이드.html
   sed '$d' src/head.html
   echo '<script>'; cat vendor/pdf.min.js; echo '</script>'
   echo '<script id="pdfWorkerSrc" type="text/plain">'; cat vendor/pdf.worker.min.js; echo '</script>'
+  echo '<script>'; cat vendor/pptxgen.bundle.js; echo '</script>'
   echo '<script>'
-  cat src/editor.js src/present.js
+  cat src/editor.js src/pptx.js src/present.js
   printf '</script>\n</body>\n</html>\n'
 } > "$OUT"
 cp "$OUT" index.html

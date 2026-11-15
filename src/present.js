@@ -255,6 +255,7 @@ function showHelp(){
   +'<tr><th>배치</th><td><kbd>]</kbd>/<kbd>[</kbd> 한 단계 앞/뒤 · <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>]</kbd>/<kbd>[</kbd> 맨 앞/맨 뒤 · <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>C</kbd>/<kbd>V</kbd> 스타일 복사/붙여넣기 · <kbd>Alt</kbd>+클릭 잠긴 도형 선택 · 드래그 중 <kbd>Alt</kbd> 스냅 잠시 끄기</td></tr>'
   +'<tr><th>화면</th><td><kbd>Ctrl</kbd>+휠 또는 <kbd>Ctrl</kbd>+<kbd>+</kbd>/<kbd>-</kbd> 확대·축소 · <kbd>Ctrl</kbd>+<kbd>0</kbd> 맞춤 · <kbd>Ctrl</kbd>+<kbd>1</kbd> 실제 크기(100%) · 아래쪽 %칸에 숫자 직접 입력 · <kbd>Space</kbd>+드래그 또는 휠 버튼 드래그로 이동</td></tr>'
   +'<tr><th>꾸미기</th><td>글자/이미지를 고르면 오른쪽에 <b>아이콘 버튼</b>(그림자·외곽선·배경띠 / 테두리·둥근 모서리·그림자·반전·반투명)과 <b>기본 세트</b>가 떠요. 「＋ 내 꾸미기 저장」으로 이름 붙여 저장하고, 칩을 누르면 적용 · ✎ 이름 변경 · × 삭제. 세밀한 값은 「자세히」</td></tr>'
+  +'<tr><th>메뉴</th><td><b>저장</b>은 편집용 원본(.lecture), <b>내보내기</b>는 완성본(PNG · PDF · PowerPoint)이에요. 「캡처 ▾」에서 이미지를 새 슬라이드로 넣을지 현재 슬라이드에 얹을지 고르고, 「가져오기 ▾」에 이미지·HTML·PDF가 있어요. PowerPoint로 저장하면 도형·글자·이미지가 편집 가능한 개체로 들어가고, 모자이크가 있는 슬라이드는 이미지가 한 장으로 합쳐져요</td></tr>'
   +'<tr><th>📁 폴더</th><td>「📁 폴더」에서 Google Drive·OneDrive·Dropbox 동기화 폴더를 연결하면 저장(Ctrl+S)·자동 저장이 그 폴더로 가고 목록에서 바로 열어요. 설정(즐겨찾기·내 꾸미기·화면)도 파일로 내보내고 불러올 수 있어요. 다른 기기에서 파일이 바뀌면 경고해요</td></tr>'
   +'<tr><th>마스터</th><td>오른쪽 패널 「마스터 만들기/편집」 · 글자에 <kbd>{n}</kbd> 쪽번호, <kbd>{total}</kbd> 전체 쪽수 · 이미지 선택 후 「배경으로 만들기」</td></tr>'
   +'<tr><th>슬라이드</th><td><kbd>PageUp</kbd>/<kbd>PageDown</kbd> 이동 · 방향키(선택 없을 때) · <kbd>E</kbd> HTML 글자 편집</td></tr>'
@@ -325,7 +326,13 @@ function initEditor(){
   $('#bSnap').onclick=()=>{snapOn=!snapOn;lsSet('ls.snap',snapOn?'1':'0');updateStatus();toast(snapOn?'스냅 켬: 도형이 가장자리·중앙에 달라붙어요':'스냅 끔');};
   $('#zIn').onclick=()=>zoomAt(1.25);$('#zOut').onclick=()=>zoomAt(1/1.25);$('#zFit').onclick=zoomFit;$('#z100').onclick=zoom100;
   const zi=$('#zPct');zi.onfocus=()=>zi.select();zi.onkeydown=e=>{e.stopPropagation();if(e.key==='Enter'){const v=parseFloat(String(zi.value).replace('%',''));if(v>0)zoomTo(v/100);zi.blur();updateStatus();}else if(e.key==='Escape'){zi.blur();updateStatus();}};zi.onblur=()=>updateStatus();
-  $('#bExport').onclick=e=>{e.stopPropagation();const m=$('#expMenu');m.hidden=!m.hidden;};document.addEventListener('click',e=>{if(!e.target.closest('#expMenu'))$('#expMenu').hidden=true;});$('#expMenu').addEventListener('click',()=>{$('#expMenu').hidden=true;});
+  /* 드롭다운 메뉴 공통 */
+  document.addEventListener('click',e=>{const t=e.target.closest('[data-dd]');const id=t&&t.dataset.dd;document.querySelectorAll('.ddm').forEach(m=>{if(m.id===id)m.hidden=!m.hidden;else m.hidden=true;});if(!t&&e.target.closest('.ddm'))return;});
+  document.querySelectorAll('.ddm').forEach(m=>m.addEventListener('click',e=>{if(e.target.closest('button')&&!e.target.closest('.ddh'))setTimeout(()=>{m.hidden=true;},0);}));
+  $('#bOpenFolder').onclick=showFolder;
+  const setPM=v=>{pasteMode=v;lsSet('ls.pasteMode',v);$('#pmNew').textContent=(v==='new'?'✔ ':'　')+'새 슬라이드로 넣기';$('#pmHere').textContent=(v==='here'?'✔ ':'　')+'현재 슬라이드에 얹기';$('#bCapDd').title='이미지 넣는 위치: '+(v==='new'?'새 슬라이드':'현재 슬라이드');};
+  $('#pmNew').onclick=()=>setPM('new');$('#pmHere').onclick=()=>setPM('here');setPM(lsGet('ls.pasteMode')==='here'?'here':'new');
+  const expWarn=fn=>()=>{if(dirty)toast('참고: 편집용 원본은 아직 저장 전이에요 (Ctrl+S)');fn();};
   new MutationObserver(()=>{$('#stHint').title=$('#stHint').textContent;}).observe($('#stHint'),{childList:true,characterData:true,subtree:true});
   $('#bImg').onclick=()=>$('#fImg').click();
   $('#fImg').addEventListener('change',async e=>{const fs=[...e.target.files];e.target.value='';await addImageFiles(fs);});
@@ -337,9 +344,8 @@ function initEditor(){
   $('#fHtml').addEventListener('change',async e=>{const f=e.target.files[0];e.target.value='';if(f)openImportDialog(await readFileText(f),f.name);});
   $('#bPdf').onclick=()=>$('#fPdf').click();
   $('#fPdf').addEventListener('change',e=>{const f=e.target.files[0];e.target.value='';if(f)openPdfDialog(f);});
-  $('#bPng').onclick=exportPNG;$('#bPrint').onclick=showPrintDialog;$('#bUndo').onclick=doUndo;$('#bRedo').onclick=doRedo;$('#bHelp').onclick=showHelp;
+  $('#bPng').onclick=expWarn(exportPNG);$('#bPrint').onclick=expWarn(showPrintDialog);$('#bPptx').onclick=expWarn(()=>exportPPTX());$('#bUndo').onclick=doUndo;$('#bRedo').onclick=doRedo;$('#bHelp').onclick=showHelp;
   $('#bPlay').onclick=()=>startPresent('single',cur);$('#bPresenter').onclick=()=>startPresent('presenter',cur);
-  $('#pasteMode').onchange=e=>{pasteMode=e.target.value;};
   $('#toolbar').addEventListener('click',e=>{const b=e.target.closest('[data-tool]');if(!b)return;setTool(b.dataset.tool);if(b.dataset.var){toolVar=b.dataset.var;Object.assign(ST.rect,clone(RECT_VAR[toolVar]));markTools();markFavs();renderInspector();}});
   window.addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
   offerRestore();

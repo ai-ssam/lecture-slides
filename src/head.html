@@ -31,8 +31,10 @@ body.lc #thumbs,body.lc #rzL,body.rc #inspector,body.rc #rzR{display:none}
 .grp{display:inline-flex;gap:4px;align-items:center}
 #top .sp{flex:1}
 #top button.pri{background:#1C2026;border-color:#1C2026;color:#fff;font-weight:600}#top button.pri:hover{background:#000;border-color:#000}
-#expMenu{position:absolute;top:100%;left:0;margin-top:4px;background:#fff;border:1px solid #C4CAD3;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:4px;display:flex;flex-direction:column;gap:2px;z-index:3500;min-width:130px}
-#expMenu[hidden]{display:none}#expMenu button{text-align:left;border:0!important;background:none!important;padding:6px 10px!important}#expMenu button:hover{background:#FFF1E6!important}
+#expMenu,.ddm{position:absolute;top:100%;left:0;margin-top:4px;background:#fff;border:1px solid #C4CAD3;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:4px;display:flex;flex-direction:column;gap:2px;z-index:3500;min-width:130px}
+.ddm[hidden]{display:none}.ddm button{text-align:left;border:0!important;background:none!important;padding:7px 12px!important;white-space:nowrap}.ddm button:hover{background:#FFF1E6!important}.ddm .ddh{font-size:12px;color:var(--mut);padding:4px 12px 2px}
+.split{gap:0!important}.split>button:first-child{border-top-right-radius:0!important;border-bottom-right-radius:0!important}.split>.dd-t{border-top-left-radius:0!important;border-bottom-left-radius:0!important;border-left:0!important;padding:5px 6px!important}
+#top button.pri.dd-t{border-left:1px solid #555!important}
 .ti{vertical-align:-2px;margin-right:4px}
 button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--sel);outline-offset:1px}
 button:focus:not(:focus-visible){outline:none}
@@ -226,12 +228,14 @@ body.mm #viewport{background:#D9CFF0}
   <header id="top">
     <span class="logo">강의슬라이드</span>
     <input id="title" value="제목 없는 강의" title="프로젝트 이름">
-    <span class="grp"><button id="bNew">새로 만들기</button><button id="bOpen">열기</button><button id="bSave" class="pri" title="Ctrl+S">💾 저장</button><button id="bSaveAs">다른 이름으로</button><button id="bFolder" title="동기화 폴더 연결 (Google Drive·OneDrive·Dropbox)">📁 폴더</button></span>
+    <span class="grp"><button id="bNew">새로 만들기</button></span>
+    <span class="grp split" style="position:relative"><button id="bOpen" title="파일에서 열기">열기</button><button class="dd-t" data-dd="mOpen" title="더 보기">▾</button><div class="ddm" id="mOpen" hidden><button id="bOpenFolder">📁 동기화 폴더의 프로젝트…</button></div></span>
+    <span class="grp split" style="position:relative"><button id="bSave" class="pri" title="Ctrl+S · 편집용 원본(.lecture) 저장">💾 저장</button><button class="dd-t pri" data-dd="mSave" title="더 보기">▾</button><div class="ddm" id="mSave" hidden><button id="bSaveAs" title="Ctrl+Shift+S">다른 이름으로 저장…</button><button id="bFolder" title="Google Drive·OneDrive·Dropbox 동기화 폴더 연결">📁 동기화 폴더 설정…</button></div></span>
     <span class="sep"></span>
-    <span class="grp"><button id="bCap" title="다른 창이나 화면의 영역을 캡처">📷 캡처</button><button id="bImg">이미지 넣기</button><button id="bHtml">HTML 가져오기</button><button id="bPdf">PDF 가져오기</button></span>
+    <span class="grp split" style="position:relative"><button id="bCap" title="다른 창이나 화면의 영역을 캡처">📷 캡처</button><button class="dd-t" data-dd="mCap" id="bCapDd" title="이미지를 넣는 위치">▾</button><div class="ddm" id="mCap" hidden><div class="ddh">이미지 넣는 위치</div><button id="pmNew"></button><button id="pmHere"></button></div></span>
+    <span class="grp" style="position:relative"><button class="dd-t full" data-dd="mImp" title="이미지·HTML·PDF 가져오기">⬇ 가져오기 ▾</button><div class="ddm" id="mImp" hidden><button id="bImg">이미지 넣기…</button><button id="bHtml">HTML 가져오기…</button><button id="bPdf">PDF 가져오기…</button></div></span>
     <span class="sep"></span>
-    <span class="grp" style="position:relative"><button id="bExport" title="PNG 저장 · 인쇄/PDF">내보내기 ▾</button><div id="expMenu" hidden><button id="bPng">PNG로 저장</button><button id="bPrint" title="Ctrl+P">인쇄 / PDF</button></div></span>
-    <select id="pasteMode" title="Ctrl+V 로 붙여넣을 때"><option value="new">붙여넣기 → 새 슬라이드</option><option value="here">붙여넣기 → 현재 슬라이드</option></select>
+    <span class="grp" style="position:relative"><button class="dd-t full" data-dd="mExp" title="완성본으로 내보내기 (편집용 원본은 「저장」)">⬆ 내보내기 ▾</button><div class="ddm" id="mExp" hidden><button id="bPng">PNG 이미지로 저장</button><button id="bPrint" title="Ctrl+P">PDF로 저장 / 인쇄…</button><button id="bPptx">PowerPoint(.pptx)로 저장</button></div></span>
     <span class="sp"></span>
     <span id="dirty"></span>
     <button id="bHelp">단축키</button>
