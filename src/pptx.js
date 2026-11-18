@@ -21,7 +21,9 @@ function pptAnn(pptx,sl,o,k,pt){
       const opt={x:o.x*k,y:o.y*k,w:o.w*k,h:o.h*k,rotate:o.rot||0,fill:o.fillA>0?{color:hex6(o.fill),transparency:Math.round((1-o.fillA)*100)}:{type:'none'},line:lineOf(o.stroke,o.sw,o.dash)};
       let shape=o.t==='ellipse'?ST.ellipse:ST.rect;
       if(o.t==='rect'&&o.radius>0){shape=ST.roundRect;opt.rectRadius=Math.min(o.radius,Math.min(o.w,o.h)/2)*k;}
-      sl.addShape(shape,opt);return;}
+      sl.addShape(shape,opt);
+      if(o.t==='rect'&&o.badge!=null&&o.badge!==''){const bp=badgePt(o),c0={x:o.x+o.w/2,y:o.y+o.h/2},q=o.rot?rotP(bp.x,bp.y,c0.x,c0.y,o.rot):bp;pptAnn(pptx,sl,{t:'num',x:q.x,y:q.y,size:o.badgeS||40,n:o.badge,fill:o.badgeC||(o.sw>0?o.stroke:o.fill),stroke:'#FFFFFF',sw:2,color:'#FFFFFF',shape:'circle'},k,pt);}
+      return;}
     case 'arrow':{
       const opt={x:Math.min(o.x1,o.x2)*k,y:Math.min(o.y1,o.y2)*k,w:Math.abs(o.x2-o.x1)*k,h:Math.abs(o.y2-o.y1)*k,flipH:o.x1>o.x2,flipV:o.y1>o.y2,line:lineOf(o.stroke,o.sw,o.dash)};
       if(o.head>=1)opt.line.endArrowType='triangle';if(o.head===2)opt.line.beginArrowType='triangle';

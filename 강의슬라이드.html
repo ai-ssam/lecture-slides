@@ -252,6 +252,7 @@ body.mm #viewport{background:#D9CFF0}
       <button class="tb" data-tool="select"><svg class="ti" viewBox="0 0 16 16" width="15" height="15"><path d="M3 2l9 6-4 1 3 5-2 1-3-5-3 3z" fill="currentColor"/></svg>선택<small>V</small></button>
       <button class="tb" data-tool="rect" data-var="sq" title="직사각형"><svg class="ti" viewBox="0 0 16 16" width="15" height="15"><rect x="2" y="3" width="12" height="10" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>직사각</button>
       <button class="tb" data-tool="rect" data-var="round" title="모서리가 둥근 사각형 (R)"><svg class="ti" viewBox="0 0 16 16" width="15" height="15"><rect x="2" y="3" width="12" height="10" rx="4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>둥근사각<small>R</small></button>
+      <button class="tb" data-tool="rect" data-var="nbox" title="번호 배지가 붙은 사각형 (B)"><svg class="ti" viewBox="0 0 16 16" width="15" height="15"><rect x="3" y="4" width="11" height="9" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="3.5" cy="4" r="3.3" fill="currentColor"/><text x="3.5" y="6" font-size="5" font-weight="700" text-anchor="middle" fill="#fff">1</text></svg>번호사각<small>B</small></button>
       <button class="tb" data-tool="rect" data-var="hl" title="반투명 노란 형광펜 사각형 (H)"><svg class="ti" viewBox="0 0 16 16" width="15" height="15"><rect x="2" y="4" width="12" height="8" fill="#FFE066" stroke="#D9B600" stroke-width="1"/></svg>형광<small>H</small></button>
       <button class="tb" data-tool="ellipse"><svg class="ti" viewBox="0 0 16 16" width="15" height="15"><ellipse cx="8" cy="8" rx="6" ry="4.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>원<small>O</small></button>
       <button class="tb" data-tool="line"><svg class="ti" viewBox="0 0 16 16" width="15" height="15"><path d="M2 13L14 3" stroke="currentColor" stroke-width="1.8" fill="none"/></svg>직선<small>L</small></button>
@@ -445,7 +446,7 @@ const readFileURL=f=>new Promise((res,rej)=>{const r=new FileReader();r.onload=(
 
 /* ===================== 기본 스타일/즐겨찾기 ===================== */
 const DEF={
-  rect:{stroke:'#E23B2E',sw:4,fill:'#E23B2E',fillA:0,dash:0,radius:0},
+  rect:{stroke:'#E23B2E',sw:4,fill:'#E23B2E',fillA:0,dash:0,radius:0,badgePos:'tl',badgeS:40,badge:1,badgeC:'#EA580C'},
   ellipse:{stroke:'#E23B2E',sw:4,fill:'#E23B2E',fillA:0,dash:0},
   arrow:{stroke:'#2563EB',sw:5,head:1,dash:0},
   line:{stroke:'#2563EB',sw:5,dash:0},
@@ -458,7 +459,7 @@ const DEF={
 const KIND_NAME={rect:'사각형',ellipse:'원',arrow:'화살표',line:'직선',img:'이미지',num:'번호',text:'글자',mosaic:'모자이크',pen:'펜'};
 const DASH=[[0,'실선'],[1,'점선'],[2,'짧은 점선']];
 const FIELDS={
-  rect:[['stroke','선 색','color'],['sw','선 굵기','range',0,24,1],['fill','채움 색','color'],['fillA','채움 농도(0=투명)','range',0,1,.05],['radius','모서리 둥글기','range',0,60,1],['dash','선 모양','select',DASH]],
+  rect:[['stroke','선 색','color'],['sw','선 굵기','range',0,24,1],['fill','채움 색','color'],['fillA','채움 농도(0=투명)','range',0,1,.05],['radius','모서리 둥글기','range',0,60,1],['dash','선 모양','select',DASH],['badge','번호','range',1,99,1],['badgePos','번호 위치','select',[['tl','왼쪽 위'],['tr','오른쪽 위'],['bl','왼쪽 아래'],['br','오른쪽 아래']]],['badgeS','번호 크기','range',20,100,1],['badgeC','번호 색','color']],
   ellipse:[['stroke','선 색','color'],['sw','선 굵기','range',0,24,1],['fill','채움 색','color'],['fillA','채움 농도(0=투명)','range',0,1,.05],['dash','선 모양','select',DASH]],
   line:[['stroke','색','color'],['sw','굵기','range',1,24,1],['dash','선 모양','select',DASH]],
   img:[['bw','테두리 굵기','range',0,24,1],['bc','테두리 색','color'],['radius','모서리 둥글기','range',0,200,1],['shadow','그림자','check'],['opacity','투명도(1=불투명)','range',.1,1,.05],['flip','좌우 반전','check']],
@@ -476,12 +477,14 @@ function defPresets(){
     {name:'노란 형광',kind:'rect',style:{...DEF.rect,stroke:'#FFE066',sw:0,fill:'#FFE066',fillA:.5,radius:2}},
     {name:'빨간 원',kind:'ellipse',style:{...DEF.ellipse}},
     {name:'번호 (주황·기본)',kind:'num',style:{...DEF.num}},
-    {name:'번호 (빨강·주의)',kind:'num',style:{...DEF.num,fill:'#DC2626'}},
+    {name:'번호 ■',kind:'num',style:{...DEF.num,shape:'square',fill:'#2563EB'}},
     {name:'파란 화살표',kind:'arrow',style:{...DEF.arrow}},
     {name:'모자이크',kind:'mosaic',style:{...DEF.mosaic}},
     {name:'라벨 글자',kind:'text',style:{...DEF.text}},
+    {name:'번호 (빨강·주의)',kind:'num',style:{...DEF.num,fill:'#DC2626'}},
     {name:'번호 (초록·완료)',kind:'num',style:{...DEF.num,fill:'#15803D'}},
-    {name:'번호 (파랑·대안)',kind:'num',style:{...DEF.num,fill:'#1D4ED8'}}
+    {name:'번호 (파랑·대안)',kind:'num',style:{...DEF.num,fill:'#1D4ED8'}},
+    {name:'번호 사각형',kind:'rect',style:{...DEF.rect,radius:6,stroke:'#EA580C',sw:4,fill:'#EA580C',fillA:0,badgeAuto:1,badgePos:'tl',badgeS:40,badgeC:'#EA580C'}}
   ].map(p=>({id:uid(),...p}));
 }
 function loadPresets(){try{const v=JSON.parse(localStorage.getItem('ls.presets')||'null');if(Array.isArray(v)&&v.length)return v;}catch(e){}return null;}
@@ -493,7 +496,7 @@ function newProject(){return {title:'제목 없는 강의',ratio:'16:9',slides:[
 let P=IS_AUD?{assets:{},htmls:{},slides:[],masters:[],presets:[]}:newProject();
 let cur=0,tool='select',sel=null,nextNum=1,dirty=false,fileHandle=null,undo=[],redo=[],lastSnap=0,editText=false,draft=null,drag=null,clipObj=null,pasteMode='new',editMaster=null;
 const lsGet=k=>{try{return localStorage.getItem(k);}catch(e){return null;}},lsSet=(k,v)=>{try{localStorage.setItem(k,v);}catch(e){}};
-const RECT_VAR={sq:{radius:0,stroke:'#E23B2E',sw:4,fill:'#E23B2E',fillA:0},round:{radius:24,stroke:'#E23B2E',sw:4,fill:'#E23B2E',fillA:0},hl:{stroke:'#FFE066',sw:0,fill:'#FFE066',fillA:.5,radius:2}},VAR_NAME={sq:'직사각',round:'둥근사각',hl:'형광'};let toolVar='sq',cropId=null;
+const RECT_VAR={sq:{radius:0,stroke:'#E23B2E',sw:4,fill:'#E23B2E',fillA:0,badgeAuto:0},round:{radius:24,stroke:'#E23B2E',sw:4,fill:'#E23B2E',fillA:0,badgeAuto:0},hl:{stroke:'#FFE066',sw:0,fill:'#FFE066',fillA:.5,radius:2,badgeAuto:0},nbox:{radius:6,stroke:'#EA580C',sw:4,fill:'#EA580C',fillA:0,badgeAuto:1,badgePos:'tl',badgeS:40}},VAR_NAME={sq:'직사각',round:'둥근사각',hl:'형광',nbox:'번호사각'};let toolVar='sq',cropId=null;
 const LAY_DEF={lw:182,rw:272,lc:0,rc:0};let layout=Object.assign({},LAY_DEF);try{Object.assign(layout,JSON.parse(lsGet('ls.layout')||'{}'));}catch(e){}
 function saveLayout(){lsSet('ls.layout',JSON.stringify(layout));}
 function applyLayout(){
@@ -629,9 +632,15 @@ function annItem(o){
   const s=annRaw(o);if(!o.rot||!s)return s;const b=bbox(o);
   return '<g transform="rotate('+o.rot+' '+(b.x+b.w/2)+' '+(b.y+b.h/2)+')">'+s+'</g>';
 }
+function badgePt(o){const pos=o.badgePos||'tl';return {x:(pos[1]==='r')?o.x+o.w:o.x,y:(pos[0]==='b')?o.y+o.h:o.y};}
+function badgeSvg(o){
+  if(o.badge==null||o.badge==='')return '';
+  const d=o.badgeS||40,r=d/2,c=badgePt(o),fs=d*(String(o.badge).length>1?0.46:0.58),col=o.badgeC||(o.sw>0?o.stroke:o.fill);
+  return '<circle cx="'+c.x+'" cy="'+c.y+'" r="'+r+'" fill="'+col+'" stroke="#FFFFFF" stroke-width="2"/><text x="'+c.x+'" y="'+c.y+'" dy=".35em" text-anchor="middle" font-size="'+fs+'" font-weight="700" fill="#FFFFFF" font-family=\''+FONT+'\'>'+esc(o.badge)+'</text>';
+}
 function annRaw(o){
   switch(o.t){
-    case 'rect':return '<rect x="'+o.x+'" y="'+o.y+'" width="'+o.w+'" height="'+o.h+'" rx="'+(o.radius||0)+'" fill="'+(o.fillA>0?o.fill:'none')+'" fill-opacity="'+o.fillA+'" stroke="'+(o.sw>0?o.stroke:'none')+'" stroke-width="'+o.sw+'"'+dashAttr(o)+'/>';
+    case 'rect':return '<rect x="'+o.x+'" y="'+o.y+'" width="'+o.w+'" height="'+o.h+'" rx="'+(o.radius||0)+'" fill="'+(o.fillA>0?o.fill:'none')+'" fill-opacity="'+o.fillA+'" stroke="'+(o.sw>0?o.stroke:'none')+'" stroke-width="'+o.sw+'"'+dashAttr(o)+'/>'+badgeSvg(o);
     case 'ellipse':return '<ellipse cx="'+(o.x+o.w/2)+'" cy="'+(o.y+o.h/2)+'" rx="'+(o.w/2)+'" ry="'+(o.h/2)+'" fill="'+(o.fillA>0?o.fill:'none')+'" fill-opacity="'+o.fillA+'" stroke="'+(o.sw>0?o.stroke:'none')+'" stroke-width="'+o.sw+'"'+dashAttr(o)+'/>';
     case 'arrow':{
       const dx=o.x2-o.x1,dy=o.y2-o.y1,L=Math.hypot(dx,dy);if(L<1)return '';
@@ -923,7 +932,7 @@ function renderThumbs(){
   const on=thumbEls.get(curSlide().id);if(on)on.el.scrollIntoView({block:'nearest'});
 }
 function renderAll(){renderThumbs();renderStage();renderInspector();updateStatus();markTools();}
-function go(i){if(editMaster)return;cur=clamp(i,0,P.slides.length-1);sel=null;draft=null;editText=false;nextNum=1+Math.max(0,...curSlide().objects.filter(o=>o.t==='num').map(o=>+o.n||0));renderAll();}
+function go(i){if(editMaster)return;cur=clamp(i,0,P.slides.length-1);sel=null;draft=null;editText=false;nextNum=1+maxNum(curSlide().objects);renderAll();}
 function markTools(){$$('#toolbar .tb').forEach(b=>b.classList.toggle('on',b.dataset.tool===tool&&(!b.dataset.var||b.dataset.var===toolVar)));}
 function setTool(t,keep){if(editMaster&&t==='mosaic'){toast('마스터에서는 모자이크를 쓸 수 없어요');return;}tool=t;if(!keep)activeFav=-1;sel=null;draft=null;editText=false;cropId=null;markTools();box.classList.toggle('sel',t==='select');box.style.cursor=t==='select'?'default':(t==='text'?'text':'crosshair');renderUI();renderInspector();$('#stHint').textContent=HINTS[t]||'';markFavs();}
 function markFavs(){$$('#favs .fav').forEach(b=>b.classList.toggle('on',+b.dataset.i===activeFav));const el=$('#stTool');if(el)el.textContent='현재 도구: '+((tool==='rect'?VAR_NAME[toolVar]:TOOL_NAME[tool])||'')+(activeFav>=0&&P.presets[activeFav]?' · 즐겨찾기 '+(activeFav+1)+'번 ('+P.presets[activeFav].name+')':'');}
@@ -938,7 +947,7 @@ function ctl(f,val){
   else if(type==='select')inp='<select data-k="'+k+'"'+(NUMERIC_SELECT.has(k)?' data-num="1"':'')+'>'+f[3].map(op=>'<option value="'+op[0]+'"'+(String(op[0])===String(val)?' selected':'')+'>'+op[1]+'</option>').join('')+'</select>';
   return '<div class="fld"><label>'+label+'</label>'+inp+'</div>';
 }
-function pickStyle(kind,src){const r={};for(const f of FIELDS[kind]){let v=src[f[0]];if(v==null&&DEF[kind])v=DEF[kind][f[0]];r[f[0]]=v;}return r;}
+function pickStyle(kind,src){const r={};for(const f of FIELDS[kind]){if(kind==='rect'&&f[0]==='badge')continue;let v=src[f[0]];if(v==null&&DEF[kind])v=DEF[kind][f[0]];r[f[0]]=v;}if(kind==='rect'&&(src.badgeAuto||(src.badge!=null&&src.badge!=='')))r.badgeAuto=1;if(kind==='rect'&&!r.badgeAuto){delete r.badgePos;delete r.badgeS;delete r.badgeC;}return r;}
 
 /* ---- 꾸미기: 아이콘 버튼 줄 + 내 꾸미기 칩 ---- */
 const DECO_KEYS={text:['color','bold','italic','underline','strike','font','bg','bgA','outline','outlineC','shadow','boxW','boxC','boxR','boxPad'],img:['bw','bc','radius','shadow','opacity','flip']};
@@ -1020,8 +1029,9 @@ function renderInspector(){
     h+='<h4>'+KIND_NAME[kind]+' 스타일'+(list.length>1?' · 선택한 '+list.length+'개':o?' · 선택한 도형':' · 다음에 그릴 도형')+'</h4>';
     if(kind==='text')h+=textToggleRow(src);
     if(kind==='text'||kind==='img')h+=decoRow(kind,src);
-    let hd='',hb='';const DET=kind==='img'?null:new Set(['bg','bgA','outline','outlineC','shadow']),BOXF=new Set(['boxW','boxC','boxR','boxPad']),boxOn=kind==='text'&&((src.boxW!=null?src.boxW:DEF.text.boxW)>0);
-    for(const f of FIELDS[kind]){if(list.length&&list[0].t==='mosaic'&&f[0]==='shape')continue;if(kind==='text'&&TXT_TGL.has(f[0]))continue;let v=src[f[0]];if(v==null&&DEF[kind])v=DEF[kind][f[0]];const c=ctl(f,v);if(kind==='text'&&BOXF.has(f[0])){if(boxOn)hb+=c;else hd+=c;}else if(kind==='img'||(DET&&DET.has(f[0])&&kind==='text'))hd+=c;else h+=c;}
+    let hd='',hb='',bd='';const bOn=kind==='rect'&&((src.badge!=null&&src.badge!=='')||src.badgeAuto),BADGEK=new Set(['badge','badgePos','badgeS','badgeC']);const DET=kind==='img'?null:new Set(['bg','bgA','outline','outlineC','shadow']),BOXF=new Set(['boxW','boxC','boxR','boxPad']),boxOn=kind==='text'&&((src.boxW!=null?src.boxW:DEF.text.boxW)>0);
+    for(const f of FIELDS[kind]){if(list.length&&list[0].t==='mosaic'&&f[0]==='shape')continue;if(kind==='text'&&TXT_TGL.has(f[0]))continue;let v=src[f[0]];if(v==null&&DEF[kind])v=DEF[kind][f[0]];const c=ctl(f,v);if(kind==='rect'&&BADGEK.has(f[0])){if(bOn&&!(f[0]==='badge'&&!list.length))bd+=c;continue;}if(kind==='text'&&BOXF.has(f[0])){if(boxOn)hb+=c;else hd+=c;}else if(kind==='img'||(DET&&DET.has(f[0])&&kind==='text'))hd+=c;else h+=c;}
+    if(kind==='rect'){h+='<div class="boxsec"><button type="button" class="btn" id="bBadge" style="margin-top:0">'+(bOn?'✔ 번호 배지 켜짐 (누르면 끔)':'① 번호 배지 붙이기')+'</button>'+bd+'</div>';}
     if(hb)h+='<div class="boxsec"><span class="rl">상자</span>'+hb+'</div>';
     if(hd)h+='<details id="detBox"'+(detOpen?' open':'')+'><summary>자세히 (색·굵기·투명도 직접 조절)</summary>'+hd+'</details>';
     if(kind==='num'){h+='<div class="fld"><label>다음 번호</label><input type="number" id="nn" min="0" value="'+nextNum+'"></div>';h+='<label class="chk"><input type="checkbox" id="autoRenum"'+(autoRenum?' checked':'')+'> 번호를 지우면 자동으로 다시 매기기</label><div class="arow ic">'+AB('renum','다시 매기기','이 슬라이드의 번호를 1부터 순서대로 다시 매겨요')+'</div>';}
@@ -1090,6 +1100,7 @@ $('#inspector').addEventListener('click',e=>{
   if(e.target.id==='mApplyAll'){masterApplyAll();return;}
   if(e.target.id==='mDel'){masterDelete();return;}
   if(e.target.id==='bgFromMaster'){snap();delete curSlide().bgOwn;renderStage();renderInspector();return;}
+  if(e.target.id==='bBadge'){toggleBadge();return;}
   if(e.target.id==='bCropEnd'){cropId=null;renderUI();renderInspector();return;}
   if(e.target.id==='bCropReset'){cropReset();return;}
   const dc=e.target.closest('[data-dec],[data-dapply],[data-dsave],[data-dren],[data-ddel]');if(dc){decoClick(dc);return;}
@@ -1177,10 +1188,13 @@ function alignPanelHTML(list){
   return h;
 }
 function shiftUnit(u,dx,dy){for(const o of u.objs)moveObj(o,cloneObj(o),dx,dy);}
+const numVal=o=>o.t==='num'?o.n:(o.t==='rect'&&o.badge!=null&&o.badge!==''?o.badge:null);
+function setNumVal(o,v){if(o.t==='num')o.n=v;else o.badge=v;}
+function maxNum(objs){return Math.max(0,...objs.map(o=>{const v=numVal(o);return v==null?0:(+v||0);}));}
 function renumber(){
-  const s=curSlide(),nums=s.objects.map((o,i)=>[o,i]).filter(x=>x[0].t==='num'&&x[0].n!==''&&!isNaN(+x[0].n));
-  nums.sort((p,q)=>(+p[0].n)-(+q[0].n)||p[1]-q[1]);nums.forEach((x,i)=>{x[0].n=i+1;});
-  nextNum=1+Math.max(0,...s.objects.filter(o=>o.t==='num').map(o=>+o.n||0));return nums.length;
+  const s=curSlide(),nums=s.objects.map((o,i)=>[o,i]).filter(x=>{const v=numVal(x[0]);return v!=null&&v!==''&&!isNaN(+v);});
+  nums.sort((p,q)=>(+numVal(p[0]))-(+numVal(q[0]))||p[1]-q[1]);nums.forEach((x,i)=>{setNumVal(x[0],i+1);});
+  nextNum=1+maxNum(s.objects);return nums.length;
 }
 function zAct(a){
   const s=curSlide(),ids=new Set(selIds());if(!ids.size)return;snap();const arr=s.objects;
@@ -1281,7 +1295,7 @@ function presetPreview(p){
   /* 실제 도형과 같은 규칙(굵기·모서리·점선·화살촉)으로 220×140 칸에 그린 뒤 축소 */
   const s=p.style,cap=(v,m,d)=>Math.min(v==null?d:v,m);let o;
   switch(p.kind){
-    case 'rect':o={t:'rect',x:14,y:20,w:192,h:100,...s,sw:cap((s.sw==null?4:s.sw)*2,30,8)};break;
+    case 'rect':o={t:'rect',x:20,y:26,w:184,h:96,...s,sw:cap((s.sw==null?4:s.sw)*2,30,8)};if(s.badgeAuto){o.badge=1;o.badgeS=(s.badgeS||40)*1.8;}break;
     case 'ellipse':o={t:'ellipse',x:14,y:16,w:192,h:108,...s,sw:cap((s.sw==null?4:s.sw)*2,30,8)};break;
     case 'arrow':o={t:'arrow',x1:22,y1:118,x2:198,y2:22,...s,sw:cap((s.sw==null?5:s.sw)*2,28,10)};break;
     case 'line':o={t:'arrow',x1:22,y1:118,x2:198,y2:22,...s,head:0,sw:cap((s.sw==null?5:s.sw)*2,28,10)};break;
@@ -1304,9 +1318,9 @@ function applyPreset(i){
   const l=selList();
   const pk=p.kind==='line'?'arrow':p.kind;
   if(l.length&&tool==='select'&&l.every(q=>kindOf(q)===pk)){
-    snap();for(const o of l){const st=clone(p.style);if(o.t==='mosaic')delete st.shape;if(p.kind==='line')st.head=0;Object.assign(o,st);}renderStage();renderInspector();toast('적용: '+p.name);return;
+    snap();for(const o of l){const st=clone(p.style);if(o.t==='mosaic')delete st.shape;if(p.kind==='line')st.head=0;if(o.t==='rect'){if(st.badgeAuto&&o.badge==null)o.badge=nextNum++;delete st.badgeAuto;}Object.assign(o,st);}renderStage();renderInspector();toast('적용: '+p.name);return;
   }
-  Object.assign(ST[p.kind],clone(p.style));setTool(p.kind,true);activeFav=i;markFavs();toast((i<9?(i+1)+'번 · ':'')+p.name);
+  if(p.kind==='rect')ST.rect.badgeAuto=0;Object.assign(ST[p.kind],clone(p.style));setTool(p.kind,true);activeFav=i;markFavs();toast((i<9?(i+1)+'번 · ':'')+p.name);
 }
 function addFavorite(){
   const o=selList()[0],kind=o?kindOf(o):(tool!=='select'?tool:null);
@@ -1453,7 +1467,7 @@ function endDrag(e){
   if(d.kind==='resize'||d.kind==='resizeM'||d.kind==='rotate'||d.kind==='crop'){renderStage();return;}
   if(d.kind==='draw'&&draft){
     const b=bbox(draft);const ok=draft.t==='arrow'?Math.hypot(draft.x2-draft.x1,draft.y2-draft.y1)>6:(b.w>5&&b.h>5);
-    if(ok){snap();s.objects.push(draft);}
+    if(ok){snap();if(draft.t==='rect'){if(draft.badgeAuto){draft.badge=nextNum++;}delete draft.badgeAuto;}s.objects.push(draft);}
   }else if(d.kind==='free'&&draft){
     if(draft.t==='pen'||d.pts.length>3){snap();s.objects.push(draft);}
   }
@@ -1516,7 +1530,12 @@ $('#thumbs').addEventListener('click',e=>{
   if(b.dataset.op==='sz'){setThumbSize(+b.dataset.w);return;}
   ({add:addBlank,dup:dupSlide,del:delSlide,up:()=>moveSlide(-1),down:()=>moveSlide(1)})[b.dataset.op]();
 });
-function deleteSel(){const s=curSlide(),ids=new Set(selIds().filter(id=>!findObj(id).locked));if(!ids.size){if(sel)toast('잠긴 도형은 지울 수 없어요 · 먼저 잠금을 풀어주세요');return;}snap();const hadNum=s.objects.some(o=>ids.has(o.id)&&o.t==='num');s.objects=s.objects.filter(o=>!ids.has(o.id));sel=null;msel=[];if(hadNum&&autoRenum)renumber();renderStage();renderInspector();}
+function toggleBadge(){
+  const l=selList().filter(o=>o.t==='rect');
+  if(l.length){snap();const on=l.every(o=>o.badge!=null&&o.badge!=='');for(const o of l){if(on)delete o.badge;else if(o.badge==null||o.badge===''){o.badge=nextNum++;if(!o.badgePos)o.badgePos='tl';}}renderStage();renderInspector();return;}
+  ST.rect.badgeAuto=ST.rect.badgeAuto?0:1;if(ST.rect.badgeAuto){ST.rect.badgePos=ST.rect.badgePos||'tl';ST.rect.badgeS=ST.rect.badgeS||40;}renderInspector();
+}
+function deleteSel(){const s=curSlide(),ids=new Set(selIds().filter(id=>!findObj(id).locked));if(!ids.size){if(sel)toast('잠긴 도형은 지울 수 없어요 · 먼저 잠금을 풀어주세요');return;}snap();const hadNum=s.objects.some(o=>ids.has(o.id)&&numVal(o)!=null);s.objects=s.objects.filter(o=>!ids.has(o.id));sel=null;msel=[];if(hadNum&&autoRenum)renumber();renderStage();renderInspector();}
 
 /* ===================== 이미지 넣기/붙여넣기 ===================== */
 async function addImage(dataURL){
@@ -1931,7 +1950,9 @@ function pptAnn(pptx,sl,o,k,pt){
       const opt={x:o.x*k,y:o.y*k,w:o.w*k,h:o.h*k,rotate:o.rot||0,fill:o.fillA>0?{color:hex6(o.fill),transparency:Math.round((1-o.fillA)*100)}:{type:'none'},line:lineOf(o.stroke,o.sw,o.dash)};
       let shape=o.t==='ellipse'?ST.ellipse:ST.rect;
       if(o.t==='rect'&&o.radius>0){shape=ST.roundRect;opt.rectRadius=Math.min(o.radius,Math.min(o.w,o.h)/2)*k;}
-      sl.addShape(shape,opt);return;}
+      sl.addShape(shape,opt);
+      if(o.t==='rect'&&o.badge!=null&&o.badge!==''){const bp=badgePt(o),c0={x:o.x+o.w/2,y:o.y+o.h/2},q=o.rot?rotP(bp.x,bp.y,c0.x,c0.y,o.rot):bp;pptAnn(pptx,sl,{t:'num',x:q.x,y:q.y,size:o.badgeS||40,n:o.badge,fill:o.badgeC||(o.sw>0?o.stroke:o.fill),stroke:'#FFFFFF',sw:2,color:'#FFFFFF',shape:'circle'},k,pt);}
+      return;}
     case 'arrow':{
       const opt={x:Math.min(o.x1,o.x2)*k,y:Math.min(o.y1,o.y2)*k,w:Math.abs(o.x2-o.x1)*k,h:Math.abs(o.y2-o.y1)*k,flipH:o.x1>o.x2,flipV:o.y1>o.y2,line:lineOf(o.stroke,o.sw,o.dash)};
       if(o.head>=1)opt.line.endArrowType='triangle';if(o.head===2)opt.line.beginArrowType='triangle';
@@ -2238,7 +2259,7 @@ function initAudience(){
 /* ===================== 단축키/도움말 ===================== */
 function showHelp(){
   modal('<h3>단축키</h3><table>'
-  +'<tr><th>편집</th><td><kbd>V</kbd> 선택 <kbd>R</kbd> 둥근사각 <kbd>H</kbd> 형광 <kbd>O</kbd> 원 <kbd>L</kbd> 직선 <kbd>A</kbd> 화살표 <kbd>N</kbd> 번호 <kbd>T</kbd> 글자 <kbd>M</kbd> 모자이크 <kbd>P</kbd> 펜</td></tr>'
+  +'<tr><th>편집</th><td><kbd>V</kbd> 선택 <kbd>R</kbd> 둥근사각 <kbd>H</kbd> 형광 <kbd>B</kbd> 번호사각 <kbd>O</kbd> 원 <kbd>L</kbd> 직선 <kbd>A</kbd> 화살표 <kbd>N</kbd> 번호 <kbd>T</kbd> 글자 <kbd>M</kbd> 모자이크 <kbd>P</kbd> 펜</td></tr>'
   +'<tr><th>즐겨찾기</th><td><kbd>1</kbd>~<kbd>9</kbd> 해당 스타일로 도구 전환 (도형을 선택해 둔 상태면 그 도형에 스타일 적용)</td></tr>'
   +'<tr><th>도형</th><td><kbd>Delete</kbd> 삭제 · 방향키 1px 이동(Shift 10px) · <kbd>Ctrl</kbd>+<kbd>C</kbd>/<kbd>V</kbd> 복사 · <kbd>Ctrl</kbd>+<kbd>D</kbd> 복제 · 더블클릭 글자/번호 수정 · <kbd>Shift</kbd>+클릭 또는 빈 곳 드래그로 여러 개 선택 · <kbd>Ctrl</kbd>+<kbd>A</kbd> 전체 · <kbd>Ctrl</kbd>+<kbd>G</kbd> 그룹 · <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>G</kbd> 그룹 풀기 · 선택하면 위쪽에 생기는 동그란 점을 끌어 회전 (<kbd>Shift</kbd>: 15°씩)</td></tr>'
   +'<tr><th>패널</th><td><kbd>Alt</kbd>+<kbd>1</kbd> 왼쪽 목록 접기/펴기 · <kbd>Alt</kbd>+<kbd>2</kbd> 오른쪽 도구 접기/펴기 · 패널 사이 경계선을 드래그하면 폭 조절(더블클릭: 기본 폭) · 목록 아래 작게/보통/크게로 섬네일 크기 · 설정은 자동 기억</td></tr>'
@@ -2286,6 +2307,7 @@ document.addEventListener('keydown',e=>{
   if(c==='F5'){e.preventDefault();startPresent('single',e.shiftKey?cur:0);return;}
   const m=c.match(/^(?:Digit|Numpad)([1-9])$/);if(m){applyPreset(+m[1]-1);return;}
   const tk={KeyV:'select',KeyR:'rect',KeyO:'ellipse',KeyL:'line',KeyA:'arrow',KeyN:'num',KeyT:'text',KeyM:'mosaic',KeyP:'pen'};
+  if(c==='KeyB'&&!ctrl&&!e.altKey){e.preventDefault();setTool('rect');toolVar='nbox';Object.assign(ST.rect,clone(RECT_VAR.nbox));markTools();markFavs();renderInspector();return;}
   if(c==='KeyH'&&!ctrl&&!e.altKey){e.preventDefault();setTool('rect');toolVar='hl';Object.assign(ST.rect,clone(RECT_VAR.hl));markTools();markFavs();renderInspector();return;}
   if(c==='KeyR'&&!ctrl&&!e.altKey){e.preventDefault();setTool('rect');toolVar='round';Object.assign(ST.rect,clone(RECT_VAR.round));markTools();markFavs();renderInspector();return;}
   if(tk[c]){e.preventDefault();setTool(tk[c]);return;}
