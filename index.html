@@ -450,7 +450,7 @@ const DEF={
   arrow:{stroke:'#2563EB',sw:5,head:1,dash:0},
   line:{stroke:'#2563EB',sw:5,dash:0},
   img:{bw:0,bc:'#111111',radius:0,shadow:0,opacity:1,flip:0},
-  num:{shape:'circle',fill:'#E23B2E',stroke:'#FFFFFF',sw:3,color:'#FFFFFF',size:44},
+  num:{shape:'circle',fill:'#EA580C',stroke:'#FFFFFF',sw:2,color:'#FFFFFF',size:44},
   text:{color:'#1C2026',size:28,bg:'#FFE066',bgA:0.9,bold:1,italic:0,underline:0,strike:0,align:'left',lh:1.25,font:'sans',outline:0,outlineC:'#FFFFFF',shadow:0,boxW:0,boxC:'#F97316',boxR:12,boxPad:4},
   mosaic:{shape:'rect',mode:'pixel',strength:14,color:'#000000'},
   pen:{stroke:'#E23B2E',sw:5,alpha:1}
@@ -475,11 +475,13 @@ function defPresets(){
     {name:'파란 박스',kind:'rect',style:{...DEF.rect,stroke:'#2563EB',fill:'#2563EB'}},
     {name:'노란 형광',kind:'rect',style:{...DEF.rect,stroke:'#FFE066',sw:0,fill:'#FFE066',fillA:.5,radius:2}},
     {name:'빨간 원',kind:'ellipse',style:{...DEF.ellipse}},
-    {name:'번호 ●',kind:'num',style:{...DEF.num}},
-    {name:'번호 ■',kind:'num',style:{...DEF.num,shape:'square',fill:'#2563EB'}},
+    {name:'번호 (주황·기본)',kind:'num',style:{...DEF.num}},
+    {name:'번호 (빨강·주의)',kind:'num',style:{...DEF.num,fill:'#DC2626'}},
     {name:'파란 화살표',kind:'arrow',style:{...DEF.arrow}},
     {name:'모자이크',kind:'mosaic',style:{...DEF.mosaic}},
-    {name:'라벨 글자',kind:'text',style:{...DEF.text}}
+    {name:'라벨 글자',kind:'text',style:{...DEF.text}},
+    {name:'번호 (초록·완료)',kind:'num',style:{...DEF.num,fill:'#15803D'}},
+    {name:'번호 (파랑·대안)',kind:'num',style:{...DEF.num,fill:'#1D4ED8'}}
   ].map(p=>({id:uid(),...p}));
 }
 function loadPresets(){try{const v=JSON.parse(localStorage.getItem('ls.presets')||'null');if(Array.isArray(v)&&v.length)return v;}catch(e){}return null;}
