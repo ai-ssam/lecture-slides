@@ -316,7 +316,7 @@ document.addEventListener('keydown',e=>{
 
 /* ===================== 시작 ===================== */
 function initEditor(){
-  initResizers();$('#bTL').onclick=()=>togglePanel('lc');$('#bTR').onclick=()=>togglePanel('rc');
+  initResizers();$('#hLb').onclick=()=>togglePanel('lc');$('#hRb').onclick=()=>togglePanel('rc');$('#pinL').onclick=()=>pinPanel('lc');$('#pinR').onclick=()=>pinPanel('rc');$('#bTbFold').onclick=toggleToolbar;document.addEventListener('pointerdown',e=>{if(ov&&!e.target.closest('#thumbs,#inspector,.hdl,.modal,.ddm')){ov=null;applyLayout();}},true);
   applyRatio(P.ratio||'16:9');renderFavs();fitStage();new ResizeObserver(fitStage).observe($('#viewport'));
   renderAll();setTool('select');
   $('#title').addEventListener('input',e=>{P.title=e.target.value;markDirty();});
