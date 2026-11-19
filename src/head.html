@@ -35,6 +35,28 @@ body.ovr #inspector{display:block;position:fixed;right:0;top:var(--hh,46px);bott
 body.tc #toolbar .tb,body.tc #toolbar #favs,body.tc #toolbar>.vs{display:none}
 body.tc #toolbar #zoomBox{margin-left:auto}
 body.aud-mode .hdl{display:none}
+#viewport,#box{touch-action:none}
+#box{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+body.nocap .grp:has(#bCap){display:none}
+body.touch #toolbar .tb,body.touch #toolbar .ur,body.touch #toolbar .fold,body.touch #zoomBox button{min-height:40px}
+body.touch .hdl .hb{width:22px;height:64px}
+body.touch .hdl .pin{width:34px;height:34px}
+body.narrow #bHelp,body.narrow #bPptx,body.narrow #bFolder,body.narrow #bOpenFolder,body.narrow #bSnap,body.narrow #pinL,body.narrow #pinR{display:none!important}
+body.narrow #top{padding:4px 6px;gap:3px 4px}body.narrow #top .logo{display:none}body.narrow #title{width:110px}
+body.narrow.ovl #thumbs{width:min(var(--lwf),84vw)}body.narrow.ovr #inspector{width:min(var(--rwf),88vw)}
+body.narrow.ovl #hL{left:min(var(--lwf),84vw)}body.narrow.ovr #hR{right:min(var(--rwf),88vw)}
+body.narrow #app{grid-template-columns:0 0 minmax(0,1fr) 0 0}
+body.touch .grp:has(#bCap){display:none}
+body.narrow #bPresenter,body.narrow #dirty,body.narrow #zoomBox .vs,body.narrow #zOut,body.narrow #zIn,body.narrow #z100{display:none}
+body.narrow #top button,body.narrow #title{font-size:13px}body.narrow #top button{padding:5px 8px}
+body.narrow #toolbar{flex-wrap:nowrap;overflow-x:auto;gap:4px;padding:4px 6px;-webkit-overflow-scrolling:touch}
+body.narrow #toolbar>*,body.narrow #favs,body.narrow #favs>*{flex:none}
+body.narrow #favs{display:flex;gap:4px;align-items:center}
+body.narrow #toolbar .tb small{display:none}
+body.narrow #toolbar .vs{margin:0 2px}
+body.narrow #zoomBox{display:flex;gap:4px;align-items:center;margin-left:4px}
+body.narrow #zPct{width:52px}
+
 #thumbs .ops.sz{padding:0 0 6px;position:static;top:auto}#thumbs .ops.sz button.on{background:var(--sel);color:#fff;border-color:var(--sel)}
 #thumbs .ops{flex-direction:row}
 #top{grid-column:1/-1;background:#F4F5F7;color:#1C2026;border-bottom:1px solid var(--line);display:flex;align-items:center;flex-wrap:wrap;gap:4px 6px;padding:5px 10px;min-height:46px;min-width:0}
