@@ -35,7 +35,7 @@ body.ovr #inspector{display:block;position:fixed;right:0;top:var(--hh,46px);bott
 body.tc #toolbar .tb,body.tc #toolbar #favs,body.tc #toolbar>.vs{display:none}
 body.tc #toolbar #zoomBox{margin-left:auto}
 body.aud-mode .hdl{display:none}
-#viewport,#box{touch-action:none}
+#viewport,#box,#pres{touch-action:none}
 #box{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 body.nocap .grp:has(#bCap){display:none}
 body.touch #toolbar .tb,body.touch #toolbar .ur,body.touch #toolbar .fold,body.touch #zoomBox button{min-height:40px}
@@ -47,6 +47,9 @@ body.narrow.ovl #thumbs{width:min(var(--lwf),84vw)}body.narrow.ovr #inspector{wi
 body.narrow.ovl #hL{left:min(var(--lwf),84vw)}body.narrow.ovr #hR{right:min(var(--rwf),88vw)}
 body.narrow #app{grid-template-columns:0 0 minmax(0,1fr) 0 0}
 body.touch .grp:has(#bCap){display:none}
+#pgNav{display:none;align-items:center;gap:6px}#pgNav button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:2px 12px;font-size:14px}#pgNav b{min-width:44px;text-align:center}
+body.narrow #pgNav{display:inline-flex}body.narrow #stHint,body.narrow #stPos{display:none}
+body.narrow #status{padding:4px 8px;justify-content:space-between}body.narrow #pgNav button{padding:6px 18px}
 body.narrow #bPresenter,body.narrow #dirty,body.narrow #zoomBox .vs,body.narrow #zOut,body.narrow #zIn,body.narrow #z100{display:none}
 body.narrow #top button,body.narrow #title{font-size:13px}body.narrow #top button{padding:5px 8px}
 body.narrow #toolbar{flex-wrap:nowrap;overflow-x:auto;gap:4px;padding:4px 6px;-webkit-overflow-scrolling:touch}
@@ -304,7 +307,7 @@ body.mm #viewport{background:#D9CFF0}
       <div id="zoomBox"><button id="bSnap" title="다른 도형·슬라이드 가장자리/중앙에 달라붙어요 (드래그 중 Alt: 잠시 끄기)">🧲 스냅</button><span class="vs"></span><button id="zOut" title="축소 (Ctrl+-)">－</button><input id="zPct" type="text" inputmode="numeric" value="100%" title="화면 배율 · 숫자를 직접 입력하고 Enter (10~400)"><button id="zIn" title="확대 (Ctrl++ / Ctrl+휠)">＋</button><button id="zFit" title="화면에 맞추기 (Ctrl+0)">맞춤</button><button id="z100" title="실제 크기 100% (Ctrl+1)">100%</button></div>
     </div>
     <div id="viewport"><div id="mbar" hidden><b>🧩 마스터 편집 중</b><span id="mbName"></span><button id="mbDone">편집 끝내기</button></div><div id="boxOuter"><div id="box"><div id="stage"></div><svg id="ui" viewBox="0 0 1280 720"></svg></div></div></div>
-    <div id="status"><span id="stTool"></span><span id="stPos"></span><span id="stHint"></span></div>
+    <div id="status"><span id="stTool"></span><span id="pgNav"><button id="pgPrev" title="이전 슬라이드">◀</button><b id="pgNo"></b><button id="pgNext" title="다음 슬라이드">▶</button></span><span id="stPos"></span><span id="stHint"></span></div>
   </main>
   <div id="rzR" class="rz" title="드래그: 폭 조절 · 더블클릭: 기본 폭"></div>
   <aside id="inspector"></aside>

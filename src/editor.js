@@ -449,7 +449,7 @@ function fitStage(){
   box.style.transform='scale('+s+')';
   updateStatus();
 }
-function updateStatus(){if(editMaster){const mm=(P.masters||[]).find(x=>x.id===editMaster);$('#stPos').textContent='마스터 편집 중'+(mm?' · '+mm.name:'')+'   ·   화면 '+Math.round(view.s*100)+'%';const zp=$('#zPct');if(zp&&document.activeElement!==zp)zp.value=Math.round(view.s*100)+'%';return;}const zp=$('#zPct');if(zp&&document.activeElement!==zp)zp.value=Math.round(view.s*100)+'%';const sb=$('#bSnap');if(sb)sb.classList.toggle('on',snapOn);$('#stPos').textContent='슬라이드 '+(cur+1)+' / '+P.slides.length+'   ·   화면 '+Math.round(view.s*100)+'%';}
+function updateStatus(){{const n=$('#pgNo');if(n)n.textContent=(cur+1)+' / '+P.slides.length;}if(editMaster){const mm=(P.masters||[]).find(x=>x.id===editMaster);$('#stPos').textContent='마스터 편집 중'+(mm?' · '+mm.name:'')+'   ·   화면 '+Math.round(view.s*100)+'%';const zp=$('#zPct');if(zp&&document.activeElement!==zp)zp.value=Math.round(view.s*100)+'%';return;}const zp=$('#zPct');if(zp&&document.activeElement!==zp)zp.value=Math.round(view.s*100)+'%';const sb=$('#bSnap');if(sb)sb.classList.toggle('on',snapOn);$('#stPos').textContent='슬라이드 '+(cur+1)+' / '+P.slides.length+'   ·   화면 '+Math.round(view.s*100)+'%';}
 function renderStage(){
   const s=curSlide();
   stageEl.classList.toggle('edit',editText&&s.type==='html');
@@ -1438,6 +1438,20 @@ window.addEventListener('blur',()=>{spaceDown=false;});
   vp.addEventListener('pointermove',mv,true);
   const up=e=>{tp.delete(e.pointerId);if(tp.size<2)pg=null;};
   vp.addEventListener('pointerup',up,true);vp.addEventListener('pointercancel',up,true);
+})();
+
+
+/* 모바일: 슬라이드 바깥(회색 영역)에서 위아래로 밀어 슬라이드 이동 + 이전/다음 버튼 */
+(function(){
+  const vp=$('#viewport');let st=null;
+  vp.addEventListener('pointerdown',e=>{st=(e.pointerType==='touch'&&!pres&&!IS_AUD&&(e.target===vp||e.target.id==='boxOuter'||e.target.id==='mbar'))?{x:e.clientX,y:e.clientY,id:e.pointerId}:null;});
+  vp.addEventListener('pointerup',e=>{
+    if(!st||e.pointerId!==st.id)return;const dx=e.clientX-st.x,dy=e.clientY-st.y;st=null;
+    if(view.z>1.01||Math.abs(dy)<50||Math.abs(dy)<Math.abs(dx)*1.5)return;
+    go(cur+(dy<0?1:-1));
+  });
+  vp.addEventListener('pointercancel',()=>{st=null;});
+  $('#pgPrev').onclick=()=>go(cur-1);$('#pgNext').onclick=()=>go(cur+1);
 })();
 
 /* ===================== 이미지 자르기 ===================== */

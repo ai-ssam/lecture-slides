@@ -35,7 +35,7 @@ body.ovr #inspector{display:block;position:fixed;right:0;top:var(--hh,46px);bott
 body.tc #toolbar .tb,body.tc #toolbar #favs,body.tc #toolbar>.vs{display:none}
 body.tc #toolbar #zoomBox{margin-left:auto}
 body.aud-mode .hdl{display:none}
-#viewport,#box{touch-action:none}
+#viewport,#box,#pres{touch-action:none}
 #box{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 body.nocap .grp:has(#bCap){display:none}
 body.touch #toolbar .tb,body.touch #toolbar .ur,body.touch #toolbar .fold,body.touch #zoomBox button{min-height:40px}
@@ -47,6 +47,9 @@ body.narrow.ovl #thumbs{width:min(var(--lwf),84vw)}body.narrow.ovr #inspector{wi
 body.narrow.ovl #hL{left:min(var(--lwf),84vw)}body.narrow.ovr #hR{right:min(var(--rwf),88vw)}
 body.narrow #app{grid-template-columns:0 0 minmax(0,1fr) 0 0}
 body.touch .grp:has(#bCap){display:none}
+#pgNav{display:none;align-items:center;gap:6px}#pgNav button{border:1px solid var(--line);background:#fff;border-radius:6px;padding:2px 12px;font-size:14px}#pgNav b{min-width:44px;text-align:center}
+body.narrow #pgNav{display:inline-flex}body.narrow #stHint,body.narrow #stPos{display:none}
+body.narrow #status{padding:4px 8px;justify-content:space-between}body.narrow #pgNav button{padding:6px 18px}
 body.narrow #bPresenter,body.narrow #dirty,body.narrow #zoomBox .vs,body.narrow #zOut,body.narrow #zIn,body.narrow #z100{display:none}
 body.narrow #top button,body.narrow #title{font-size:13px}body.narrow #top button{padding:5px 8px}
 body.narrow #toolbar{flex-wrap:nowrap;overflow-x:auto;gap:4px;padding:4px 6px;-webkit-overflow-scrolling:touch}
@@ -304,7 +307,7 @@ body.mm #viewport{background:#D9CFF0}
       <div id="zoomBox"><button id="bSnap" title="다른 도형·슬라이드 가장자리/중앙에 달라붙어요 (드래그 중 Alt: 잠시 끄기)">🧲 스냅</button><span class="vs"></span><button id="zOut" title="축소 (Ctrl+-)">－</button><input id="zPct" type="text" inputmode="numeric" value="100%" title="화면 배율 · 숫자를 직접 입력하고 Enter (10~400)"><button id="zIn" title="확대 (Ctrl++ / Ctrl+휠)">＋</button><button id="zFit" title="화면에 맞추기 (Ctrl+0)">맞춤</button><button id="z100" title="실제 크기 100% (Ctrl+1)">100%</button></div>
     </div>
     <div id="viewport"><div id="mbar" hidden><b>🧩 마스터 편집 중</b><span id="mbName"></span><button id="mbDone">편집 끝내기</button></div><div id="boxOuter"><div id="box"><div id="stage"></div><svg id="ui" viewBox="0 0 1280 720"></svg></div></div></div>
-    <div id="status"><span id="stTool"></span><span id="stPos"></span><span id="stHint"></span></div>
+    <div id="status"><span id="stTool"></span><span id="pgNav"><button id="pgPrev" title="이전 슬라이드">◀</button><b id="pgNo"></b><button id="pgNext" title="다음 슬라이드">▶</button></span><span id="stPos"></span><span id="stHint"></span></div>
   </main>
   <div id="rzR" class="rz" title="드래그: 폭 조절 · 더블클릭: 기본 폭"></div>
   <aside id="inspector"></aside>
@@ -915,7 +918,7 @@ function fitStage(){
   box.style.transform='scale('+s+')';
   updateStatus();
 }
-function updateStatus(){if(editMaster){const mm=(P.masters||[]).find(x=>x.id===editMaster);$('#stPos').textContent='마스터 편집 중'+(mm?' · '+mm.name:'')+'   ·   화면 '+Math.round(view.s*100)+'%';const zp=$('#zPct');if(zp&&document.activeElement!==zp)zp.value=Math.round(view.s*100)+'%';return;}const zp=$('#zPct');if(zp&&document.activeElement!==zp)zp.value=Math.round(view.s*100)+'%';const sb=$('#bSnap');if(sb)sb.classList.toggle('on',snapOn);$('#stPos').textContent='슬라이드 '+(cur+1)+' / '+P.slides.length+'   ·   화면 '+Math.round(view.s*100)+'%';}
+function updateStatus(){{const n=$('#pgNo');if(n)n.textContent=(cur+1)+' / '+P.slides.length;}if(editMaster){const mm=(P.masters||[]).find(x=>x.id===editMaster);$('#stPos').textContent='마스터 편집 중'+(mm?' · '+mm.name:'')+'   ·   화면 '+Math.round(view.s*100)+'%';const zp=$('#zPct');if(zp&&document.activeElement!==zp)zp.value=Math.round(view.s*100)+'%';return;}const zp=$('#zPct');if(zp&&document.activeElement!==zp)zp.value=Math.round(view.s*100)+'%';const sb=$('#bSnap');if(sb)sb.classList.toggle('on',snapOn);$('#stPos').textContent='슬라이드 '+(cur+1)+' / '+P.slides.length+'   ·   화면 '+Math.round(view.s*100)+'%';}
 function renderStage(){
   const s=curSlide();
   stageEl.classList.toggle('edit',editText&&s.type==='html');
@@ -1906,6 +1909,20 @@ window.addEventListener('blur',()=>{spaceDown=false;});
   vp.addEventListener('pointerup',up,true);vp.addEventListener('pointercancel',up,true);
 })();
 
+
+/* 모바일: 슬라이드 바깥(회색 영역)에서 위아래로 밀어 슬라이드 이동 + 이전/다음 버튼 */
+(function(){
+  const vp=$('#viewport');let st=null;
+  vp.addEventListener('pointerdown',e=>{st=(e.pointerType==='touch'&&!pres&&!IS_AUD&&(e.target===vp||e.target.id==='boxOuter'||e.target.id==='mbar'))?{x:e.clientX,y:e.clientY,id:e.pointerId}:null;});
+  vp.addEventListener('pointerup',e=>{
+    if(!st||e.pointerId!==st.id)return;const dx=e.clientX-st.x,dy=e.clientY-st.y;st=null;
+    if(view.z>1.01||Math.abs(dy)<50||Math.abs(dy)<Math.abs(dx)*1.5)return;
+    go(cur+(dy<0?1:-1));
+  });
+  vp.addEventListener('pointercancel',()=>{st=null;});
+  $('#pgPrev').onclick=()=>go(cur-1);$('#pgNext').onclick=()=>go(cur+1);
+})();
+
 /* ===================== 이미지 자르기 ===================== */
 function startCrop(){const l=selList();if(l.length!==1||l[0].t!=='img')return;if(l[0].locked){toast('잠긴 이미지는 자를 수 없어요');return;}cropId=l[0].id;renderUI();renderInspector();toast('가장자리를 끌어서 자르세요 · Enter 로 끝내기');}
 function cropFrame(o,c){return {Fw:o.w/(1-c.l-c.r),Fh:o.h/(1-c.t-c.b)};}
@@ -2390,7 +2407,11 @@ document.addEventListener('keydown',e=>{
 
 /* ===================== 시작 ===================== */
 function initEditor(){
-  if(!navigator.mediaDevices||!navigator.mediaDevices.getDisplayMedia)document.body.classList.add('nocap');initResizers();$('#hLb').onclick=()=>togglePanel('lc');$('#hRb').onclick=()=>togglePanel('rc');$('#pinL').onclick=()=>pinPanel('lc');$('#pinR').onclick=()=>pinPanel('rc');$('#bTbFold').onclick=toggleToolbar;document.addEventListener('pointerdown',e=>{if(ov&&!e.target.closest('#thumbs,#inspector,.hdl,.modal,.ddm')){ov=null;applyLayout();}},true);
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getDisplayMedia)document.body.classList.add('nocap');(()=>{const pr=$('#pres');let sw=null,sd=0;
+  pr.addEventListener('pointerdown',e=>{sw=(e.pointerType==='touch'&&pres&&pres.tool==='none'&&!pres.blank)?{x:e.clientX,y:e.clientY,id:e.pointerId}:null;},true);
+  pr.addEventListener('pointerup',e=>{if(!sw||e.pointerId!==sw.id||!pres)return;const dx=e.clientX-sw.x,dy=e.clientY-sw.y;sw=null;const ax=Math.abs(dx),ay=Math.abs(dy);if(Math.max(ax,ay)<50)return;sd=Date.now();showP(pres.idx+((ay>ax?dy<0:dx<0)?1:-1));},true);
+  pr.addEventListener('click',e=>{if(Date.now()-sd<500){e.stopPropagation();e.preventDefault();}},true);
+})();initResizers();$('#hLb').onclick=()=>togglePanel('lc');$('#hRb').onclick=()=>togglePanel('rc');$('#pinL').onclick=()=>pinPanel('lc');$('#pinR').onclick=()=>pinPanel('rc');$('#bTbFold').onclick=toggleToolbar;document.addEventListener('pointerdown',e=>{if(ov&&!e.target.closest('#thumbs,#inspector,.hdl,.modal,.ddm')){ov=null;applyLayout();}},true);
   applyRatio(P.ratio||'16:9');renderFavs();fitStage();new ResizeObserver(fitStage).observe($('#viewport'));
   renderAll();setTool('select');
   $('#title').addEventListener('input',e=>{P.title=e.target.value;markDirty();});
