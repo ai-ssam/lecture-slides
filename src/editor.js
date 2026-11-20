@@ -1252,7 +1252,7 @@ async function renderRecent(){
   if(!window.showOpenFilePicker){box.hidden=true;return;}
   box.hidden=false;const l=await recentList(),list=$('#recList');
   list.innerHTML=l.length?l.map((x,i)=>'<button class="rec" data-i="'+i+'" title="'+esc(x.name)+'"><span class="rn">'+esc(x.name.replace(/\.lecture$/,''))+'</span><span class="rt">'+recTime(x.t)+'</span></button>').join(''):'<div class="rnone">최근 항목 없음</div>';
-  $('#recClear').hidden=!l.length;
+  $('#recClear').hidden=!l.length;$('#recH').hidden=!l.length;$('#recBox .rsep').hidden=!l.length;
 }
 async function openRecent(i){
   const l=await recentList(),x=l[i];if(!x)return;
