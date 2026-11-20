@@ -21,27 +21,32 @@ body.aud-mode #aud{display:block}
 #thumbs{grid-column:1;grid-row:2}#rzL{grid-column:2;grid-row:2}#center{grid-column:3;grid-row:2}#rzR{grid-column:4;grid-row:2}#inspector{grid-column:5;grid-row:2}
 .rz{cursor:col-resize;background:var(--line);opacity:.55;transition:background .12s,opacity .12s;touch-action:none}.rz:hover,.rz.drag{background:var(--acc);opacity:1}
 body.lc #thumbs,body.lc #rzL,body.rc #inspector,body.rc #rzR{display:none}
-.hdl{position:fixed;top:50%;z-index:60;display:flex;flex-direction:column;gap:6px;transform:translateY(-50%)}
-#hL{left:var(--lw,0px)}#hR{right:var(--rw,0px)}
-.hdl .hb{width:16px;height:56px;border:1px solid var(--line);background:#fff;color:#556;font-size:15px;line-height:1;padding:0;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.18)}
-#hL .hb{border-radius:0 8px 8px 0;border-left:0}#hR .hb{border-radius:8px 0 0 8px;border-right:0}
-.hdl .hb:hover{background:#FFF1E6;color:var(--sel);border-color:var(--sel)}
-.hdl .pin{display:none;width:26px;height:26px;border:1px solid var(--line);background:#fff;border-radius:6px;padding:0;font-size:13px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.18)}
+.hdl{position:fixed;top:50%;z-index:60;transform:translateY(-50%)}
+#hL{left:calc(var(--lw,0px) + 5px)}#hR{right:calc(var(--rw,0px) + 5px)}
+body.lc #hL{left:0}body.rc #hR{right:0}
+.hdl .hb{display:flex;align-items:center;justify-content:center;width:20px;height:72px;border:1px solid #9AA3B2;background:#fff;color:#3A4352;padding:0;cursor:pointer;box-shadow:0 1px 6px rgba(0,0,0,.25)}
+.hdl .hb svg{width:12px;height:12px;pointer-events:none}
+#hL .hb{border-radius:0 9px 9px 0;border-left:0}#hR .hb{border-radius:9px 0 0 9px;border-right:0}
+.hdl .hb:hover{background:var(--sel);color:#fff;border-color:var(--sel)}
+.hdl .hb:active{filter:brightness(.92)}
 body.ovl #hL{left:var(--lwf)}body.ovr #hR{right:var(--rwf)}
-body.ovl #hL .pin,body.ovr #hR .pin{display:block}
 body.ovl #thumbs{display:flex;position:fixed;left:0;top:var(--hh,46px);bottom:0;width:var(--lwf);z-index:50;box-shadow:4px 0 18px rgba(0,0,0,.22)}
 body.ovr #inspector{display:block;position:fixed;right:0;top:var(--hh,46px);bottom:0;width:var(--rwf);z-index:50;box-shadow:-4px 0 18px rgba(0,0,0,.22)}
 #toolbar .fold{border:1px solid var(--line);background:#fff;border-radius:6px;padding:4px 8px;color:#556;white-space:nowrap}#toolbar .fold:hover{border-color:var(--sel);color:var(--sel)}
-body.tc #toolbar .tb,body.tc #toolbar #favs,body.tc #toolbar>.vs{display:none}
-body.tc #toolbar #zoomBox{margin-left:auto}
+#toolbar{flex-direction:column;align-items:stretch;gap:4px;flex-wrap:nowrap}
+#toolbar .trow{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+#toolbar .fold{margin-left:auto;display:inline-flex;align-items:center;gap:4px;cursor:pointer;padding:4px 7px;font-size:12px}
+#toolbar .fold svg{width:14px;height:14px}
+#rowF #zoomBox{margin-left:auto}#rowF #zoomBox+.fold{margin-left:6px}
+body.tc #rowT .tb,body.tc #rowT>.vs{display:none}
+body.fc #rowF #favs{display:none}
 body.aud-mode .hdl{display:none}
 #viewport,#box,#pres{touch-action:none}
 #box{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 body.nocap .grp:has(#bCap){display:none}
 body.touch #toolbar .tb,body.touch #toolbar .ur,body.touch #toolbar .fold,body.touch #zoomBox button{min-height:40px}
-body.touch .hdl .hb{width:22px;height:64px}
-body.touch .hdl .pin{width:34px;height:34px}
-body.narrow #bHelp,body.narrow #bPptx,body.narrow #bFolder,body.narrow #bOpenFolder,body.narrow #bSnap,body.narrow #pinL,body.narrow #pinR{display:none!important}
+body.touch .hdl .hb{width:26px;height:80px}
+body.narrow #bHelp,body.narrow #bPptx,body.narrow #bFolder,body.narrow #bOpenFolder,body.narrow #bSnap{display:none!important}
 body.narrow #top{padding:4px 6px;gap:3px 4px}body.narrow #top .logo{display:none}body.narrow #title{width:110px}
 body.narrow.ovl #thumbs{width:min(var(--lwf),84vw)}body.narrow.ovr #inspector{width:min(var(--rwf),88vw)}
 body.narrow.ovl #hL{left:min(var(--lwf),84vw)}body.narrow.ovr #hR{right:min(var(--rwf),88vw)}
@@ -54,8 +59,8 @@ body.narrow #pgNav{display:inline-flex}body.narrow #stHint,body.narrow #stPos{di
 body.narrow #status{padding:4px 8px;justify-content:space-between}body.narrow #pgNav button{padding:6px 18px}
 body.narrow #bPresenter,body.narrow #dirty,body.narrow #zoomBox .vs,body.narrow #zOut,body.narrow #zIn,body.narrow #z100{display:none}
 body.narrow #top button,body.narrow #title{font-size:13px}body.narrow #top button{padding:5px 8px}
-body.narrow #toolbar{flex-wrap:nowrap;overflow-x:auto;gap:4px;padding:4px 6px;-webkit-overflow-scrolling:touch}
-body.narrow #toolbar>*,body.narrow #favs,body.narrow #favs>*{flex:none}
+body.narrow #toolbar{flex-direction:row;align-items:center;flex-wrap:nowrap;overflow-x:auto;gap:4px;padding:4px 6px;-webkit-overflow-scrolling:touch}
+body.narrow #toolbar .trow{display:contents}body.narrow #toolbar .fold{display:none}body.narrow #toolbar>*,body.narrow #favs,body.narrow #favs>*{flex:none}
 body.narrow #favs{display:flex;gap:4px;align-items:center}
 body.narrow #toolbar .tb small{display:none}
 body.narrow #toolbar .vs{margin:0 2px}
@@ -97,7 +102,7 @@ details.alg{margin:8px 0;border:1px solid var(--line);border-radius:6px;padding:
 .tbox{width:var(--tw,152px);height:var(--thH,85.5px);overflow:hidden;position:relative;background:#fff;box-shadow:0 0 0 1px var(--line)}
 .troot{transform:scale(var(--ts,.11875));transform-origin:0 0;pointer-events:none}
 #center{display:flex;flex-direction:column;min-width:0;min-height:0}
-#toolbar{background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:4px;padding:6px 8px;flex-wrap:wrap}
+#toolbar{background:#fff;border-bottom:1px solid var(--line);display:flex;flex-direction:column;align-items:stretch;gap:4px;padding:6px 8px;flex-wrap:nowrap}
 #toolbar .tb{border:1px solid var(--line);background:#fff;border-radius:6px;padding:4px 8px;white-space:nowrap}
 #toolbar .tb.on{background:var(--sel);color:#fff;border-color:var(--sel);font-weight:700;box-shadow:0 0 0 3px rgba(249,115,22,.3)}
 #toolbar .ur{border:1px solid #C4CAD3;background:#fff;border-radius:6px;padding:4px 10px;font-weight:600;white-space:nowrap}#toolbar .ur:hover{background:#FFF1E6;border-color:var(--sel)}
@@ -285,13 +290,13 @@ body.mm #viewport{background:#D9CFF0}
     <button id="bPresenter" title="발표자 화면 + 청중 창">발표자 보기</button>
     <button id="bPlay" class="go" title="F5 처음부터 / Shift+F5 현재부터">▶ 발표</button>
   </header>
-  <div id="hL" class="hdl"><button class="hb" id="hLb"></button><button class="pin" id="pinL" title="패널을 고정해서 항상 보이기">📌</button></div>
-  <div id="hR" class="hdl"><button class="hb" id="hRb"></button><button class="pin" id="pinR" title="패널을 고정해서 항상 보이기">📌</button></div>
+  <div id="hL" class="hdl"><button class="hb" id="hLb"></button></div>
+  <div id="hR" class="hdl"><button class="hb" id="hRb"></button></div>
   <aside id="thumbs"></aside>
   <div id="rzL" class="rz" title="드래그: 폭 조절 · 더블클릭: 기본 폭"></div>
   <main id="center">
-    <div id="toolbar">
-      <button id="bUndo" class="ur" title="되돌리기 (Ctrl+Z)">↶ 되돌리기</button><button id="bRedo" class="ur" title="다시 실행 (Ctrl+Y)">↷ 다시</button><button id="bTbFold" class="fold">▲</button><span class="vs"></span>
+    <div id="toolbar"><div class="trow" id="rowT">
+      <button id="bUndo" class="ur" title="되돌리기 (Ctrl+Z)">↶ 되돌리기</button><button id="bRedo" class="ur" title="다시 실행 (Ctrl+Y)">↷ 다시</button><span class="vs"></span>
       <button class="tb" data-tool="select"><svg class="ti" viewBox="0 0 16 16" width="15" height="15"><path d="M3 2l9 6-4 1 3 5-2 1-3-5-3 3z" fill="currentColor"/></svg>선택<small>V</small></button>
       <button class="tb" data-tool="rect" data-var="sq" title="직사각형"><svg class="ti" viewBox="0 0 16 16" width="15" height="15"><rect x="2" y="3" width="12" height="10" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>직사각</button>
       <button class="tb" data-tool="rect" data-var="round" title="모서리가 둥근 사각형 (R)"><svg class="ti" viewBox="0 0 16 16" width="15" height="15"><rect x="2" y="3" width="12" height="10" rx="4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>둥근사각<small>R</small></button>
@@ -305,8 +310,9 @@ body.mm #viewport{background:#D9CFF0}
       <button class="tb" data-tool="mosaic"><svg class="ti" viewBox="0 0 16 16" width="15" height="15"><path d="M2 2h4v4H2zM10 2h4v4h-4zM6 6h4v4H6zM2 10h4v4H2zM10 10h4v4h-4z" fill="currentColor"/></svg>모자이크<small>M</small></button>
       <button class="tb" data-tool="pen"><svg class="ti" viewBox="0 0 16 16" width="15" height="15"><path d="M2 14l1-4 8-8 3 3-8 8z" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>펜<small>P</small></button>
       <span class="vs"></span>
+      <button id="bFoldT" class="fold" title="도구 줄 접기"></button></div><div class="trow" id="rowF">
       <div id="favs"></div>
-      <div id="zoomBox"><button id="bSnap" title="다른 도형·슬라이드 가장자리/중앙에 달라붙어요 (드래그 중 Alt: 잠시 끄기)">🧲 스냅</button><span class="vs"></span><button id="zOut" title="축소 (Ctrl+-)">－</button><input id="zPct" type="text" inputmode="numeric" value="100%" title="화면 배율 · 숫자를 직접 입력하고 Enter (10~400)"><button id="zIn" title="확대 (Ctrl++ / Ctrl+휠)">＋</button><button id="zFit" title="화면에 맞추기 (Ctrl+0)">맞춤</button><button id="z100" title="실제 크기 100% (Ctrl+1)">100%</button></div>
+      <div id="zoomBox"><button id="bSnap" title="다른 도형·슬라이드 가장자리/중앙에 달라붙어요 (드래그 중 Alt: 잠시 끄기)">🧲 스냅</button><span class="vs"></span><button id="zOut" title="축소 (Ctrl+-)">－</button><input id="zPct" type="text" inputmode="numeric" value="100%" title="화면 배율 · 숫자를 직접 입력하고 Enter (10~400)"><button id="zIn" title="확대 (Ctrl++ / Ctrl+휠)">＋</button><button id="zFit" title="화면에 맞추기 (Ctrl+0)">맞춤</button><button id="z100" title="실제 크기 100% (Ctrl+1)">100%</button></div><button id="bFoldF" class="fold" title="즐겨찾기 줄 접기"></button></div>
     </div>
     <div id="viewport"><div id="mbar" hidden><b>🧩 마스터 편집 중</b><span id="mbName"></span><button id="mbDone">편집 끝내기</button></div><div id="boxOuter"><div id="box"><div id="stage"></div><svg id="ui" viewBox="0 0 1280 720"></svg></div></div></div>
     <div id="status"><span id="stTool"></span><span id="pgNav"><button id="pgPrev" title="이전 슬라이드">◀</button><b id="pgNo"></b><button id="pgNext" title="다음 슬라이드">▶</button></span><span id="stPos"></span><span id="stHint"></span></div>

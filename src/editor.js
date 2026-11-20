@@ -69,7 +69,7 @@ let P=IS_AUD?{assets:{},htmls:{},slides:[],masters:[],presets:[]}:newProject();
 let cur=0,tool='select',sel=null,nextNum=1,dirty=false,fileHandle=null,undo=[],redo=[],lastSnap=0,editText=false,draft=null,drag=null,clipObj=null,pasteMode='new',editMaster=null;
 const lsGet=k=>{try{return localStorage.getItem(k);}catch(e){return null;}},lsSet=(k,v)=>{try{localStorage.setItem(k,v);}catch(e){}};
 const RECT_VAR={sq:{radius:0,stroke:'#E23B2E',sw:4,fill:'#E23B2E',fillA:0,badgeAuto:0},round:{radius:24,stroke:'#E23B2E',sw:4,fill:'#E23B2E',fillA:0,badgeAuto:0},hl:{stroke:'#FFE066',sw:0,fill:'#FFE066',fillA:.5,radius:2,badgeAuto:0},nbox:{radius:6,stroke:'#EA580C',sw:4,fill:'#EA580C',fillA:0,badgeAuto:1,badgePos:'tl',badgeS:40}},VAR_NAME={sq:'직사각',round:'둥근사각',hl:'형광',nbox:'번호사각'};let toolVar='sq',cropId=null;
-const LAY_DEF={lw:182,rw:272,lc:0,rc:0,tc:0};let ov=null;const TOUCH=matchMedia('(pointer:coarse)').matches,TK=TOUCH?1.9:1,NARROW=()=>innerWidth<760;let layout=Object.assign({},LAY_DEF);try{Object.assign(layout,JSON.parse(lsGet('ls.layout')||'{}'));}catch(e){}
+const LAY_DEF={lw:182,rw:272,lc:0,rc:0,tc:0,fc:0};let ov=null;const TOUCH=matchMedia('(pointer:coarse)').matches,TK=TOUCH?1.9:1,NARROW=()=>innerWidth<760;let layout=Object.assign({},LAY_DEF);try{Object.assign(layout,JSON.parse(lsGet('ls.layout')||'{}'));}catch(e){}
 function saveLayout(){lsSet('ls.layout',JSON.stringify(layout));}
 function applyLayout(){
   const mx=Math.max(240,innerWidth-420);layout.lw=clamp(+layout.lw||182,110,Math.min(420,mx-layout.rw*(layout.rc?0:1)));layout.rw=clamp(+layout.rw||272,220,Math.min(520,mx-layout.lw*(layout.lc?0:1)));
@@ -78,15 +78,18 @@ function applyLayout(){
   const hh=$('#top');if(hh)rs.setProperty('--hh',hh.offsetHeight+'px');
   rs.setProperty('--tw',tw+'px');rs.setProperty('--ts',(tw/W)+'');rs.setProperty('--thH',(tw*H/W)+'px');
   const B=document.body.classList;B.toggle('lc',!!LC);B.toggle('rc',!!RC);B.toggle('tc',!!layout.tc);B.toggle('narrow',nr);B.toggle('touch',TOUCH);B.toggle('ovl',!!LC&&ov==='lc');B.toggle('ovr',!!RC&&ov==='rc');
+  const CH=d=>'<svg viewBox="0 0 12 12"><path d="'+(d==='l'?'M8 1L3 6l5 5':d==='r'?'M4 1l5 5-5 5':d==='u'?'M1 8l5-5 5 5':'M1 4l5 5 5-5')+'" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
   const hl=$('#hL'),hr=$('#hR');
-  if(hl){const o=LC&&ov==='lc';hl.querySelector('.hb').textContent=LC&&!o?'›':'‹';hl.querySelector('.hb').title=LC?(o?'목록 닫기 (Alt+1)':'슬라이드 목록 열기 (Alt+1)'):'슬라이드 목록 접기 (Alt+1)';}
-  if(hr){const o=RC&&ov==='rc';hr.querySelector('.hb').textContent=RC&&!o?'‹':'›';hr.querySelector('.hb').title=RC?(o?'도구 패널 닫기 (Alt+2)':'도구 패널 열기 (Alt+2)'):'도구 패널 접기 (Alt+2)';}
-  const tf=$('#bTbFold');if(tf){tf.textContent=layout.tc?'▼ 도구':'▲';tf.title=layout.tc?'도구 모음 펼치기':'도구 모음 접기 (단축키는 그대로 동작)';}
+  if(hl){const o=LC&&ov==='lc',b=hl.querySelector('.hb');b.innerHTML=CH(LC&&!o?'r':'l');b.title=LC?(o?'슬라이드 목록 닫기 (Alt+1)':'슬라이드 목록 열기 (Alt+1)'):'슬라이드 목록 숨기기 (Alt+1)';}
+  if(hr){const o=RC&&ov==='rc',b=hr.querySelector('.hb');b.innerHTML=CH(RC&&!o?'l':'r');b.title=RC?(o?'도구 패널 닫기 (Alt+2)':'도구 패널 열기 (Alt+2)'):'도구 패널 숨기기 (Alt+2)';}
+  B.toggle('fc',!!layout.fc);
+  const ft=$('#bFoldT'),ff=$('#bFoldF');
+  if(ft){ft.innerHTML=CH(layout.tc?'d':'u')+(layout.tc?'도구':'');ft.title=layout.tc?'도구 줄 펼치기':'도구 줄 접기 (단축키는 그대로 동작)';}
+  if(ff){ff.innerHTML=CH(layout.fc?'d':'u')+(layout.fc?'즐겨찾기':'');ff.title=layout.fc?'즐겨찾기 줄 펼치기':'즐겨찾기 줄 접기 (숫자키 1~9는 그대로 동작)';}
   document.querySelectorAll('#thumbs .sz button').forEach(x=>x.classList.toggle('on',+x.dataset.w===layout.lw));
 }
-function togglePanel(side){if(!layout[side]&&!NARROW()){layout[side]=1;ov=null;}else{ov=(ov===side)?null:side;}saveLayout();applyLayout();}
-function pinPanel(side){if(NARROW())return;layout[side]=0;ov=null;saveLayout();applyLayout();}
-function toggleToolbar(){layout.tc=layout.tc?0:1;saveLayout();applyLayout();setTimeout(()=>{try{fitStage();}catch(e){}},30);}
+function togglePanel(side){if(NARROW()){ov=(ov===side)?null:side;}else{layout[side]=layout[side]?0:1;ov=null;saveLayout();}applyLayout();}
+function toggleFold(k){layout[k]=layout[k]?0:1;saveLayout();applyLayout();setTimeout(()=>{try{fitStage();}catch(e){}},30);}
 function setThumbSize(w){layout.lw=w;layout.lc=0;saveLayout();applyLayout();}
 function initResizers(){
   for(const [id,side] of [['#rzL','lw'],['#rzR','rw']]){
