@@ -1165,7 +1165,7 @@ function loadProject(d){
   $('#title').value=P.title;for(const [,t] of thumbEls)t.el.remove();thumbEls.clear();stageEl._ok=0;stageEl._sid=null;applyRatio(P.ratio);
   renderFavs();go(0);P.slides.filter(s=>s.type==='html'&&!s.thumb).forEach(queueThumb);
 }
-function openText(text,handle){try{loadProject(JSON.parse(text));fileHandle=handle;baseMod=0;if(handle)handle.getFile().then(f=>{baseMod=f.lastModified;}).catch(()=>{});toast('열었어요: '+P.title);}catch(err){toast('열 수 없어요: '+err.message);}}
+function openText(text,handle){try{loadProject(JSON.parse(text));fileHandle=handle;if(handle)addRecent(handle);baseMod=0;if(handle)handle.getFile().then(f=>{baseMod=f.lastModified;}).catch(()=>{});toast('열었어요: '+P.title);}catch(err){toast('열 수 없어요: '+err.message);}}
 /* ---- 동기화 폴더 (Google Drive / OneDrive / Dropbox 데스크톱 앱 폴더) ---- */
 let dirHandle=null,baseMod=0,folderAuto=lsGet('ls.folderAuto')==='1',folderT=0,extIgnored=0;
 const safeName=n=>(String(n||'강의').replace(/[\\/:*?"<>|]/g,'_').trim().slice(0,80)||'강의');
@@ -1203,7 +1203,7 @@ async function saveProject(as){
       if(!fresh&&await externalChanged()){
         if(!confirm('⚠ 이 파일이 다른 기기나 창에서 바뀌었어요.\n지금 저장하면 그쪽 변경이 사라져요.\n\n확인: 그래도 덮어쓰기 · 취소: 저장 안 함 (「다른 이름으로」로 사본을 만들 수 있어요)')){toast('저장을 취소했어요 · 다른 이름으로 저장해 두면 안전해요');return;}
       }
-      await writeProject(fileHandle,data);
+      await writeProject(fileHandle,data);addRecent(fileHandle);
       toast('저장했어요: '+fileHandle.name);
     }else{download(new Blob([data],{type:'application/json'}),(P.title||'강의')+'.lecture');toast('파일로 내려받았어요');}
     dirty=false;$('#dirty').textContent='저장됨';setTimeout(()=>{if(!dirty)$('#dirty').textContent='';},2500);
@@ -1232,6 +1232,43 @@ async function showExtBanner(force){
   $('#xRe',b).onclick=()=>{if(dirty&&!confirm('저장하지 않은 내 변경이 사라져요. 계속할까요?'))return;b.remove();reloadExternal();};
   $('#xNo',b).onclick=()=>{extIgnored=m;b.remove();};
 }
+
+/* ---- 최근 항목 (파일 접근 권한을 IndexedDB에 기억) ---- */
+async function recentList(){try{return (await idb.get('recent'))||[];}catch(e){return [];}}
+async function addRecent(h){
+  if(!h||!window.showOpenFilePicker)return;
+  try{
+    let l=await recentList();const ex=[];
+    for(const x of l){let same=false;try{same=await x.h.isSameEntry(h);}catch(e){}if(!same)ex.push(x);}
+    ex.unshift({name:h.name,t:Date.now(),h});await idb.set('recent',ex.slice(0,10));
+  }catch(e){}
+}
+function recTime(t){const d=new Date(t),n=new Date(),p=v=>String(v).padStart(2,'0'),dd=Math.round((new Date(n.getFullYear(),n.getMonth(),n.getDate())-new Date(d.getFullYear(),d.getMonth(),d.getDate()))/864e5);return dd===0?'오늘 '+p(d.getHours())+':'+p(d.getMinutes()):dd===1?'어제':(d.getMonth()+1)+'/'+d.getDate();}
+async function renderRecent(){
+  const box=$('#recBox');if(!box)return;
+  if(!window.showOpenFilePicker){box.hidden=true;return;}
+  box.hidden=false;const l=await recentList(),list=$('#recList');
+  list.innerHTML=l.length?l.map((x,i)=>'<button class="rec" data-i="'+i+'" title="'+esc(x.name)+'"><span class="rn">'+esc(x.name.replace(/\.lecture$/,''))+'</span><span class="rt">'+recTime(x.t)+'</span></button>').join(''):'<div class="rnone">최근 항목 없음</div>';
+  $('#recClear').hidden=!l.length;
+}
+async function openRecent(i){
+  const l=await recentList(),x=l[i];if(!x)return;
+  if(dirty&&!confirm('저장하지 않은 변경이 있어요. 그래도 열까요?'))return;
+  try{
+    const o={mode:'readwrite'};let p=await x.h.queryPermission(o);if(p!=='granted')p=await x.h.requestPermission(o);
+    if(p!=='granted'){o.mode='read';p=await x.h.queryPermission(o);if(p!=='granted')p=await x.h.requestPermission(o);}
+    if(p!=='granted'){toast('파일 접근을 허용해야 열 수 있어요');return;}
+    const f=await x.h.getFile();openText(await f.text(),x.h);
+  }catch(err){
+    if(err&&(err.name==='NotFoundError'||err.name==='NotAllowedError'&&false)){await idb.set('recent',l.filter((_,k)=>k!==i));toast('파일을 찾을 수 없어요 · 목록에서 뺐어요');renderRecent();}
+    else toast('열 수 없어요: '+(err&&err.message||err));
+  }
+}
+document.addEventListener('click',e=>{
+  if(e.target.closest('[data-dd="mOpen"]'))renderRecent();
+  const r=e.target.closest('#recList .rec');if(r)openRecent(+r.dataset.i);
+  if(e.target.closest('#recClear'))idb.set('recent',[]).then(renderRecent);
+});
 async function openProject(){
   if(dirty&&!confirm('저장하지 않은 변경이 있어요. 그래도 열까요?'))return;
   if(window.showOpenFilePicker){
