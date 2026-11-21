@@ -52,7 +52,7 @@ async function exportPPTX(){
   if(editMaster){toast('마스터 편집을 먼저 끝내 주세요');return;}
   toast('PowerPoint 파일 만드는 중…');
   try{
-    const inW=P.ratio==='4:3'?10:13.333,inH=inW*H/W,k=inW/W,pt=k*72,pptx=new PptxGenJS();
+    const inW=RATIOS[ratioKey(P.ratio)].inW,inH=inW*H/W,k=inW/W,pt=k*72,pptx=new PptxGenJS();
     pptx.defineLayout({name:'LS',width:inW,height:inH});pptx.layout='LS';pptx.title=P.title||'강의';
     let flat=0,html=0;
     for(let i=0;i<P.slides.length;i++){

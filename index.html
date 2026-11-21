@@ -42,6 +42,13 @@ body.tc #rowT .tb,body.tc #rowT>.vs{display:none}
 body.fc #rowF #favs{display:none}
 body.aud-mode .hdl{display:none}
 #viewport,#box,#pres{touch-action:none}
+#cropGhost{display:none;position:absolute;pointer-events:none;opacity:.38;z-index:1}#cropGhost img{width:100%;height:100%;display:block;pointer-events:none}
+#cropBar{display:none;position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:30;background:#F97316;color:#fff;padding:5px 8px 5px 14px;border-radius:20px;gap:10px;align-items:center;box-shadow:0 2px 10px rgba(0,0,0,.3);white-space:nowrap;max-width:94%}
+#cropBar span{font-size:12px;opacity:.95;overflow:hidden;text-overflow:ellipsis}#cropBar button{background:#fff;color:#C2410C;border:0;border-radius:14px;padding:4px 12px;font-weight:700;cursor:pointer}
+body.cropping #cropBar{display:flex}
+body.cropping #viewport{box-shadow:inset 0 0 0 4px #F97316}
+#inspector .btn.cropon{background:#F97316;color:#fff;border-color:#EA580C;font-weight:700}
+body.narrow #cropBar span{display:none}
 #box{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 body.nocap .grp:has(#bCap){display:none}
 body.touch #toolbar .tb,body.touch #toolbar .ur,body.touch #toolbar .fold,body.touch #zoomBox button{min-height:40px}
@@ -314,7 +321,7 @@ body.mm #viewport{background:#D9CFF0}
       <div id="favs"></div>
       <div id="zoomBox"><button id="bSnap" title="다른 도형·슬라이드 가장자리/중앙에 달라붙어요 (드래그 중 Alt: 잠시 끄기)">🧲 스냅</button><span class="vs"></span><button id="zOut" title="축소 (Ctrl+-)">－</button><input id="zPct" type="text" inputmode="numeric" value="100%" title="화면 배율 · 숫자를 직접 입력하고 Enter (10~400)"><button id="zIn" title="확대 (Ctrl++ / Ctrl+휠)">＋</button><button id="zFit" title="화면에 맞추기 (Ctrl+0)">맞춤</button><button id="z100" title="실제 크기 100% (Ctrl+1)">100%</button></div><button id="bFoldF" class="fold" title="즐겨찾기 줄 접기"></button></div>
     </div>
-    <div id="viewport"><div id="mbar" hidden><b>🧩 마스터 편집 중</b><span id="mbName"></span><button id="mbDone">편집 끝내기</button></div><div id="boxOuter"><div id="box"><div id="stage"></div><svg id="ui" viewBox="0 0 1280 720"></svg></div></div></div>
+    <div id="viewport"><div id="cropBar"><b>✂ 자르기 모드</b><span>모서리·가장자리를 끌어서 자르세요 · 흐린 부분이 잘려나간 영역</span><button id="cropDone">완료 (Enter)</button></div><div id="mbar" hidden><b>🧩 마스터 편집 중</b><span id="mbName"></span><button id="mbDone">편집 끝내기</button></div><div id="boxOuter"><div id="box"><div id="stage"></div><div id="cropGhost"><img alt=""></div><svg id="ui" viewBox="0 0 1280 720"></svg></div></div></div>
     <div id="status"><span id="stTool"></span><span id="pgNav"><button id="pgPrev" title="이전 슬라이드">◀</button><b id="pgNo"></b><button id="pgNext" title="다음 슬라이드">▶</button></span><span id="stPos"></span><span id="stHint"></span></div>
   </main>
   <div id="rzR" class="rz" title="드래그: 폭 조절 · 더블클릭: 기본 폭"></div>
@@ -478,6 +485,8 @@ body.mm #viewport{background:#D9CFF0}
 'use strict';
 /* ===================== 유틸/상수 ===================== */
 const W=1280,IS_AUD=location.hash==='#aud';let H=720;
+const RATIOS={'16:9':{h:720,inW:13.333,name:'16:9 (와이드)'},'4:3':{h:960,inW:10,name:'4:3 (발표용 표준)'},'A4':{h:905,inW:11.693,name:'A4 가로 (297×210)',page:'A4 landscape',pw:1122.52},'A4v':{h:1810,inW:8.268,name:'A4 세로 (210×297)',page:'A4 portrait',pw:793.7}};
+const ratioKey=r=>RATIOS[r]?r:'16:9';
 const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
 const uid=()=>Math.random().toString(36).slice(2,9);
 const clone=o=>JSON.parse(JSON.stringify(o));
@@ -937,8 +946,20 @@ function renderStage(){
   box.classList.toggle('sel',tool==='select');
   renderUI();scheduleThumb();
 }
+function cropGhost(){
+  const g=$('#cropGhost');if(!g)return;
+  const co=cropId&&findObj(cropId);
+  document.body.classList.toggle('cropping',!!co);
+  if(!co){g.style.display='none';return;}
+  const c=co.crop||{l:0,t:0,r:0,b:0},Fw=co.w/(1-c.l-c.r),Fh=co.h/(1-c.t-c.b),cl=co.flip?c.r:c.l,fx=co.x-cl*Fw,fy=co.y-c.t*Fh,im=g.firstChild;
+  if(im.dataset.id!==co.src){im.src=P.assets[co.src]||'';im.dataset.id=co.src;}
+  const ix=cl*Fw,iy=c.t*Fh;
+  g.style.cssText='display:block;left:'+fx+'px;top:'+fy+'px;width:'+Fw+'px;height:'+Fh+'px;transform-origin:'+(co.x+co.w/2-fx)+'px '+(co.y+co.h/2-fy)+'px;transform:rotate('+(co.rot||0)+'deg);clip-path:path(evenodd,"M0 0H'+Fw+'V'+Fh+'H0Z M'+ix+' '+iy+'h'+co.w+'v'+co.h+'h-'+co.w+'Z")';
+  im.style.transform=co.flip?'scaleX(-1)':'';
+}
 function renderUI(){
   if(cropId){const co=findObj(cropId);if(!co||selIds().join()!==cropId)cropId=null;}
+  cropGhost();
   let h='';
   if(draft){
     if(draft.t==='mosaic'){
@@ -956,10 +977,17 @@ function renderUI(){
     h+='<rect x="'+b.x+'" y="'+b.y+'" width="'+b.w+'" height="'+b.h+'" fill="none" stroke="'+(fr.locked?'#F59E0B':'#2563EB')+'" stroke-width="1.5" stroke-dasharray="5 3" vector-effect="non-scaling-stroke"'+(fr.rot?' transform="rotate('+fr.rot+' '+cx+' '+cy+')"':'')+'/>';
     for(const hd of frameHandles(fr)){
       if(hd.n==='rot'){const t=rotP(cx,b.y,cx,cy,fr.rot);h+='<line x1="'+t.x+'" y1="'+t.y+'" x2="'+hd.x+'" y2="'+hd.y+'" stroke="#2563EB" stroke-width="1.5" vector-effect="non-scaling-stroke"/><circle cx="'+hd.x+'" cy="'+hd.y+'" r="'+(hs*0.62)+'" fill="#fff" stroke="#2563EB" stroke-width="1.5" vector-effect="non-scaling-stroke"/>';}
+      else if(cropId&&fr.single&&fr.single.id===cropId){
+        const L=hs*2.2,n=hd.n,sx=n.includes('w')?1:n.includes('e')?-1:0,sy=n.includes('n')?1:n.includes('s')?-1:0;let d;
+        if(n.length===2)d='M'+(hd.x+sx*L)+' '+hd.y+'L'+hd.x+' '+hd.y+'L'+hd.x+' '+(hd.y+sy*L);
+        else if(sx)d='M'+hd.x+' '+(hd.y-L*.7)+'L'+hd.x+' '+(hd.y+L*.7);else d='M'+(hd.x-L*.7)+' '+hd.y+'L'+(hd.x+L*.7)+' '+hd.y;
+        const tf=fr.rot?' transform="rotate('+fr.rot+' '+hd.x+' '+hd.y+')"':'';
+        h+='<path d="'+d+'" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="square" stroke-linejoin="miter" vector-effect="non-scaling-stroke"'+tf+'/><path d="'+d+'" fill="none" stroke="#111827" stroke-width="5" stroke-linecap="square" stroke-linejoin="miter" vector-effect="non-scaling-stroke"'+tf+'/>';
+      }
       else h+='<rect x="'+(hd.x-hs/2)+'" y="'+(hd.y-hs/2)+'" width="'+hs+'" height="'+hs+'" fill="#fff" stroke="#2563EB" stroke-width="1.5" vector-effect="non-scaling-stroke"/>';
     }
   }
-  if(cropId&&fr&&fr.single){const co=fr.single,c=co.crop||{l:0,t:0,r:0,b:0},Fw=co.w/(1-c.l-c.r),Fh=co.h/(1-c.t-c.b),cl=co.flip?c.r:c.l,ccx=co.x+co.w/2,ccy=co.y+co.h/2;h+='<rect x="'+(co.x-cl*Fw)+'" y="'+(co.y-c.t*Fh)+'" width="'+Fw+'" height="'+Fh+'" fill="none" stroke="#F59E0B" stroke-width="1.5" stroke-dasharray="4 4" vector-effect="non-scaling-stroke"'+(co.rot?' transform="rotate('+co.rot+' '+ccx+' '+ccy+')"':'')+'/>';}
+  if(cropId&&fr&&fr.single){const co=fr.single,c=co.crop||{l:0,t:0,r:0,b:0},Fw=co.w/(1-c.l-c.r),Fh=co.h/(1-c.t-c.b),cl=co.flip?c.r:c.l,ccx=co.x+co.w/2,ccy=co.y+co.h/2;h+='<rect x="'+(co.x-cl*Fw)+'" y="'+(co.y-c.t*Fh)+'" width="'+Fw+'" height="'+Fh+'" fill="none" stroke="#F97316" stroke-width="2" stroke-dasharray="6 4" vector-effect="non-scaling-stroke"'+(co.rot?' transform="rotate('+co.rot+' '+ccx+' '+ccy+')"':'')+'/>';}
   if(fr&&fr.locked)h+='<text x="'+(fr.box.x+4)+'" y="'+(fr.box.y-6/view.s)+'" font-size="'+(15/view.s)+'">🔒 잠김</text>';
   for(const g of guides)h+=g.x!=null?'<line x1="'+g.x+'" y1="0" x2="'+g.x+'" y2="'+H+'" stroke="#EC4899" stroke-width="1" vector-effect="non-scaling-stroke"/>':'<line x1="0" y1="'+g.y+'" x2="'+W+'" y2="'+g.y+'" stroke="#EC4899" stroke-width="1" vector-effect="non-scaling-stroke"/>';
   $('#ui').innerHTML=h;
@@ -1095,7 +1123,7 @@ function renderInspector(){
     if(kind==='num'){h+='<div class="fld"><label>다음 번호</label><input type="number" id="nn" min="0" value="'+nextNum+'"></div>';h+='<label class="chk"><input type="checkbox" id="autoRenum"'+(autoRenum?' checked':'')+'> 번호를 지우면 자동으로 다시 매기기</label><div class="arow ic">'+AB('renum','다시 매기기','이 슬라이드의 번호를 1부터 순서대로 다시 매겨요')+'</div>';}
     if(o&&ROTT.includes(o.t))h+=ctl(['rot','회전(°)','range',0,360,1],Math.round(o.rot||0));
     if(kind==='img'){
-      if(o){h+=cropId===o.id?'<p class="hint">✂ 자르는 중 · 가장자리/모서리를 끌어서 자르고, 늘리면 다시 살아나요 (점선 = 원본 크기)</p><button class="btn" id="bCropEnd">✔ 자르기 끝내기 (Enter)</button><button class="btn" id="bCropReset">원본 크기로 되돌리기</button>':'<button class="btn" id="bCrop">✂ 이미지 자르기 (더블클릭)</button><button class="btn" id="bBgFill">🖼 배경으로 만들기 (꽉 채움·맨 뒤·잠금)</button>'+(o.crop?'<button class="btn" id="bCropReset">자르기 취소 (원본 복원)</button>':'');}
+      if(o){h+=cropId===o.id?'<p class="hint">✂ 자르는 중 · 가장자리/모서리를 끌어서 자르고, 늘리면 다시 살아나요 (점선 = 원본 크기)</p><button class="btn cropon" id="bCropEnd">✂ 자르는 중 · 눌러서 끝내기 (Enter)</button><button class="btn" id="bCropReset">원본 크기로 되돌리기</button>':'<button class="btn" id="bCrop">✂ 이미지 자르기 (더블클릭)</button><button class="btn" id="bBgFill">🖼 배경으로 만들기 (꽉 채움·맨 뒤·잠금)</button>'+(o.crop?'<button class="btn" id="bCropReset">자르기 취소 (원본 복원)</button>':'');}
     }else h+='<button class="btn" id="addFav">★ 이 스타일을 즐겨찾기에 저장</button>';
   }
   else if(!list.length){h+='<h4>도구</h4><p class="hint">위쪽 도구를 고르거나, 도형을 클릭해서 스타일을 바꿔요. 자주 쓰는 모양은 ★로 저장하고 숫자키 1~9 로 불러오세요.</p>';const nl=s.objects.filter(o=>o.locked).length;if(nl)h+='<p class="hint">🔒 잠긴 도형 '+nl+'개 (Alt+클릭으로 선택)</p><button class="btn" data-act="unlockAll">모두 잠금 해제</button>';}
@@ -1114,7 +1142,7 @@ function renderInspector(){
   if(mcur&&s.bgOwn)h+='<button class="btn" id="bgFromMaster">마스터 배경색 사용</button>';
   h+='<div class="fld"><label>마스터</label><select id="slMaster"><option value="none"'+(s.master==='none'?' selected':'')+'>없음</option>'+ms.map(m=>'<option value="'+m.id+'"'+(mcur&&mcur.id===m.id&&s.master!=='none'?' selected':'')+'>'+esc(m.name)+'</option>').join('')+'</select></div>';
   h+='<div class="arow"><button id="mEdit" style="min-width:90px">🧩 '+(ms.length?'마스터 편집':'마스터 만들기')+'</button>'+(ms.length?'<button id="mNew" style="min-width:90px">＋ 새 마스터</button>':'')+'</div>';
-  h+='<div class="fld"><label>화면비(전체)</label><select id="slRatio"><option value="16:9"'+(P.ratio!=='4:3'?' selected':'')+'>16:9 (와이드)</option><option value="4:3"'+(P.ratio==='4:3'?' selected':'')+'>4:3 (발표용 표준)</option></select></div>';
+  h+='<div class="fld"><label>화면비(전체)</label><select id="slRatio">'+Object.keys(RATIOS).map(k=>'<option value="'+k+'"'+(ratioKey(P.ratio)===k?' selected':'')+'>'+RATIOS[k].name+'</option>').join('')+'</select></div>';
   if(s.type==='html'){
     h+='<button class="btn" id="bEditText">'+(editText?'✔ 텍스트 편집 끝내기':'✎ 텍스트 편집 (E)')+'</button>';
     h+='<p class="hint">HTML 슬라이드는 원본 모양 그대로 보여요. 글자 수정은 위 버튼, 도형·모자이크·펜은 그 위에 얹혀요.</p>';
@@ -1428,7 +1456,10 @@ function handleAt(fr,p){const hs=12*TK/view.s;for(const hd of frameHandles(fr))i
 const ROT_SVG="<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'><path d='M12 4a8 8 0 1 0 7.5 5.2' fill='none' stroke='white' stroke-width='4.5' stroke-linecap='round'/><path d='M12 4a8 8 0 1 0 7.5 5.2' fill='none' stroke='black' stroke-width='2' stroke-linecap='round'/><path d='M21 2.5v8h-8z' fill='black' stroke='white' stroke-width='1.2'/></svg>";
 const ROT_CURSOR='url("data:image/svg+xml,'+encodeURIComponent(ROT_SVG)+'") 12 12, grab';
 const BASE_ANG={e:0,se:45,s:90,sw:135,w:180,nw:225,n:270,ne:315},CUR4=['ew-resize','nwse-resize','ns-resize','nesw-resize'];
+const CROP_SVG="<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'><path d='M8 2v18h18M2 8h18v18' fill='none' stroke='#fff' stroke-width='6' stroke-linejoin='miter'/><path d='M8 2v18h18M2 8h18v18' fill='none' stroke='#111827' stroke-width='3' stroke-linejoin='miter'/></svg>";
+const CROP_CURSOR='url("data:image/svg+xml,'+encodeURIComponent(CROP_SVG)+'") 14 14, crosshair';
 function cursorFor(n,rot){
+  if(cropId&&n!=='rot')return CROP_CURSOR;
   if(n==='rot')return ROT_CURSOR;if(n==='a1'||n==='a2')return 'move';
   const a=((BASE_ANG[n]+(rot||0))%360+360)%360;return CUR4[Math.round(a/45)%4];
 }
@@ -1640,7 +1671,7 @@ function serialize(){
 function loadProject(d){
   if(!d||d.format!=='lecture-slides')throw new Error('강의슬라이드 파일이 아니에요');
   if(editMaster){editMaster=null;document.body.classList.remove('mm');$('#mbar').hidden=true;}
-  P={title:d.title||'제목 없는 강의',ratio:d.ratio==='4:3'?'4:3':'16:9',masters:d.masters||[],slides:d.slides&&d.slides.length?d.slides:[blankSlide()],assets:d.assets||{},htmls:d.htmls||{},presets:d.presets&&d.presets.length?d.presets:(loadPresets()||defPresets())};
+  P={title:d.title||'제목 없는 강의',ratio:ratioKey(d.ratio),masters:d.masters||[],slides:d.slides&&d.slides.length?d.slides:[blankSlide()],assets:d.assets||{},htmls:d.htmls||{},presets:d.presets&&d.presets.length?d.presets:(loadPresets()||defPresets())};
   imgCache.clear();undo=[];redo=[];sel=null;editText=false;dirty=false;$('#dirty').textContent='';
   $('#title').value=P.title;for(const [,t] of thumbEls)t.el.remove();thumbEls.clear();stageEl._ok=0;stageEl._sid=null;applyRatio(P.ratio);
   renderFavs();go(0);P.slides.filter(s=>s.type==='html'&&!s.thumb).forEach(queueThumb);
@@ -1861,7 +1892,7 @@ async function buildPrintRoot(opts){
   await Promise.all([...root.querySelectorAll('img')].map(im=>(im.decode?im.decode():Promise.resolve()).catch(()=>{})));
   await Promise.all([...root.querySelectorAll('iframe')].map(f=>new Promise(res=>{f.addEventListener('load',()=>setTimeout(res,500));setTimeout(res,3500);})));
   let st=$('#pgstyle');if(!st){st=document.createElement('style');st.id='pgstyle';document.head.appendChild(st);}
-  st.textContent=opts.notes?'@page{size:A4 portrait;margin:12mm}':'@page{size:'+W+'px '+H+'px;margin:0}';
+  const R=RATIOS[ratioKey(P.ratio)];st.textContent=opts.notes?'@page{size:A4 portrait;margin:12mm}':R.page?'@page{size:'+R.page+';margin:0}.pp{zoom:'+(R.pw/W*0.998).toFixed(5)+'}':'@page{size:'+W+'px '+H+'px;margin:0}';
 }
 async function printSlides(opts){
   toast('인쇄 준비 중…');
@@ -1873,7 +1904,7 @@ async function printSlides(opts){
 function showPrintDialog(){
   const m=modal('<h3>인쇄 / PDF로 저장</h3>'
     +'<p><b>범위</b></p><label><input type="radio" name="pr" value="all" checked> 전체 슬라이드 ('+P.slides.length+'장)</label><br><label><input type="radio" name="pr" value="cur"> 지금 슬라이드만</label>'
-    +'<p><b>모양</b></p><label><input type="radio" name="pm" value="slides" checked> 슬라이드만 (한 페이지에 한 장, 16:9)</label><br><label><input type="radio" name="pm" value="notes"> 슬라이드 + 발표자 메모 (A4 세로)</label>'
+    +'<p><b>모양</b></p><label><input type="radio" name="pm" value="slides" checked> 슬라이드만 (한 페이지에 한 장, '+RATIOS[ratioKey(P.ratio)].name.split(' ')[0]+(RATIOS[ratioKey(P.ratio)].page?' 용지 크기':'')+')</label><br><label><input type="radio" name="pm" value="notes"> 슬라이드 + 발표자 메모 (A4 세로)</label>'
     +'<p class="hint">다음에 열리는 인쇄창에서 대상(프린터)을 「PDF로 저장」으로 고르면 PDF 파일이 만들어져요. HTML 슬라이드 위의 모자이크/블러는 인쇄에서 회색 상자로 가려져요.</p>'
     +'<div class="row"><button class="pri" id="prGo">인쇄창 열기</button><button id="prNo">취소</button></div>');
   $('#prNo',m).onclick=closeModal;
@@ -1971,6 +2002,32 @@ window.addEventListener('blur',()=>{spaceDown=false;});
   $('#pgPrev').onclick=()=>go(cur-1);$('#pgNext').onclick=()=>go(cur+1);
 })();
 
+
+/* 슬라이드 밖으로 나간 도형·조절점도 잡을 수 있게: 회색 영역 클릭을 슬라이드 쪽 핸들러로 넘김 */
+(function(){
+  const vp=$('#viewport');
+  const hitOut=e=>{
+    if(IS_AUD||pres||e.target!==vp&&e.target.id!=='boxOuter')return null;
+    if(tool!=='select'&&!cropId)return null;
+    const p=pt(e),fr=selFrame();
+    if(fr&&handleAt(fr,p))return 'h';
+    if(!cropId&&hitTest(curSlide().objects,p.x,p.y,8*TK/view.s+2,e.altKey))return 'o';
+    return null;
+  };
+  vp.addEventListener('pointerdown',e=>{
+    if(e.button!==0)return;
+    if(hitOut(e)){e.stopPropagation();box.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true,cancelable:true,clientX:e.clientX,clientY:e.clientY,button:0,buttons:1,pointerId:e.pointerId,pointerType:e.pointerType,isPrimary:true,shiftKey:e.shiftKey,altKey:e.altKey,ctrlKey:e.ctrlKey,metaKey:e.metaKey}));}
+  });
+  vp.addEventListener('pointermove',e=>{
+    if(e.buttons||spaceDown)return;
+    if(e.target!==vp&&e.target.id!=='boxOuter')return;
+    const k=hitOut(e);let c='';
+    if(k==='h'){const fr=selFrame(),hd=handleAt(fr,pt(e));c=cursorFor(hd.n,fr.rot);}else if(k==='o')c='move';
+    vp.style.cursor=c;
+  });
+  $('#cropDone').onclick=()=>{cropId=null;renderUI();renderInspector();};
+})();
+
 /* ===================== 이미지 자르기 ===================== */
 function startCrop(){const l=selList();if(l.length!==1||l[0].t!=='img')return;if(l[0].locked){toast('잠긴 이미지는 자를 수 없어요');return;}cropId=l[0].id;renderUI();renderInspector();toast('가장자리를 끌어서 자르세요 · Enter 로 끝내기');}
 function cropFrame(o,c){return {Fw:o.w/(1-c.l-c.r),Fh:o.h/(1-c.t-c.b)};}
@@ -1998,7 +2055,7 @@ function cropReset(){
 
 /* ===================== 화면비 ===================== */
 function applyRatio(r){
-  P.ratio=r==='4:3'?'4:3':'16:9';H=P.ratio==='4:3'?960:720;
+  P.ratio=ratioKey(r);H=RATIOS[P.ratio].h;
   const rs=document.documentElement.style;rs.setProperty('--H',H+'px');rs.setProperty('--phH',(700*H/W)+'px');
   for(const s of ['#ui','#audInk','#pink']){const e=$(s);if(e)e.setAttribute('viewBox','0 0 '+W+' '+H);}
   stageEl._ok=0;for(const [,t] of thumbEls)t.root._ok=0;
@@ -2051,9 +2108,10 @@ async function refitBgs(){
   renderAll();
 }
 function changeRatio(r){
-  if(r===P.ratio)return;
-  if(r==='16:9'&&P.slides.concat(P.masters||[]).some(s=>s.objects.some(o=>{const b=bbox(o);return b.y+b.h>720+2;}))&&!confirm('16:9로 바꾸면 화면 아래쪽(높이 720 밖)에 있던 도형은 안 보이게 돼요. 바꿀까요?')){renderInspector();return;}
-  applyRatio(r);markDirty();renderAll();refitBgs();toast('화면비를 '+r+' 로 바꿨어요 (배경으로 만든 이미지는 자동으로 다시 맞춰요)');
+  r=ratioKey(r);if(r===P.ratio)return;
+  const nh=RATIOS[r].h;
+  if(nh<H&&P.slides.concat(P.masters||[]).some(sl=>sl.objects.some(o=>{const b=bbox(o);return b.y+b.h>nh+2;}))&&!confirm(RATIOS[r].name+'로 바꾸면 화면 아래쪽(높이 '+nh+' 밖)에 있던 도형은 안 보이게 돼요. 바꿀까요?')){renderInspector();return;}
+  applyRatio(r);markDirty();renderAll();refitBgs();toast('화면비를 '+RATIOS[r].name+' 로 바꿨어요 (배경으로 만든 이미지는 자동으로 다시 맞춰요)');
 }
 
 /* ===================== PowerPoint(.pptx) 내보내기 ===================== */
@@ -2109,7 +2167,7 @@ async function exportPPTX(){
   if(editMaster){toast('마스터 편집을 먼저 끝내 주세요');return;}
   toast('PowerPoint 파일 만드는 중…');
   try{
-    const inW=P.ratio==='4:3'?10:13.333,inH=inW*H/W,k=inW/W,pt=k*72,pptx=new PptxGenJS();
+    const inW=RATIOS[ratioKey(P.ratio)].inW,inH=inW*H/W,k=inW/W,pt=k*72,pptx=new PptxGenJS();
     pptx.defineLayout({name:'LS',width:inW,height:inH});pptx.layout='LS';pptx.title=P.title||'강의';
     let flat=0,html=0;
     for(let i=0;i<P.slides.length;i++){

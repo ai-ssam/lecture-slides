@@ -42,6 +42,13 @@ body.tc #rowT .tb,body.tc #rowT>.vs{display:none}
 body.fc #rowF #favs{display:none}
 body.aud-mode .hdl{display:none}
 #viewport,#box,#pres{touch-action:none}
+#cropGhost{display:none;position:absolute;pointer-events:none;opacity:.38;z-index:1}#cropGhost img{width:100%;height:100%;display:block;pointer-events:none}
+#cropBar{display:none;position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:30;background:#F97316;color:#fff;padding:5px 8px 5px 14px;border-radius:20px;gap:10px;align-items:center;box-shadow:0 2px 10px rgba(0,0,0,.3);white-space:nowrap;max-width:94%}
+#cropBar span{font-size:12px;opacity:.95;overflow:hidden;text-overflow:ellipsis}#cropBar button{background:#fff;color:#C2410C;border:0;border-radius:14px;padding:4px 12px;font-weight:700;cursor:pointer}
+body.cropping #cropBar{display:flex}
+body.cropping #viewport{box-shadow:inset 0 0 0 4px #F97316}
+#inspector .btn.cropon{background:#F97316;color:#fff;border-color:#EA580C;font-weight:700}
+body.narrow #cropBar span{display:none}
 #box{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 body.nocap .grp:has(#bCap){display:none}
 body.touch #toolbar .tb,body.touch #toolbar .ur,body.touch #toolbar .fold,body.touch #zoomBox button{min-height:40px}
@@ -314,7 +321,7 @@ body.mm #viewport{background:#D9CFF0}
       <div id="favs"></div>
       <div id="zoomBox"><button id="bSnap" title="다른 도형·슬라이드 가장자리/중앙에 달라붙어요 (드래그 중 Alt: 잠시 끄기)">🧲 스냅</button><span class="vs"></span><button id="zOut" title="축소 (Ctrl+-)">－</button><input id="zPct" type="text" inputmode="numeric" value="100%" title="화면 배율 · 숫자를 직접 입력하고 Enter (10~400)"><button id="zIn" title="확대 (Ctrl++ / Ctrl+휠)">＋</button><button id="zFit" title="화면에 맞추기 (Ctrl+0)">맞춤</button><button id="z100" title="실제 크기 100% (Ctrl+1)">100%</button></div><button id="bFoldF" class="fold" title="즐겨찾기 줄 접기"></button></div>
     </div>
-    <div id="viewport"><div id="mbar" hidden><b>🧩 마스터 편집 중</b><span id="mbName"></span><button id="mbDone">편집 끝내기</button></div><div id="boxOuter"><div id="box"><div id="stage"></div><svg id="ui" viewBox="0 0 1280 720"></svg></div></div></div>
+    <div id="viewport"><div id="cropBar"><b>✂ 자르기 모드</b><span>모서리·가장자리를 끌어서 자르세요 · 흐린 부분이 잘려나간 영역</span><button id="cropDone">완료 (Enter)</button></div><div id="mbar" hidden><b>🧩 마스터 편집 중</b><span id="mbName"></span><button id="mbDone">편집 끝내기</button></div><div id="boxOuter"><div id="box"><div id="stage"></div><div id="cropGhost"><img alt=""></div><svg id="ui" viewBox="0 0 1280 720"></svg></div></div></div>
     <div id="status"><span id="stTool"></span><span id="pgNav"><button id="pgPrev" title="이전 슬라이드">◀</button><b id="pgNo"></b><button id="pgNext" title="다음 슬라이드">▶</button></span><span id="stPos"></span><span id="stHint"></span></div>
   </main>
   <div id="rzR" class="rz" title="드래그: 폭 조절 · 더블클릭: 기본 폭"></div>
